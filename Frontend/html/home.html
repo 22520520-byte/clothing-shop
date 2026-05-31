@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/home.css">
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-left">
+                <i class="fa-solid fa-phone"></i>
+                <span>0911.010.757</span>
+            </div>
+
+            <div class="topbar-right">
+                <a href="../html/login.html" id="topbarAccountLink" data-role="topbar-account-link">
+    <span id="topbarAccountText">Tài khoản</span>
+</a>
+
+                <a href="../html/cart.html">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                    <span>Giỏ hàng</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../html/home.html">
+                <img src="../img/logo.png" alt="DUHU Shop">
+            </a>
+        </div>
+
+        <nav class="nav-left">
+            <ul class="menu">
+                <li class="drop-down">
+                    <a href="../html/ao-tay-ngan.html">Áo ngắn tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-thun.html">Áo thun</a></li>
+                            <li><a href="../html/ao-polo.html">Áo polo</a></li>
+                            <li><a href="../html/ao-so-mi.html">Áo sơ mi</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/ao-tay-dai.html">Áo dài tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-sweater.html">Áo Sweater</a></li>
+                            <li><a href="../html/ao-hoodie.html">Áo Hoodie</a></li>
+                            <li><a href="../html/ao-khoac.html">Áo Khoác</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/quan.html">Quần</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/quan-dai.html">Quần dài</a></li>
+                            <li><a href="../html/quan-ngan.html">Quần ngắn</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/vay.html">Váy</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/vay-ngan.html">Váy ngắn</a></li>
+                            <li><a href="../html/vay-dai.html">Váy dài</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/phu-kien.html">Phụ kiện</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/mu.html">Mũ</a></li>
+                            <li><a href="../html/quan-lot.html">Quần lót</a></li>
+                            <li><a href="../html/tat.html">Tất</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/flash-sale.html">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Flash Sale</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <form class="text-box" id="searchForm" action="#">
+            <input
+                type="text"
+                id="searchKeyword"
+                name="keyword"
+                placeholder="Tìm kiếm ..."
+            >
+
+            <button type="submit" id="searchButton" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- Home page -->
+    <main class="homePage" data-page="home">
+        <!-- Banner -->
+        <section class="banner" id="homeBanner">
+            <div class="banner-slide" id="bannerTrack">
+                <div class="slide active" data-banner-id="banner-1">
+                    <img src="../img/banner1.png" alt="Banner 1">
+                </div>
+
+                <div class="slide" data-banner-id="banner-2">
+                    <img src="../img/banner2.png" alt="Banner 2">
+                </div>
+
+                <div class="slide" data-banner-id="banner-3">
+                    <img src="../img/banner3.png" alt="Banner 3">
+                </div>
+
+                <div class="slide" data-banner-id="banner-4">
+                    <img src="../img/banner4.png" alt="Banner 4">
+                </div>
+
+                <div class="slide" data-banner-id="banner-5">
+                    <img src="../img/banner5.png" alt="Banner 5">
+                </div>
+            </div>
+
+            <button type="button" class="prev" id="bannerPrevBtn" aria-label="Banner trước">
+                &#10094;
+            </button>
+
+            <button type="button" class="next" id="bannerNextBtn" aria-label="Banner sau">
+                &#10095;
+            </button>
+        </section>
+
+        <!-- Sản phẩm nổi bật -->
+        <section class="hotProducts" data-section="home-products">
+            <!-- Hàng mới về -->
+            <section class="homeProductSection" data-product-group="new-arrivals" data-source="new-products">
+                <div class="titleProduct">
+                    <h2>Hàng mới về</h2>
+                </div>
+
+                <div class="homeState loadingState" id="newProductLoadingState">
+                    Đang tải sản phẩm mới...
+                </div>
+
+                <div class="homeState emptyState" id="newProductEmptyState" hidden>
+                    Hiện chưa có sản phẩm mới.
+                </div>
+
+                <div class="homeState errorState" id="newProductErrorState" hidden>
+                    Có lỗi khi tải danh sách sản phẩm mới.
+                </div>
+
+                <div class="productItems" id="newProductList" data-list-type="new" hidden>
+                    <!-- JS render sản phẩm mới tại đây -->
+                </div>
+            </section>
+
+            <!-- Hàng giảm giá -->
+            <section class="homeProductSection" data-product-group="sale-products" data-source="sale-products">
+                <div class="titleProduct">
+                    <h2>Hàng giảm giá</h2>
+                </div>
+
+                <div class="homeState loadingState" id="saleProductLoadingState">
+                    Đang tải sản phẩm giảm giá...
+                </div>
+
+                <div class="homeState emptyState" id="saleProductEmptyState" hidden>
+                    Hiện chưa có sản phẩm giảm giá.
+                </div>
+
+                <div class="homeState errorState" id="saleProductErrorState" hidden>
+                    Có lỗi khi tải danh sách sản phẩm giảm giá.
+                </div>
+
+                <div class="productItems" id="saleProductList" data-list-type="sale" hidden>
+                    <!-- JS render sản phẩm giảm giá tại đây -->
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <!-- Template sản phẩm trang chủ -->
+    <template id="homeProductTemplate">
+        <article class="blockItem" data-product-id="">
+            <div class="imgProduct">
+                <a href="#" class="productLink" data-role="product-link">
+                    <img src="" alt="" data-role="product-image">
+                </a>
+
+                <div class="productAction">
+                    <a href="#" data-action="quick-buy">
+                        <i class="fa-solid fa-cart-arrow-down"></i>
+                        <span>Mua nhanh</span>
+                    </a>
+
+                    <a href="#" data-action="view-detail">
+                        <i class="fa-solid fa-eye"></i>
+                        <span>Xem chi tiết</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="infoItem">
+                <a href="#" class="nameProduct" data-role="product-link">
+                    <span data-role="product-name"></span>
+                </a>
+
+                <div class="priceProduct">
+                    <span class="realPrice" data-role="sale-price"></span>
+
+                    <span class="fakePrice" data-role="old-price-wrap">
+                        <del data-role="old-price"></del>
+                    </span>
+                </div>
+
+                <div class="sale" data-role="discount-wrap">
+                    Giảm <span class="discountPercentage" data-role="discount-percent"></span>%
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <!-- Quick view popup -->
+    <div class="quickViewOverlay" id="quickViewOverlay" hidden></div>
+
+    <section class="quickViewPopup" id="quickViewPopup" hidden aria-label="Xem nhanh sản phẩm">
+        <button type="button" class="quickViewCloseBtn" id="quickViewCloseBtn" aria-label="Đóng xem nhanh">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="quickViewContent">
+            <!-- Left -->
+            <div class="quickViewGallery">
+                <div class="quickViewThumbs" id="quickViewThumbs">
+                    <!-- JS render thumbnail xem nhanh tại đây -->
+                </div>
+
+                <div class="quickViewMainImage">
+                    <button type="button" class="quickViewImageNav quickViewPrevImageBtn" id="quickViewPrevImageBtn" aria-label="Ảnh trước">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    <img src="" alt="" id="quickViewImage">
+
+                    <button type="button" class="quickViewImageNav quickViewNextImageBtn" id="quickViewNextImageBtn" aria-label="Ảnh sau">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right -->
+            <div class="quickViewInfo">
+                <div class="quickViewBrand" id="quickViewBrand">DUHU Shop</div>
+
+                <h2 id="quickViewProductName">Tên sản phẩm</h2>
+
+                <p class="quickViewStatus">
+                    Tình trạng:
+                    <strong id="quickViewProductStatus">Còn hàng</strong>
+                </p>
+
+                <div class="quickViewPriceBox">
+                    <span class="quickViewCurrentPrice" id="quickViewCurrentPrice">0đ</span>
+                    <span class="quickViewOldPrice" id="quickViewOldPrice"></span>
+                    <span class="quickViewDiscount" id="quickViewDiscount"></span>
+                </div>
+
+                <div class="quickViewOption">
+                    <div class="quickViewOptionTop">
+                        <span>Màu sắc</span>
+                        <strong id="quickViewSelectedColor">---</strong>
+                    </div>
+
+                    <div class="quickViewColorList" id="quickViewColorList">
+                        <!-- JS render màu tại đây -->
+                    </div>
+                </div>
+
+                <div class="quickViewOption">
+                    <div class="quickViewOptionTop">
+                        <span>Kích thước</span>
+                    </div>
+
+                    <div class="quickViewSizeList" id="quickViewSizeList">
+                        <!-- JS render size tại đây -->
+                    </div>
+                </div>
+
+                <div class="quickViewOption">
+                    <div class="quickViewOptionTop">
+                        <span>Số lượng</span>
+                    </div>
+
+                    <div class="quickViewQuantityBox">
+                        <button type="button" id="quickViewMinusQty" aria-label="Giảm số lượng">
+                            -
+                        </button>
+
+                        <input type="number" id="quickViewQuantityInput" value="1" min="1" readonly>
+
+                        <button type="button" id="quickViewPlusQty" aria-label="Tăng số lượng">
+                            +
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button" class="quickViewBuyBtn" id="quickViewBuyBtn">
+                    Sở hữu ngay
+                </button>
+
+                <div class="quickViewMoreInfo">
+                    <button type="button" class="quickViewToggleBtn" data-action="toggle-material">
+                        <span>Chất liệu sản phẩm</span>
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+
+                    <div class="quickViewToggleContent" id="quickViewMaterial" hidden>
+                        Nội dung chất liệu sản phẩm.
+                    </div>
+
+                    <button type="button" class="quickViewToggleBtn" data-action="toggle-description">
+                        <span>Mô tả sản phẩm</span>
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+
+                    <div class="quickViewToggleContent" id="quickViewDescription" hidden>
+                        Nội dung mô tả sản phẩm.
+                    </div>
+                </div>
+
+                <a href="#" class="quickViewDetailLink" id="quickViewDetailLink">
+                    Xem chi tiết sản phẩm &gt;&gt;
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Template thumbnail xem nhanh -->
+    <template id="quickViewThumbTemplate">
+        <button type="button" class="quickViewThumb" data-image-index="">
+            <img src="" alt="">
+        </button>
+    </template>
+
+    <!-- Template màu xem nhanh -->
+    <template id="quickViewColorTemplate">
+        <button
+            type="button"
+            class="quickViewColorItem"
+            data-color-name=""
+            data-color-value=""
+            title=""
+            aria-label="">
+        </button>
+    </template>
+
+    <!-- Template size xem nhanh -->
+    <template id="quickViewSizeTemplate">
+        <button type="button" class="quickViewSizeItem" data-size=""></button>
+    </template>
+
+    <!-- Cart drawer -->
+    <div class="cartDrawerOverlay" id="cartDrawerOverlay" hidden></div>
+
+    <aside class="cartDrawer" id="cartDrawer" hidden aria-label="Giỏ hàng nhanh">
+        <div class="cartDrawerHeader">
+            <div>
+                <h2>Giỏ hàng</h2>
+                <p>Bạn đang có <strong id="cartDrawerCount">0</strong> sản phẩm trong giỏ hàng.</p>
+            </div>
+
+            <button type="button" class="cartDrawerCloseBtn" id="cartDrawerCloseBtn" aria-label="Đóng giỏ hàng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="cartDrawerBody">
+            <div class="cartDrawerState emptyState" id="cartDrawerEmptyState" hidden>
+                Giỏ hàng của bạn đang trống.
+            </div>
+
+            <div class="cartDrawerList" id="cartDrawerList">
+                <!-- JS render sản phẩm trong giỏ hàng nhanh tại đây -->
+            </div>
+        </div>
+
+        <div class="cartDrawerFooter">
+            <div class="cartDrawerTotalRow">
+                <span>Tổng tiền tạm tính:</span>
+                <strong id="cartDrawerSubtotal">0đ</strong>
+            </div>
+
+            <button type="button" class="cartDrawerCheckoutBtn" id="cartDrawerCheckoutBtn">
+                Tiến hành đặt hàng
+            </button>
+
+            <a href="../html/cart.html" class="cartDrawerDetailLink" id="cartDrawerDetailLink">
+                Xem chi tiết giỏ hàng
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Template item trong cart drawer -->
+    <template id="cartDrawerItemTemplate">
+        <div class="cartDrawerItem" data-cart-item-id="">
+            <div class="cartDrawerItemImage">
+                <a href="#" data-role="drawer-product-link">
+                    <img src="" alt="" data-role="drawer-product-image">
+                </a>
+            </div>
+
+            <div class="cartDrawerItemInfo">
+                <h3>
+                    <a href="#" data-role="drawer-product-name"></a>
+                </h3>
+
+                <p data-role="drawer-product-variant"></p>
+
+                <div class="cartDrawerItemBottom">
+                    <span data-role="drawer-product-price-quantity"></span>
+
+                    <button type="button" data-role="drawer-remove-item-btn">
+                        Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="containerFooter">
+            <div class="contact">
+                <h4>Gọi mua hàng (8:30-21:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0911.010.757</span>
+                    </p>
+
+                    <p>Tất cả các ngày trong tuần</p>
+                </div>
+            </div>
+
+            <div class="contact">
+                <h4>Góp ý, khiếu nại (8:30-20:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0917.257.595</span>
+                    </p>
+
+                    <p>Các ngày trong tuần (trừ ngày lễ)</p>
+                </div>
+            </div>
+
+            <div class="socialMedia">
+                <h4>Nền tảng mạng xã hội</h4>
+
+                <div class="iconSocialMedia">
+                    <a href="#" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+
+                    <a href="#" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="map">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.9317374327557!2d106.79120977589625!3d10.892792489263131!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d9b2d9812e63%3A0xd4c6b932cc0bca0e!2sBcons%20City%20Mall!5e0!3m2!1sen!2s!4v1773054657751!5m2!1sen!2s"
+                    width="600"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS render banner, sản phẩm, quick view và cart drawer -->
+     <script src="../js/auth-ui.js"></script>
+    <script src="../js/home.js"></script>
+</body>
+</html>

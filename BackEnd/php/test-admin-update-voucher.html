@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Update Voucher API</title>
+</head>
+<body>
+    <h2>Test Admin Update Voucher API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy voucher_id từ <b>test-admin-vouchers.html</b>.
+    </p>
+
+    <div>
+        <label>Voucher ID:</label>
+        <br>
+        <input id="voucherIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Mã voucher:</label>
+        <br>
+        <input id="codeInput" type="text" value="ADMINSALE10UPDATE">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Tên voucher:</label>
+        <br>
+        <input id="nameInput" type="text" size="60" value="Voucher test admin đã cập nhật">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Mô tả:</label>
+        <br>
+        <input id="descriptionInput" type="text" size="80" value="Voucher được cập nhật từ API admin.">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Loại giảm giá:</label>
+        <br>
+        <select id="discountTypeInput">
+            <option value="fixed">fixed - Giảm tiền cố định</option>
+            <option value="percent" selected>percent - Giảm phần trăm</option>
+            <option value="freeship">freeship - Miễn phí vận chuyển</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Giá trị giảm:</label>
+        <br>
+        <input id="discountValueInput" type="number" value="15">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Đơn tối thiểu:</label>
+        <br>
+        <input id="minOrderValueInput" type="number" value="150000">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Giảm tối đa:</label>
+        <br>
+        <input id="maxDiscountAmountInput" type="number" value="70000">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số lượng:</label>
+        <br>
+        <input id="quantityInput" type="number" value="120">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số lần dùng / người:</label>
+        <br>
+        <input id="usageLimitInput" type="number" value="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ngày bắt đầu:</label>
+        <br>
+        <input id="startDateInput" type="datetime-local">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ngày kết thúc:</label>
+        <br>
+        <input id="endDateInput" type="datetime-local">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái:</label>
+        <br>
+        <select id="statusInput">
+            <option value="active" selected>active - Đang hoạt động</option>
+            <option value="inactive">inactive - Tạm ẩn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="updateVoucherBtn">Cập nhật voucher</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        // 1. Set ngày mặc định
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hour = String(date.getHours()).padStart(2, "0");
+            const minute = String(date.getMinutes()).padStart(2, "0");
+
+            return year + "-" + month + "-" + day + "T" + hour + ":" + minute;
+        }
+
+        const now = new Date();
+        const nextMonth = new Date();
+
+        nextMonth.setMonth(now.getMonth() + 1);
+
+        document.getElementById("startDateInput").value = formatDateTimeLocal(now);
+        document.getElementById("endDateInput").value = formatDateTimeLocal(nextMonth);
+
+
+        // 2. Gọi API cập nhật voucher
+        document.getElementById("updateVoucherBtn").addEventListener("click", function () {
+            const voucherId = Number(document.getElementById("voucherIdInput").value);
+
+            const code = document.getElementById("codeInput").value.trim();
+            const name = document.getElementById("nameInput").value.trim();
+            const description = document.getElementById("descriptionInput").value.trim();
+
+            const discountType = document.getElementById("discountTypeInput").value;
+            const discountValue = Number(document.getElementById("discountValueInput").value);
+
+            const minOrderValue = Number(document.getElementById("minOrderValueInput").value);
+            const maxDiscountAmountValue = document.getElementById("maxDiscountAmountInput").value.trim();
+            const maxDiscountAmount = maxDiscountAmountValue !== "" ? Number(maxDiscountAmountValue) : "";
+
+            const quantity = Number(document.getElementById("quantityInput").value);
+            const usageLimitPerUser = Number(document.getElementById("usageLimitInput").value);
+
+            const startDate = document.getElementById("startDateInput").value;
+            const endDate = document.getElementById("endDateInput").value;
+
+            const status = document.getElementById("statusInput").value;
+
+            fetch("./api/admin/vouchers/update-voucher.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    voucher_id: voucherId,
+                    code: code,
+                    name: name,
+                    description: description,
+                    discount_type: discountType,
+                    discount_value: discountValue,
+                    min_order_value: minOrderValue,
+                    max_discount_amount: maxDiscountAmount,
+                    quantity: quantity,
+                    usage_limit_per_user: usageLimitPerUser,
+                    start_date: startDate,
+                    end_date: endDate,
+                    status: status
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập quản trị</title>
+
+    <link rel="stylesheet" href="../css/admin-login.css">
+</head>
+<body>
+    <main class="adminLoginPage">
+        <section class="adminLoginContainer">
+            <div class="adminLoginIntro">
+                <div class="adminLogoBox">
+                    <span class="adminLogoText">FASHION STORE</span>
+                    <span class="adminLogoSub">Admin Panel</span>
+                </div>
+
+                <h1>Quản lý cửa hàng quần áo dễ dàng hơn</h1>
+                <p>
+                    Đăng nhập để quản lý sản phẩm, đơn hàng, khách hàng, voucher,
+                    điểm tích lũy và báo cáo doanh thu.
+                </p>
+
+                <ul class="adminFeatureList">
+                    <li>Quản lý sản phẩm</li>
+                    <li>Theo dõi đơn hàng</li>
+                    <li>Quản lý khách hàng</li>
+                    <li>Xem báo cáo doanh thu</li>
+                </ul>
+            </div>
+
+            <div class="adminLoginCard">
+                <div class="adminLoginHeader">
+                    <h2>Đăng nhập quản trị</h2>
+                    <p>Dành cho chủ cửa hàng và nhân viên</p>
+                </div>
+
+                <form class="adminLoginForm" id="adminLoginForm">
+                    <div class="formGroup">
+                        <label for="adminUsername">Tên đăng nhập</label>
+                        <input 
+                            type="text" 
+                            id="adminUsername" 
+                            name="adminUsername" 
+                            placeholder="Nhập tên đăng nhập"
+                        >
+                    </div>
+
+                    <div class="formGroup">
+                        <label for="adminPassword">Mật khẩu</label>
+
+                        <div class="passwordGroup">
+                            <input 
+                                type="password" 
+                                id="adminPassword" 
+                                name="adminPassword" 
+                                placeholder="Nhập mật khẩu"
+                            >
+
+                            <button 
+                                type="button" 
+                                class="togglePasswordBtn" 
+                                id="togglePasswordBtn"
+                            >
+                                Hiện
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="formOptions">
+                        <label class="rememberBox">
+                            <input type="checkbox" id="rememberAdmin">
+                            <span>Ghi nhớ đăng nhập</span>
+                        </label>
+
+                        <a href="#" class="forgotPasswordLink">Quên mật khẩu?</a>
+                    </div>
+
+                    <p class="formMessage" id="formMessage"></p>
+
+                    <button type="submit" class="adminLoginBtn">
+                        Đăng nhập
+                    </button>
+                </form>
+
+                <div class="demoAccountBox">
+                    <p><strong>Tài khoản demo:</strong></p>
+                    <p>Chủ cửa hàng: <span>owner / 123456</span></p>
+                    <p>Nhân viên: <span>staff / 123456</span></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/admin-login.js"></script>
+</body>
+</html>

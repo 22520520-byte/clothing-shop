@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Product Options API</title>
+</head>
+<body>
+    <h2>Test Admin Product Options API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+    </p>
+
+    <button id="getOptionsBtn">Lấy option sản phẩm admin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getOptionsBtn").addEventListener("click", function () {
+            fetch("./api/admin/options/get-product-options.php", {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

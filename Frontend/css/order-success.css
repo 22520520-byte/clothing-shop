@@ -1,0 +1,593 @@
+/* 1. Order success page */
+
+.successPage {
+    min-height: 100vh;
+    background: #f7f7f7;
+}
+
+.successContainer {
+    width: min(1200px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 50px;
+}
+
+/* 2. Breadcrumb */
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+    color: #777777;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    color: #555555;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+    color: #111111;
+}
+
+.breadcrumb span:last-child {
+    color: #111111;
+    font-weight: 700;
+}
+
+/* 3. Main card */
+
+.successCard {
+    padding: 34px;
+    border: 1px solid #eeeeee;
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
+
+#orderSuccessContent[hidden] {
+    display: none;
+}
+
+/* 4. Page states */
+
+.successState {
+    padding: 16px;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    background: #fafafa;
+    color: #666666;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.successState[hidden] {
+    display: none;
+}
+
+.successState.errorState {
+    color: #d71920;
+    background: #fff0f0;
+    border-color: #ffd2d2;
+}
+
+.successState.emptyState {
+    color: #8a5a00;
+    background: #fff8eb;
+    border-color: #ffe2ad;
+}
+
+/* 5. Success header */
+
+.successIcon {
+    width: 82px;
+    height: 82px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: #f1fbf4;
+    color: #16803c;
+    font-size: 42px;
+}
+
+#successTitle {
+    margin: 0 0 10px;
+    color: #111111;
+    text-align: center;
+    font-size: 34px;
+    line-height: 1.2;
+    font-weight: 900;
+}
+
+.successDesc {
+    max-width: 720px;
+    margin: 0 auto 28px;
+    color: #666666;
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+/* 6. Order overview */
+
+.orderInfoGrid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.infoBox {
+    min-height: 94px;
+    padding: 16px;
+    border: 1px solid #eeeeee;
+    border-radius: 18px;
+    background: #fafafa;
+}
+
+.infoBox span {
+    display: block;
+    margin-bottom: 8px;
+    color: #777777;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.infoBox strong {
+    display: block;
+    color: #111111;
+    font-size: 15px;
+    line-height: 1.4;
+    font-weight: 900;
+    word-break: break-word;
+}
+
+.infoBox .totalPrice {
+    color: #d71920;
+    font-size: 18px;
+}
+
+/* 7. Content boxes */
+
+.receiverBox,
+.orderedProducts,
+.orderSummaryBox,
+.usedBenefitsBox {
+    padding: 22px;
+    margin-bottom: 22px;
+    border: 1px solid #eeeeee;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.035);
+}
+
+.receiverBox h2,
+.orderedProducts h2,
+.orderSummaryBox h2,
+.usedBenefitsBox h2 {
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eeeeee;
+    color: #111111;
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 900;
+}
+
+/* 8. Receiver info */
+
+.receiverBox p {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 10px;
+    color: #555555;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.receiverBox p:last-child {
+    margin-bottom: 0;
+}
+
+.receiverBox strong {
+    min-width: 120px;
+    color: #111111;
+    font-weight: 900;
+}
+
+.receiverBox span {
+    flex: 1;
+}
+
+/* 9. Ordered product list */
+
+#orderedProductList {
+    display: grid;
+    gap: 14px;
+}
+
+#orderedProductList[hidden] {
+    display: none;
+}
+
+.orderedItem {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.orderedItem:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.orderedThumb {
+    width: 92px;
+    height: 110px;
+    overflow: hidden;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    background: #fafafa;
+}
+
+.orderedThumb a {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.orderedThumb img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.orderedText {
+    min-width: 0;
+}
+
+.orderedText h3 {
+    margin: 0 0 7px;
+    color: #111111;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 900;
+}
+
+.orderedText h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.orderedText h3 a:hover {
+    color: #d71920;
+}
+
+.orderedText p {
+    margin: 0 0 8px;
+    color: #666666;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.orderedText span[data-role="product-price-quantity"] {
+    display: block;
+    margin-bottom: 7px;
+    color: #333333;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.orderedText strong[data-role="product-line-total"] {
+    display: block;
+    color: #d71920;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+/* 10. Order summary */
+
+.orderSummaryBox {
+    max-width: 620px;
+    margin-left: auto;
+}
+
+.summaryRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eeeeee;
+    color: #444444;
+    font-size: 14px;
+}
+
+.summaryRow[hidden] {
+    display: none;
+}
+
+.summaryRow span {
+    color: #555555;
+    font-weight: 700;
+}
+
+.summaryRow strong {
+    color: #111111;
+    font-weight: 900;
+}
+
+.summaryRow.discount strong {
+    color: #16803c;
+}
+
+.summaryTotal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 18px;
+    color: #111111;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.summaryTotal strong {
+    color: #d71920;
+    font-size: 26px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+/* 11. Used benefits */
+
+.usedBenefitsBox[hidden] {
+    display: none;
+}
+
+.usedBenefitItem {
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    background: #fafafa;
+}
+
+.usedBenefitItem[hidden] {
+    display: none;
+}
+
+.usedBenefitItem:last-child {
+    margin-bottom: 0;
+}
+
+.usedBenefitItem strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #111111;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.usedBenefitItem p {
+    margin: 0;
+    color: #666666;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+/* 12. Guest notice */
+
+.guestOrderNotice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    margin-bottom: 22px;
+    border: 1px solid #ffe2ad;
+    border-radius: 16px;
+    background: #fff8eb;
+    color: #8a5a00;
+}
+
+.guestOrderNotice[hidden] {
+    display: none;
+}
+
+.guestOrderNotice i {
+    flex: 0 0 auto;
+    margin-top: 3px;
+    color: #d88a00;
+    font-size: 18px;
+}
+
+.guestOrderNotice p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 700;
+}
+
+/* 13. Actions */
+
+.successActions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+.btnPrimary,
+.btnSecondary {
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    text-decoration: none;
+    transition: all 0.22s ease;
+}
+
+.btnPrimary {
+    border: 1px solid #111111;
+    background: #111111;
+    color: #ffffff;
+}
+
+.btnPrimary:hover {
+    background: #222222;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+.btnSecondary {
+    border: 1px solid #dddddd;
+    background: #ffffff;
+    color: #111111;
+}
+
+.btnSecondary:hover {
+    border-color: #111111;
+    background: #fafafa;
+    transform: translateY(-1px);
+}
+
+.btnSecondary[hidden] {
+    display: none;
+}
+
+/* 14. Responsive */
+
+@media (max-width: 1100px) {
+    .orderInfoGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .successContainer {
+        width: min(100% - 24px, 1200px);
+        padding-top: 22px;
+    }
+
+    .successCard {
+        padding: 24px;
+        border-radius: 20px;
+    }
+
+    #successTitle {
+        font-size: 28px;
+    }
+
+    .successDesc {
+        font-size: 14px;
+    }
+
+    .orderInfoGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .receiverBox,
+    .orderedProducts,
+    .orderSummaryBox,
+    .usedBenefitsBox {
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .receiverBox h2,
+    .orderedProducts h2,
+    .orderSummaryBox h2,
+    .usedBenefitsBox h2 {
+        font-size: 19px;
+    }
+
+    .orderSummaryBox {
+        max-width: none;
+    }
+
+    .receiverBox p {
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .receiverBox strong {
+        min-width: 0;
+    }
+
+    .summaryTotal strong {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 576px) {
+    .successContainer {
+        width: min(100% - 18px, 1200px);
+    }
+
+    .successCard {
+        padding: 18px;
+    }
+
+    .successIcon {
+        width: 68px;
+        height: 68px;
+        font-size: 34px;
+    }
+
+    #successTitle {
+        font-size: 25px;
+    }
+
+    .orderInfoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .infoBox {
+        min-height: auto;
+    }
+
+    .orderedItem {
+        grid-template-columns: 78px minmax(0, 1fr);
+    }
+
+    .orderedThumb {
+        width: 78px;
+        height: 94px;
+        border-radius: 14px;
+    }
+
+    .summaryRow,
+    .summaryTotal {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .guestOrderNotice {
+        flex-direction: column;
+    }
+
+    .successActions {
+        flex-direction: column;
+    }
+
+    .btnPrimary,
+    .btnSecondary {
+        width: 100%;
+    }
+}

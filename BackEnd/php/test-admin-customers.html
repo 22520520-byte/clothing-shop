@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Customers API</title>
+</head>
+<body>
+    <h2>Test Admin Customers API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+    </p>
+
+    <div>
+        <label>Từ khóa:</label>
+        <br>
+        <input id="keywordInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái tài khoản:</label>
+        <br>
+        <select id="statusInput">
+            <option value="all">Tất cả</option>
+            <option value="active">active - Đang hoạt động</option>
+            <option value="inactive">inactive - Tạm khóa</option>
+            <option value="blocked">blocked - Bị chặn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Hạng thành viên:</label>
+        <br>
+        <select id="membershipInput">
+            <option value="all">Tất cả</option>
+            <option value="normal">normal - Thường</option>
+            <option value="silver">silver - Bạc</option>
+            <option value="gold">gold - Vàng</option>
+            <option value="diamond">diamond - Kim cương</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Sắp xếp:</label>
+        <br>
+        <select id="sortInput">
+            <option value="latest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
+            <option value="name_asc">Tên A-Z</option>
+            <option value="spent_desc">Chi tiêu cao nhất</option>
+            <option value="orders_desc">Nhiều đơn nhất</option>
+            <option value="points_desc">Nhiều điểm nhất</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="getCustomersBtn">Lấy danh sách khách hàng admin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getCustomersBtn").addEventListener("click", function () {
+            const keyword = document.getElementById("keywordInput").value.trim();
+            const status = document.getElementById("statusInput").value;
+            const membershipLevel = document.getElementById("membershipInput").value;
+            const sort = document.getElementById("sortInput").value;
+
+            let url = "./api/admin/customers/get-customers.php?page=1&limit=10";
+            url += "&keyword=" + encodeURIComponent(keyword);
+            url += "&status=" + encodeURIComponent(status);
+            url += "&membership_level=" + encodeURIComponent(membershipLevel);
+            url += "&sort=" + encodeURIComponent(sort);
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

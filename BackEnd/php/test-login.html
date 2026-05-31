@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Login API</title>
+</head>
+<body>
+    <h2>Test Login API</h2>
+
+    <div>
+        <label>Email hoặc số điện thoại:</label>
+        <br>
+        <input id="accountInput" type="text" value="khachtest01@example.com">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Mật khẩu:</label>
+        <br>
+        <input id="passwordInput" type="password" value="123456">
+    </div>
+
+    <br>
+
+    <button id="loginBtn">Test đăng nhập</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("loginBtn").addEventListener("click", function () {
+            const account = document.getElementById("accountInput").value.trim();
+            const password = document.getElementById("passwordInput").value.trim();
+
+            fetch("./api/auth/login.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    account: account,
+                    password: password
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Create Staff API</title>
+</head>
+<body>
+    <h2>Test Admin Create Staff API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin</b> trước.
+    </p>
+
+    <div>
+        <label>Họ tên:</label>
+        <br>
+        <input id="fullNameInput" type="text" size="50" value="Nhân viên Test 01">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Email:</label>
+        <br>
+        <input id="emailInput" type="email" size="50" value="stafftest01@example.com">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số điện thoại:</label>
+        <br>
+        <input id="phoneInput" type="text" value="0900000001">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Mật khẩu:</label>
+        <br>
+        <input id="passwordInput" type="text" value="123456">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Giới tính:</label>
+        <br>
+        <select id="genderInput">
+            <option value="male">male - Nam</option>
+            <option value="female">female - Nữ</option>
+            <option value="other" selected>other - Khác</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ngày sinh:</label>
+        <br>
+        <input id="dateOfBirthInput" type="date" value="2000-01-01">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Vai trò:</label>
+        <br>
+        <select id="roleCodeInput">
+            <option value="staff" selected>staff - Nhân viên</option>
+            <option value="admin">admin - Quản trị viên</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Mã nhân viên:</label>
+        <br>
+        <input id="staffCodeInput" type="text" value="NVTEST01">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Chức vụ:</label>
+        <br>
+        <input id="positionNameInput" type="text" value="Nhân viên bán hàng">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Phòng ban:</label>
+        <br>
+        <input id="departmentInput" type="text" value="Bán hàng">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái làm việc:</label>
+        <br>
+        <select id="workStatusInput">
+            <option value="working" selected>working - Đang làm việc</option>
+            <option value="on_leave">on_leave - Nghỉ phép</option>
+            <option value="resigned">resigned - Đã nghỉ việc</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái tài khoản:</label>
+        <br>
+        <select id="statusInput">
+            <option value="active" selected>active - Đang hoạt động</option>
+            <option value="inactive">inactive - Tạm khóa</option>
+            <option value="blocked">blocked - Bị chặn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="createStaffBtn">Thêm nhân viên</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("createStaffBtn").addEventListener("click", function () {
+            const fullName = document.getElementById("fullNameInput").value.trim();
+            const email = document.getElementById("emailInput").value.trim();
+            const phone = document.getElementById("phoneInput").value.trim();
+            const password = document.getElementById("passwordInput").value.trim();
+
+            const gender = document.getElementById("genderInput").value;
+            const dateOfBirth = document.getElementById("dateOfBirthInput").value;
+
+            const roleCode = document.getElementById("roleCodeInput").value;
+
+            const staffCode = document.getElementById("staffCodeInput").value.trim();
+            const positionName = document.getElementById("positionNameInput").value.trim();
+            const department = document.getElementById("departmentInput").value.trim();
+            const workStatus = document.getElementById("workStatusInput").value;
+
+            const status = document.getElementById("statusInput").value;
+
+            fetch("./api/admin/staff/create-staff.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    full_name: fullName,
+                    email: email,
+                    phone: phone,
+                    password: password,
+                    gender: gender,
+                    date_of_birth: dateOfBirth,
+                    role_code: roleCode,
+                    staff_code: staffCode,
+                    position_name: positionName,
+                    department: department,
+                    work_status: workStatus,
+                    status: status
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

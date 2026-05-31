@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Wishlist API</title>
+</head>
+<body>
+    <h2>Test Wishlist API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+    </p>
+
+    <button id="getWishlistBtn">Lấy danh sách yêu thích</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getWishlistBtn").addEventListener("click", function () {
+            fetch("./api/customer-features/get-wishlist.php?page=1&limit=12", {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Register API</title>
+</head>
+<body>
+    <h2>Test Register API</h2>
+
+    <button id="registerBtn">Test đăng ký</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("registerBtn").addEventListener("click", function () {
+            fetch("./api/auth/register.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    full_name: "Khách Test 01",
+                    email: "khachtest01@example.com",
+                    phone: "0912345678",
+                    password: "123456",
+                    confirm_password: "123456"
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Staff API</title>
+</head>
+<body>
+    <h2>Test Admin Staff API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+    </p>
+
+    <div>
+        <label>Từ khóa:</label>
+        <br>
+        <input id="keywordInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Vai trò:</label>
+        <br>
+        <select id="roleCodeInput">
+            <option value="all">Tất cả</option>
+            <option value="owner">owner - Chủ cửa hàng</option>
+            <option value="admin">admin - Quản trị viên</option>
+            <option value="staff">staff - Nhân viên</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái tài khoản:</label>
+        <br>
+        <select id="statusInput">
+            <option value="all">Tất cả</option>
+            <option value="active">active - Đang hoạt động</option>
+            <option value="inactive">inactive - Tạm khóa</option>
+            <option value="blocked">blocked - Bị chặn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái làm việc:</label>
+        <br>
+        <select id="workStatusInput">
+            <option value="all">Tất cả</option>
+            <option value="working">working - Đang làm việc</option>
+            <option value="on_leave">on_leave - Nghỉ phép</option>
+            <option value="resigned">resigned - Đã nghỉ việc</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Phòng ban:</label>
+        <br>
+        <input id="departmentInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Sắp xếp:</label>
+        <br>
+        <select id="sortInput">
+            <option value="latest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
+            <option value="name_asc">Tên A-Z</option>
+            <option value="activity_desc">Hoạt động nhiều nhất</option>
+            <option value="role_asc">Theo vai trò</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="getStaffBtn">Lấy danh sách nhân viên admin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getStaffBtn").addEventListener("click", function () {
+            const keyword = document.getElementById("keywordInput").value.trim();
+            const roleCode = document.getElementById("roleCodeInput").value;
+            const status = document.getElementById("statusInput").value;
+            const workStatus = document.getElementById("workStatusInput").value;
+            const department = document.getElementById("departmentInput").value.trim();
+            const sort = document.getElementById("sortInput").value;
+
+            let url = "./api/admin/staff/get-staff.php?page=1&limit=10";
+            url += "&keyword=" + encodeURIComponent(keyword);
+            url += "&role_code=" + encodeURIComponent(roleCode);
+            url += "&status=" + encodeURIComponent(status);
+            url += "&work_status=" + encodeURIComponent(workStatus);
+            url += "&department=" + encodeURIComponent(department);
+            url += "&sort=" + encodeURIComponent(sort);
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

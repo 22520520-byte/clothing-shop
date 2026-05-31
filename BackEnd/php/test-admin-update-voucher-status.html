@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Update Voucher Status API</title>
+</head>
+<body>
+    <h2>Test Admin Update Voucher Status API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy voucher_id từ <b>test-admin-vouchers.html</b>.
+    </p>
+
+    <div>
+        <label>Voucher ID:</label>
+        <br>
+        <input id="voucherIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái mới:</label>
+        <br>
+        <select id="statusInput">
+            <option value="active">active - Đang hoạt động</option>
+            <option value="inactive">inactive - Tạm ẩn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="updateVoucherStatusBtn">Cập nhật trạng thái voucher</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updateVoucherStatusBtn").addEventListener("click", function () {
+            const voucherId = Number(document.getElementById("voucherIdInput").value);
+            const status = document.getElementById("statusInput").value;
+
+            fetch("./api/admin/vouchers/update-voucher-status.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    voucher_id: voucherId,
+                    status: status
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

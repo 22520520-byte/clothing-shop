@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Current User API</title>
+</head>
+<body>
+    <h2>Test Current User API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập thành công bằng <b>test-login.html</b> trước,
+        rồi mới test file này.
+    </p>
+
+    <button id="currentUserBtn">Lấy người dùng hiện tại</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("currentUserBtn").addEventListener("click", function () {
+            fetch("./api/auth/get-current-user.php", {
+                method: "GET"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

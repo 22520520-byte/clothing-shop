@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Update Payment Status API</title>
+</head>
+<body>
+    <h2>Test Admin Update Payment Status API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy order id hoặc order code từ <b>test-admin-orders.html</b>.
+    </p>
+
+    <div>
+        <label>Order ID:</label>
+        <br>
+        <input id="orderIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Order code:</label>
+        <br>
+        <input id="orderCodeInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái thanh toán mới:</label>
+        <br>
+        <select id="paymentStatusInput">
+            <option value="unpaid">unpaid - Chưa thanh toán</option>
+            <option value="paid">paid - Đã thanh toán</option>
+            <option value="failed">failed - Thanh toán thất bại</option>
+            <option value="refunded">refunded - Đã hoàn tiền</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Mã giao dịch:</label>
+        <br>
+        <input id="transactionCodeInput" type="text" value="ADMIN-TEST-PAYMENT-001">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ghi chú:</label>
+        <br>
+        <textarea id="noteInput" rows="3" cols="60">Admin cập nhật trạng thái thanh toán.</textarea>
+    </div>
+
+    <br>
+
+    <button id="updatePaymentStatusBtn">Cập nhật trạng thái thanh toán</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updatePaymentStatusBtn").addEventListener("click", function () {
+            const orderId = document.getElementById("orderIdInput").value.trim();
+            const orderCode = document.getElementById("orderCodeInput").value.trim();
+            const paymentStatus = document.getElementById("paymentStatusInput").value;
+            const transactionCode = document.getElementById("transactionCodeInput").value.trim();
+            const note = document.getElementById("noteInput").value.trim();
+
+            fetch("./api/admin/orders/update-payment-status.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    order_id: orderId !== "" ? Number(orderId) : 0,
+                    order_code: orderCode,
+                    payment_status: paymentStatus,
+                    transaction_code: transactionCode,
+                    note: note
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

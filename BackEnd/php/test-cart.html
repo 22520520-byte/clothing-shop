@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Cart API</title>
+</head>
+<body>
+    <h2>Test Cart API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước,
+        rồi mới test giỏ hàng.
+    </p>
+
+    <button id="getCartBtn">Lấy giỏ hàng hiện tại</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getCartBtn").addEventListener("click", function () {
+            fetch("./api/cart/get-cart.php", {
+                method: "GET"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

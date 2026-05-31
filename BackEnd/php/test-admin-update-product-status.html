@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Update Product Status API</title>
+</head>
+<body>
+    <h2>Test Admin Update Product Status API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy product_id từ <b>test-admin-products.html</b>.
+    </p>
+
+    <div>
+        <label>Product ID:</label>
+        <br>
+        <input id="productIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái mới:</label>
+        <br>
+        <select id="statusInput">
+            <option value="active">active - Đang bán</option>
+            <option value="inactive">inactive - Tạm ẩn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="updateStatusBtn">Cập nhật trạng thái sản phẩm</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updateStatusBtn").addEventListener("click", function () {
+            const productId = Number(document.getElementById("productIdInput").value);
+            const status = document.getElementById("statusInput").value;
+
+            fetch("./api/admin/products/update-product-status.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    product_id: productId,
+                    status: status
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

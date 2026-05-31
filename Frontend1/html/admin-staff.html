@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý nhân viên</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+                <a href="../html/admin-staff.html" class="adminMenuLink active" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1>Quản lý nhân viên</h1>
+                    <p>Tạo tài khoản, phân quyền và quản lý trạng thái hoạt động của nhân viên</p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+
+                    <a href="../html/admin-staff-detail.html" class="primaryBtn" id="openAddStaffBtn">
+                        + Thêm nhân viên
+                    </a>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="statGrid">
+                    <article class="statCard">
+                        <div class="statIcon">☷</div>
+
+                        <div>
+                            <p>Tổng tài khoản</p>
+                            <h2 id="totalStaffCount">0</h2>
+                            <span>Chủ cửa hàng và nhân viên</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">✓</div>
+
+                        <div>
+                            <p>Đang hoạt động</p>
+                            <h2 id="activeStaffCount">0</h2>
+                            <span>Tài khoản có thể đăng nhập</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">★</div>
+
+                        <div>
+                            <p>Chủ cửa hàng</p>
+                            <h2 id="ownerStaffCount">0</h2>
+                            <span>Tài khoản có quyền cao nhất</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">×</div>
+
+                        <div>
+                            <p>Đã khóa</p>
+                            <h2 id="lockedStaffCount">0</h2>
+                            <span>Tài khoản tạm ngừng hoạt động</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="contentCard">
+                    <div class="cardHeader">
+                        <div>
+                            <h2>Danh sách nhân viên</h2>
+                            <p>Nhấn vào một dòng nhân viên để xem và chỉnh sửa thông tin</p>
+                        </div>
+                    </div>
+
+                    <div class="filterBar">
+                        <input 
+                            type="text" 
+                            class="searchInput" 
+                            id="staffSearchInput" 
+                            placeholder="Tìm theo tên, tài khoản, email hoặc số điện thoại..."
+                        >
+
+                        <select class="filterSelect" id="staffRoleFilter">
+                            <option value="all">Tất cả vai trò</option>
+                            <option value="owner">Chủ cửa hàng</option>
+                            <option value="staff">Nhân viên</option>
+                        </select>
+
+                        <select class="filterSelect" id="staffStatusFilter">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="active">Đang hoạt động</option>
+                            <option value="locked">Đã khóa</option>
+                        </select>
+                    </div>
+
+                    <div class="tableWrapper">
+                        <table class="adminTable staffTable">
+                            <thead>
+                                <tr>
+                                    <th>Nhân viên</th>
+                                    <th>Tài khoản</th>
+                                    <th>Liên hệ</th>
+                                    <th>Vai trò</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ghi chú</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="staffTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <p class="emptyText" id="emptyStaffText">
+                        Không tìm thấy nhân viên phù hợp.
+                    </p>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <template id="staffRowTemplate">
+        <tr>
+            <td>
+                <div class="staffInfoCell">
+                    <div class="staffAvatarText"></div>
+
+                    <div>
+                        <strong class="staffFullNameText"></strong>
+                        <span class="staffCodeText"></span>
+                    </div>
+                </div>
+            </td>
+
+            <td class="staffUsernameText"></td>
+
+            <td>
+                <div class="staffContactCell">
+                    <span class="staffEmailText"></span>
+                    <span class="staffPhoneText"></span>
+                </div>
+            </td>
+
+            <td>
+                <span class="roleBadge staffRoleText"></span>
+            </td>
+
+            <td class="staffCreatedAtText"></td>
+
+            <td>
+                <span class="statusBadge staffStatusText"></span>
+            </td>
+
+            <td class="staffNoteText"></td>
+
+            <td>
+                <div class="actionGroup">
+                    <button type="button" class="tableActionBtn deleteBtn" data-action="delete">
+                        Xóa
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </template>
+
+    <script src="../js/admin-staff.js"></script>
+</body>
+</html>

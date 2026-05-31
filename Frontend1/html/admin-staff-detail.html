@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết nhân viên</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+                <a href="../html/admin-staff.html" class="adminMenuLink active" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1 id="staffDetailTitle">Chi tiết nhân viên</h1>
+                    <p id="staffDetailSubtitle">
+                        Thêm mới hoặc chỉnh sửa thông tin tài khoản nhân viên
+                    </p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+
+                    <a href="../html/admin-staff.html" class="secondaryBtn">
+                        Quay lại
+                    </a>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="staffDetailLayout" id="staffDetailLayout">
+                    <div class="staffDetailMainColumn">
+                        <section class="contentCard">
+                            <div class="cardHeader">
+                                <div>
+                                    <h2 id="staffFormTitle">Thông tin nhân viên</h2>
+                                    <p>Quản lý thông tin đăng nhập, vai trò và trạng thái tài khoản</p>
+                                </div>
+                            </div>
+
+                            <form class="adminForm" id="staffDetailForm">
+                                <input type="hidden" id="staffId">
+
+                                <div class="formGrid">
+                                    <div class="formGroup">
+                                        <label for="staffFullName">Họ tên</label>
+                                        <input 
+                                            type="text" 
+                                            class="formInput" 
+                                            id="staffFullName" 
+                                            placeholder="Ví dụ: Nguyễn Văn A"
+                                        >
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label for="staffUsername">Tên đăng nhập</label>
+                                        <input 
+                                            type="text" 
+                                            class="formInput" 
+                                            id="staffUsername" 
+                                            placeholder="Ví dụ: nhanvien01"
+                                        >
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label for="staffPassword">Mật khẩu</label>
+                                        <input 
+                                            type="password" 
+                                            class="formInput" 
+                                            id="staffPassword" 
+                                            placeholder="Nhập mật khẩu"
+                                        >
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label for="staffRoleInput">Vai trò</label>
+                                        <select class="formSelect" id="staffRoleInput">
+                                            <option value="staff">Nhân viên</option>
+                                            <option value="owner">Chủ cửa hàng</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label for="staffEmail">Email</label>
+                                        <input 
+                                            type="email" 
+                                            class="formInput" 
+                                            id="staffEmail" 
+                                            placeholder="Ví dụ: nhanvien@gmail.com"
+                                        >
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label for="staffPhone">Số điện thoại</label>
+                                        <input 
+                                            type="text" 
+                                            class="formInput" 
+                                            id="staffPhone" 
+                                            placeholder="Ví dụ: 0901234567"
+                                        >
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label for="staffCreatedAt">Ngày tạo</label>
+                                        <input 
+                                            type="date" 
+                                            class="formInput" 
+                                            id="staffCreatedAt"
+                                        >
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label for="staffStatusInput">Trạng thái</label>
+                                        <select class="formSelect" id="staffStatusInput">
+                                            <option value="active">Đang hoạt động</option>
+                                            <option value="locked">Đã khóa</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="staffNote">Ghi chú</label>
+                                    <textarea 
+                                        class="formTextarea" 
+                                        id="staffNote" 
+                                        placeholder="Ví dụ: Nhân viên phụ trách xử lý đơn hàng..."
+                                    ></textarea>
+                                </div>
+
+                                <p class="formHint">
+                                    Chỉ chủ cửa hàng mới được thêm, sửa hoặc khóa tài khoản nhân viên.
+                                </p>
+
+                                <p class="formMessage" id="staffFormMessage"></p>
+
+                                <div class="formActions">
+                                    <a href="../html/admin-staff.html" class="secondaryBtn">
+                                        Hủy
+                                    </a>
+
+                                    <button type="submit" class="primaryBtn">
+                                        Lưu nhân viên
+                                    </button>
+                                </div>
+                            </form>
+                        </section>
+
+                        <section class="contentCard staffActivityCard" id="staffActivityCard">
+                            <div class="cardHeader">
+                                <div>
+                                    <h2>Lịch sử hoạt động</h2>
+                                    <p>Theo dõi các thao tác gần đây của nhân viên trong hệ thống</p>
+                                </div>
+                            </div>
+
+                            <div class="staffActivityList" id="staffActivityList"></div>
+
+                            <p class="emptyText" id="emptyStaffActivityText">
+                                Chưa có lịch sử hoạt động nào cho nhân viên này.
+                            </p>
+                        </section>
+                    </div>
+
+                    <aside class="staffDetailSideColumn">
+                        <section class="contentCard staffActivitySummaryCard">
+                            <div class="cardHeader">
+                                <div>
+                                    <h2>Tổng quan hoạt động</h2>
+                                    <p>Thông tin nhanh về hoạt động của nhân viên</p>
+                                </div>
+                            </div>
+
+                            <div class="overviewList staffActivityOverviewList">
+                                <div class="overviewItem">
+                                    <span>Tổng hoạt động</span>
+                                    <strong id="staffActivityTotalCount">0</strong>
+                                </div>
+
+                                <div class="overviewItem">
+                                    <span>Lần đăng nhập gần nhất</span>
+                                    <strong id="staffActivityLastLogin">Chưa có</strong>
+                                </div>
+
+                                <div class="overviewItem">
+                                    <span>Thao tác thường gặp</span>
+                                    <strong id="staffActivityMainAction">Chưa có</strong>
+                                </div>
+
+                                <div class="overviewItem">
+                                    <span>Hoạt động mới nhất</span>
+                                    <strong id="staffActivityLastAction">Chưa có</strong>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="contentCard staffGuideCard">
+                            <div class="cardHeader">
+                                <div>
+                                    <h2>Gợi ý phân quyền</h2>
+                                    <p>Cách dùng vai trò trong hệ thống admin</p>
+                                </div>
+                            </div>
+
+                            <div class="staffGuideList">
+                                <div class="staffGuideItem">
+                                    <strong>Chủ cửa hàng</strong>
+                                    <span>Có quyền cao nhất, được quản lý nhân viên, voucher và toàn bộ dữ liệu admin.</span>
+                                </div>
+
+                                <div class="staffGuideItem">
+                                    <strong>Nhân viên</strong>
+                                    <span>Có thể xử lý sản phẩm, đơn hàng, khách hàng tùy theo phân quyền sau này.</span>
+                                </div>
+
+                                <div class="staffGuideItem">
+                                    <strong>Lịch sử hoạt động</strong>
+                                    <span>Chỉ dùng để xem lại thao tác nhân viên đã thực hiện, không nên cho chỉnh sửa thủ công.</span>
+                                </div>
+
+                                <div class="staffGuideItem">
+                                    <strong>Đã khóa</strong>
+                                    <span>Tài khoản bị tạm ngừng, không nên cho phép đăng nhập.</span>
+                                </div>
+                            </div>
+                        </section>
+                    </aside>
+                </section>
+
+                <section class="contentCard" id="staffNotFoundBox" style="display: none;">
+                    <div class="emptyStateBox">
+                        <h2>Không tìm thấy nhân viên</h2>
+                        <p>Tài khoản nhân viên có thể đã bị xóa hoặc mã nhân viên không hợp lệ.</p>
+
+                        <a href="../html/admin-staff.html" class="primaryBtn">
+                            Quay lại danh sách nhân viên
+                        </a>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <template id="staffActivityItemTemplate">
+        <div class="staffActivityItem">
+            <div class="staffActivityIcon">
+                <span class="staffActivityIconText"></span>
+            </div>
+
+            <div class="staffActivityContent">
+                <div class="staffActivityTop">
+                    <strong class="staffActivityTitleText"></strong>
+                    <span class="staffActivityTimeText"></span>
+                </div>
+
+                <p class="staffActivityDetailText"></p>
+
+                <div class="staffActivityMeta">
+                    <span class="staffActivityTypeText"></span>
+                    <span class="staffActivityTargetText"></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="../js/admin-staff-detail.js"></script>
+</body>
+</html>

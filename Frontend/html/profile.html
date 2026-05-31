@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài khoản của tôi</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/profile.css">
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-left">
+                <i class="fa-solid fa-phone"></i>
+                <span>0911.010.757</span>
+            </div>
+
+            <div class="topbar-right">
+                <a href="../html/login.html" id="topbarAccountLink" data-role="topbar-account-link">
+                    <span id="topbarAccountText">Tài khoản</span>
+                </a>
+
+                <a href="../html/cart.html">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                    <span>Giỏ hàng</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../html/home.html">
+                <img src="../img/logo.png" alt="DUHU Shop">
+            </a>
+        </div>
+
+        <nav class="nav-left">
+            <ul class="menu">
+                <li class="drop-down">
+                    <a href="../html/ao-tay-ngan.html">Áo ngắn tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-thun.html">Áo thun</a></li>
+                            <li><a href="../html/ao-polo.html">Áo polo</a></li>
+                            <li><a href="../html/ao-so-mi.html">Áo sơ mi</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/ao-tay-dai.html">Áo dài tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-sweater.html">Áo sweater</a></li>
+                            <li><a href="../html/ao-hoodie.html">Áo hoodie</a></li>
+                            <li><a href="../html/ao-khoac.html">Áo khoác</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/quan.html">Quần</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/quan-dai.html">Quần dài</a></li>
+                            <li><a href="../html/quan-ngan.html">Quần ngắn</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/vay.html">Váy</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/vay-ngan.html">Váy ngắn</a></li>
+                            <li><a href="../html/vay-dai.html">Váy dài</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/phu-kien.html">Phụ kiện</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/mu.html">Mũ</a></li>
+                            <li><a href="../html/quan-lot.html">Quần lót</a></li>
+                            <li><a href="../html/tat.html">Tất</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/flash-sale.html">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Flash Sale</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <form class="text-box" id="searchForm" action="#">
+            <input
+                type="text"
+                id="searchKeyword"
+                name="keyword"
+                placeholder="Tìm kiếm ..."
+            >
+
+            <button type="submit" id="searchButton" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- Profile page -->
+    <main class="profilePage" data-page="profile">
+        <div class="profileContainer">
+            <div class="breadcrumb">
+                <a href="../html/home.html">Trang chủ</a>
+                <span>/</span>
+                <span aria-current="page">Tài khoản của tôi</span>
+            </div>
+
+            <h1 class="pageTitle">Tài khoản của tôi</h1>
+
+            <div class="profileLayout">
+                <!-- Sidebar -->
+                <aside class="profileSidebar">
+                    <div class="userBox" id="profileUserBox">
+                        <div class="userAvatar">
+                            <i class="fa-regular fa-user"></i>
+                        </div>
+
+                        <div class="userInfo">
+                            <h3 id="profileUserName">Khách hàng</h3>
+                            <p id="profileUserRank">Thành viên</p>
+                        </div>
+                    </div>
+
+                    <ul class="sidebarMenu">
+                        <li class="active">
+                            <a href="../html/profile.html">
+                                <i class="fa-regular fa-user"></i>
+                                <span>Thông tin tài khoản</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="../html/my-order.html">
+                                <i class="fa-solid fa-bag-shopping"></i>
+                                <span>Đơn hàng của tôi</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="../html/order-history.html">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>Lịch sử mua hàng</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="../html/wishlist.html">
+                                <i class="fa-regular fa-heart"></i>
+                                <span>Sản phẩm yêu thích</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="../html/points.html">
+                                <i class="fa-solid fa-coins"></i>
+                                <span>Điểm tích lũy</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <button type="button" class="logoutBtn" id="logoutBtn">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </li>
+                    </ul>
+                </aside>
+
+                <!-- Content -->
+                <div class="profileContent">
+                    <!-- Thông tin cá nhân -->
+                    <div class="contentCard">
+                        <div class="cardHeader">
+                            <h2>Thông tin cá nhân</h2>
+                            <p>Cập nhật thông tin của bạn để quản lý tài khoản dễ dàng hơn.</p>
+                        </div>
+
+                        <form class="profileForm" id="profileInfoForm" novalidate>
+                            <div class="formState errorState" id="profileInfoErrorState" hidden></div>
+                            <div class="formState successState" id="profileInfoSuccessState" hidden></div>
+
+                            <div class="formGrid">
+                                <div class="formGroup">
+                                    <label for="fullName">Họ và tên</label>
+                                    <input
+                                        type="text"
+                                        id="fullName"
+                                        name="fullName"
+                                        placeholder="Nhập họ và tên"
+                                        autocomplete="name"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="email">Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        placeholder="Nhập email"
+                                        autocomplete="email"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="phone">Số điện thoại</label>
+                                    <input
+                                        type="tel"
+                                        id="phone"
+                                        name="phone"
+                                        placeholder="Nhập số điện thoại"
+                                        autocomplete="tel"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="birthDate">Ngày sinh</label>
+                                    <input
+                                        type="date"
+                                        id="birthDate"
+                                        name="birthDate"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="city">Tỉnh/Thành phố</label>
+                                    <select id="city" name="city">
+                                        <option value="" selected disabled>Chọn Tỉnh/Thành phố</option>
+                                    </select>
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="district">Quận/Huyện</label>
+                                    <select id="district" name="district" disabled>
+                                        <option value="" selected disabled>Chọn Quận/Huyện</option>
+                                    </select>
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="ward">Phường/Xã</label>
+                                    <select id="ward" name="ward" disabled>
+                                        <option value="" selected disabled>Chọn Phường/Xã</option>
+                                    </select>
+                                </div>
+
+                                <div class="formGroup fullWidth">
+                                    <label for="addressDetail">Địa chỉ chi tiết</label>
+                                    <input
+                                        type="text"
+                                        id="addressDetail"
+                                        name="addressDetail"
+                                        placeholder="Số nhà, tên đường..."
+                                        autocomplete="street-address"
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="genderGroup">
+                                <span class="groupLabel">Giới tính</span>
+
+                                <div class="genderOptions">
+                                    <label for="genderMale">
+                                        <input
+                                            type="radio"
+                                            id="genderMale"
+                                            name="gender"
+                                            value="male"
+                                        >
+                                        <span>Nam</span>
+                                    </label>
+
+                                    <label for="genderFemale">
+                                        <input
+                                            type="radio"
+                                            id="genderFemale"
+                                            name="gender"
+                                            value="female"
+                                        >
+                                        <span>Nữ</span>
+                                    </label>
+
+                                    <label for="genderOther">
+                                        <input
+                                            type="radio"
+                                            id="genderOther"
+                                            name="gender"
+                                            value="other"
+                                        >
+                                        <span>Khác</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="buttonGroup">
+                                <button type="submit" class="btnPrimary" id="updateProfileBtn">
+                                    CẬP NHẬT THÔNG TIN
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Đổi mật khẩu -->
+                    <div class="contentCard">
+                        <div class="cardHeader">
+                            <h2>Đổi mật khẩu</h2>
+                            <p>Để bảo mật tài khoản, bạn nên thay đổi mật khẩu định kỳ.</p>
+                        </div>
+
+                        <form class="profileForm" id="changePasswordForm" novalidate>
+                            <div class="formState errorState" id="passwordErrorState" hidden></div>
+                            <div class="formState successState" id="passwordSuccessState" hidden></div>
+
+                            <div class="formGrid">
+                                <div class="formGroup fullWidth">
+                                    <label for="currentPassword">Mật khẩu hiện tại</label>
+                                    <input
+                                        type="password"
+                                        id="currentPassword"
+                                        name="currentPassword"
+                                        placeholder="Nhập mật khẩu hiện tại"
+                                        autocomplete="current-password"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="newPassword">Mật khẩu mới</label>
+                                    <input
+                                        type="password"
+                                        id="newPassword"
+                                        name="newPassword"
+                                        placeholder="Nhập mật khẩu mới"
+                                        autocomplete="new-password"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
+                                    <input
+                                        type="password"
+                                        id="confirmNewPassword"
+                                        name="confirmNewPassword"
+                                        placeholder="Nhập lại mật khẩu mới"
+                                        autocomplete="new-password"
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="buttonGroup">
+                                <button type="submit" class="btnSecondary" id="changePasswordBtn">
+                                    ĐỔI MẬT KHẨU
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="containerFooter">
+            <div class="contact">
+                <h4>Gọi mua hàng (8:30-21:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0911.010.757</span>
+                    </p>
+
+                    <p>Tất cả các ngày trong tuần</p>
+                </div>
+            </div>
+
+            <div class="contact">
+                <h4>Góp ý, khiếu nại (8:30-20:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0917.257.595</span>
+                    </p>
+
+                    <p>Các ngày trong tuần (trừ ngày lễ)</p>
+                </div>
+            </div>
+
+            <div class="socialMedia">
+                <h4>Nền tảng mạng xã hội</h4>
+
+                <div class="iconSocialMedia">
+                    <a href="#" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+
+                    <a href="#" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="map">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.9317374327557!2d106.79120977589625!3d10.892792489263131!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d9b2d9812e63%3A0xd4c6b932cc0bca0e!2sBcons%20City%20Mall!5e0!3m2!1svi!2s!4v1773054657751!5m2!1svi!2s"
+                    width="600"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/auth-ui.js"></script>
+    <script src="../js/profile.js"></script>
+</body>
+</html>

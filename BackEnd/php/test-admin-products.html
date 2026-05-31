@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Products API</title>
+</head>
+<body>
+    <h2>Test Admin Products API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+    </p>
+
+    <div>
+        <label>Từ khóa:</label>
+        <br>
+        <input id="keywordInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Danh mục slug:</label>
+        <br>
+        <input id="categorySlugInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái:</label>
+        <br>
+        <select id="statusInput">
+            <option value="all">Tất cả</option>
+            <option value="active">active</option>
+            <option value="inactive">inactive</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Sắp xếp:</label>
+        <br>
+        <select id="sortInput">
+            <option value="latest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
+            <option value="name_asc">Tên A-Z</option>
+            <option value="price_asc">Giá tăng dần</option>
+            <option value="price_desc">Giá giảm dần</option>
+            <option value="stock_asc">Tồn kho thấp nhất</option>
+            <option value="stock_desc">Tồn kho cao nhất</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="getProductsBtn">Lấy danh sách sản phẩm admin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getProductsBtn").addEventListener("click", function () {
+            const keyword = document.getElementById("keywordInput").value.trim();
+            const categorySlug = document.getElementById("categorySlugInput").value.trim();
+            const status = document.getElementById("statusInput").value;
+            const sort = document.getElementById("sortInput").value;
+
+            let url = "./api/admin/products/get-products.php?page=1&limit=10";
+            url += "&keyword=" + encodeURIComponent(keyword);
+            url += "&category_slug=" + encodeURIComponent(categorySlug);
+            url += "&status=" + encodeURIComponent(status);
+            url += "&sort=" + encodeURIComponent(sort);
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

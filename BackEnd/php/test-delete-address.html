@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Delete Address API</title>
+</head>
+<body>
+    <h2>Test Delete Address API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+        Sau đó mở <b>test-addresses.html</b> để lấy address_id cần xóa.
+    </p>
+
+    <div>
+        <label>Address ID:</label>
+        <br>
+        <input id="addressIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <button id="deleteAddressBtn">Xóa địa chỉ</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("deleteAddressBtn").addEventListener("click", function () {
+            const addressId = Number(document.getElementById("addressIdInput").value);
+
+            const confirmDelete = confirm("Bạn có chắc muốn xóa địa chỉ này không?");
+
+            if (!confirmDelete) {
+                return;
+            }
+
+            fetch("./api/users/delete-address.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    address_id: addressId
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Update Address API</title>
+</head>
+<body>
+    <h2>Test Update Address API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+        Sau đó mở <b>test-addresses.html</b> để lấy address_id cần sửa.
+    </p>
+
+    <div>
+        <label>Address ID:</label>
+        <br>
+        <input id="addressIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Tên người nhận:</label>
+        <br>
+        <input id="receiverNameInput" type="text" value="Khách Test 01 Updated">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số điện thoại:</label>
+        <br>
+        <input id="receiverPhoneInput" type="text" value="0912345678">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Tỉnh/Thành phố:</label>
+        <br>
+        <input id="provinceInput" type="text" value="TP. Hồ Chí Minh">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Quận/Huyện:</label>
+        <br>
+        <input id="districtInput" type="text" value="Thành phố Thủ Đức">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Phường/Xã:</label>
+        <br>
+        <input id="wardInput" type="text" value="Linh Xuân">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Địa chỉ cụ thể:</label>
+        <br>
+        <input id="addressDetailInput" type="text" size="70" value="456 Đường Test Updated">
+    </div>
+
+    <br>
+
+    <div>
+        <label>
+            <input id="isDefaultInput" type="checkbox" checked>
+            Đặt làm địa chỉ mặc định
+        </label>
+    </div>
+
+    <br>
+
+    <button id="updateAddressBtn">Cập nhật địa chỉ</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updateAddressBtn").addEventListener("click", function () {
+            const addressId = Number(document.getElementById("addressIdInput").value);
+            const receiverName = document.getElementById("receiverNameInput").value.trim();
+            const receiverPhone = document.getElementById("receiverPhoneInput").value.trim();
+
+            const province = document.getElementById("provinceInput").value.trim();
+            const district = document.getElementById("districtInput").value.trim();
+            const ward = document.getElementById("wardInput").value.trim();
+            const addressDetail = document.getElementById("addressDetailInput").value.trim();
+
+            const isDefault = document.getElementById("isDefaultInput").checked ? 1 : 0;
+
+            fetch("./api/users/update-address.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    address_id: addressId,
+                    receiver_name: receiverName,
+                    receiver_phone: receiverPhone,
+                    province: province,
+                    district: district,
+                    ward: ward,
+                    address_detail: addressDetail,
+                    is_default: isDefault
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

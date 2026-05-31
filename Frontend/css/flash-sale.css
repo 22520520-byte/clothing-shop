@@ -1,0 +1,561 @@
+/* 1. Flash sale page */
+
+.flashSalePage {
+    background: #f7f7f7;
+}
+
+.flashSalePage .categoryContainer {
+    padding-bottom: 50px;
+}
+
+/* 2. Flash hero */
+
+.flashHero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    min-height: 260px;
+    padding: 38px 42px;
+    margin-bottom: 26px;
+    overflow: hidden;
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.35), transparent 32%),
+        linear-gradient(135deg, #111111 0%, #2b2b2b 48%, #d71920 100%);
+    color: #ffffff;
+    box-shadow: 0 14px 34px rgba(17, 17, 17, 0.18);
+}
+
+.flashHero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.08) 0%, transparent 35%),
+        repeating-linear-gradient(
+            -35deg,
+            rgba(255, 255, 255, 0.05) 0,
+            rgba(255, 255, 255, 0.05) 1px,
+            transparent 1px,
+            transparent 12px
+        );
+    pointer-events: none;
+}
+
+.flashHeroContent {
+    position: relative;
+    z-index: 1;
+    max-width: 670px;
+}
+
+.flashLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    margin-bottom: 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.flashLabel::before {
+    content: "⚡";
+    font-size: 15px;
+}
+
+.flashHero h1 {
+    margin: 0 0 12px;
+    font-size: 48px;
+    line-height: 1.05;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.flashHero p {
+    max-width: 560px;
+    margin: 0 0 24px;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+/* 3. Countdown */
+
+.countdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.timeBox {
+    min-width: 82px;
+    padding: 13px 14px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.13);
+    backdrop-filter: blur(8px);
+}
+
+.timeBox strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #ffffff;
+    font-size: 26px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.timeBox span {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* 4. Hero discount tag */
+
+.flashHeroTag {
+    position: relative;
+    z-index: 1;
+    width: 150px;
+    height: 150px;
+    flex: 0 0 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #d71920;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22);
+    transform: rotate(8deg);
+}
+
+.flashHeroTag span {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333333;
+}
+
+.flashHeroTag strong {
+    font-size: 42px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+/* 5. Explore bar */
+
+.flashExploreBar {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.flashFilterBar {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #eeeeee;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.04);
+}
+
+.flashTab {
+    min-height: 42px;
+    padding: 0 18px;
+    border: 1px solid #eeeeee;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #333333;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+
+.flashTab:hover {
+    border-color: #d71920;
+    color: #d71920;
+}
+
+.flashTab.active {
+    border-color: #d71920;
+    background: #d71920;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(215, 25, 32, 0.22);
+}
+
+/* 6. Big voucher entry */
+
+.bigVoucherEntry {
+    width: 270px;
+    flex: 0 0 270px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fff7e8, #ffffff);
+    border: 1px solid #ffe2ad;
+    color: #222222;
+    text-decoration: none;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.04);
+    transition: all 0.22s ease;
+}
+
+.bigVoucherEntry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.08);
+}
+
+.bigVoucherIcon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: #d71920;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+.bigVoucherText {
+    flex: 1;
+    min-width: 0;
+}
+
+.bigVoucherText strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #111111;
+    font-size: 15px;
+}
+
+.bigVoucherText span {
+    display: block;
+    color: #777777;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.bigVoucherArrow {
+    color: #d71920;
+    font-size: 14px;
+}
+
+/* 7. Flash toolbar */
+
+.flashSalePage .categoryToolbar {
+    margin-bottom: 18px;
+}
+
+.flashSalePage .resultCount {
+    font-weight: 700;
+}
+
+/* 8. Flash grid and card */
+
+.flashGrid {
+    margin-top: 0;
+}
+
+.flashCard {
+    position: relative;
+}
+
+.flashCard .productThumb {
+    position: relative;
+}
+
+.flashBadge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #d71920;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    box-shadow: 0 8px 16px rgba(215, 25, 32, 0.28);
+}
+
+.flashBadge::before {
+    content: "-";
+}
+
+.salePrice {
+    color: #d71920;
+    font-weight: 900;
+}
+
+/* 9. Sale meta and stock bar */
+
+.saleMeta {
+    margin-top: 12px;
+}
+
+.saleMeta > span {
+    display: block;
+    margin-bottom: 7px;
+    color: #666666;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.stockBar {
+    position: relative;
+    width: 100%;
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #eeeeee;
+}
+
+.stockBar span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #d71920, #ff8a00);
+    transition: width 0.28s ease;
+}
+
+/* 10. List view support */
+
+.flashGrid.listView .flashCard .saleMeta {
+    max-width: 280px;
+}
+
+/* 11. Product states */
+
+.flashSalePage .productState {
+    margin-bottom: 18px;
+}
+
+#flashLoadingState.show,
+#flashEmptyState.show,
+#flashErrorState.show {
+    display: block;
+}
+
+#flashLoadingState[hidden],
+#flashEmptyState[hidden],
+#flashErrorState[hidden] {
+    display: none;
+}
+
+/* 12. Toast */
+
+#flashSaleToastContainer {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.flashSaleToast {
+    min-width: 260px;
+    max-width: 360px;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: flashToastIn 0.25s ease forwards;
+}
+
+.flashSaleToast.success {
+    background: #16803c;
+}
+
+.flashSaleToast.error {
+    background: #d71920;
+}
+
+.flashSaleToast.warning {
+    background: #a86600;
+}
+
+@keyframes flashToastIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 13. Ended state */
+
+.flashSalePage.is-ended .flashHero {
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.25), transparent 32%),
+        linear-gradient(135deg, #222222 0%, #555555 100%);
+}
+
+.flashSalePage.is-ended .flashTab.active {
+    border-color: #555555;
+    background: #555555;
+    box-shadow: none;
+}
+
+.flashSalePage.is-ended .flashBadge {
+    background: #555555;
+    box-shadow: none;
+}
+
+/* 14. Responsive */
+
+@media (max-width: 992px) {
+    .flashHero {
+        align-items: flex-start;
+        padding: 32px 28px;
+    }
+
+    .flashHero h1 {
+        font-size: 40px;
+    }
+
+    .flashHeroTag {
+        width: 126px;
+        height: 126px;
+        flex-basis: 126px;
+    }
+
+    .flashHeroTag strong {
+        font-size: 34px;
+    }
+
+    .flashExploreBar {
+        flex-direction: column;
+    }
+
+    .bigVoucherEntry {
+        width: 100%;
+        flex-basis: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .flashHero {
+        flex-direction: column;
+        min-height: auto;
+        padding: 28px 22px;
+        border-radius: 18px;
+    }
+
+    .flashHero h1 {
+        font-size: 34px;
+    }
+
+    .flashHero p {
+        font-size: 14px;
+    }
+
+    .flashHeroTag {
+        width: 116px;
+        height: 116px;
+        flex-basis: 116px;
+        align-self: flex-end;
+        margin-top: -8px;
+    }
+
+    .flashHeroTag strong {
+        font-size: 30px;
+    }
+
+    .timeBox {
+        min-width: 72px;
+        padding: 11px 12px;
+    }
+
+    .timeBox strong {
+        font-size: 22px;
+    }
+
+    .flashFilterBar {
+        gap: 8px;
+    }
+
+    .flashTab {
+        min-height: 38px;
+        padding: 0 14px;
+        font-size: 13px;
+    }
+
+    #flashSaleToastContainer {
+        right: 14px;
+        bottom: 14px;
+        left: 14px;
+    }
+
+    .flashSaleToast {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .flashHero {
+        padding: 24px 18px;
+    }
+
+    .flashHero h1 {
+        font-size: 30px;
+    }
+
+    .countdown {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .timeBox {
+        min-width: 0;
+    }
+
+    .flashHeroTag {
+        align-self: center;
+        transform: rotate(0);
+    }
+
+    .flashFilterBar {
+        padding: 10px;
+    }
+
+    .flashTab {
+        flex: 1 1 calc(50% - 8px);
+        padding: 0 10px;
+    }
+
+    .bigVoucherEntry {
+        padding: 12px 14px;
+    }
+}

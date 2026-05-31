@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-left">
+                <i class="fa-solid fa-phone"></i>
+                <span>0911.010.757</span>
+            </div>
+
+            <div class="topbar-right">
+                <a href="../html/login.html" id="topbarAccountLink" data-role="topbar-account-link">
+                    <span id="topbarAccountText">Tài khoản</span>
+                </a>
+
+                <a href="../html/cart.html">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                    <span>Giỏ hàng</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../html/home.html">
+                <img src="../img/logo.png" alt="DUHU Shop">
+            </a>
+        </div>
+
+        <nav class="nav-left">
+            <ul class="menu">
+                <li class="drop-down">
+                    <a href="../html/ao-tay-ngan.html">Áo ngắn tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-thun.html">Áo thun</a></li>
+                            <li><a href="../html/ao-polo.html">Áo polo</a></li>
+                            <li><a href="../html/ao-so-mi.html">Áo sơ mi</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/ao-tay-dai.html">Áo dài tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-sweater.html">Áo Sweater</a></li>
+                            <li><a href="../html/ao-hoodie.html">Áo Hoodie</a></li>
+                            <li><a href="../html/ao-khoac.html">Áo Khoác</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/quan.html">Quần</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/quan-dai.html">Quần dài</a></li>
+                            <li><a href="../html/quan-ngan.html">Quần ngắn</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/vay.html">Váy</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/vay-ngan.html">Váy ngắn</a></li>
+                            <li><a href="../html/vay-dai.html">Váy dài</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/phu-kien.html">Phụ kiện</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/mu.html">Mũ</a></li>
+                            <li><a href="../html/quan-lot.html">Quần lót</a></li>
+                            <li><a href="../html/tat.html">Tất</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/flash-sale.html">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Flash Sale</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <form class="text-box" id="searchForm" action="#">
+            <input
+                type="text"
+                id="searchKeyword"
+                name="keyword"
+                placeholder="Tìm kiếm ..."
+            >
+
+            <button type="submit" id="searchButton" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- Login -->
+    <main class="loginPage" data-page="login">
+        <div class="loginCard">
+            <div class="loginTabs">
+                <a href="../html/login.html" class="tab active">ĐĂNG NHẬP</a>
+                <a href="../html/register.html" class="tab">ĐĂNG KÝ</a>
+            </div>
+
+            <div class="loginBody">
+                <h1>Chào mừng quay lại</h1>
+
+                <p class="subText">
+                    Đăng nhập để tiếp tục mua sắm và quản lý đơn hàng của bạn.
+                </p>
+
+                <form class="loginForm" id="loginForm" novalidate>
+                    <div class="formState errorState" id="loginErrorState" hidden></div>
+                    <div class="formState successState" id="loginSuccessState" hidden></div>
+
+                    <div class="formGroup">
+                        <label for="loginIdentifier">Email hoặc Tên đăng nhập</label>
+
+                        <div class="inputWrap">
+                            <i class="fa-regular fa-user"></i>
+
+                            <input
+                                type="text"
+                                id="loginIdentifier"
+                                name="identifier"
+                                placeholder="Nhập email hoặc tên đăng nhập"
+                                autocomplete="username"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="formGroup">
+                        <label for="loginPassword">Mật khẩu</label>
+
+                        <div class="inputWrap">
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="loginPassword"
+                                name="password"
+                                placeholder="Nhập mật khẩu"
+                                autocomplete="current-password"
+                            >
+
+                            <button
+                                type="button"
+                                class="togglePassword"
+                                id="togglePassword"
+                                aria-label="Hiện hoặc ẩn mật khẩu"
+                            >
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="formOptions">
+                        <label class="rememberMe" for="rememberMe">
+                            <input type="checkbox" id="rememberMe" name="rememberMe">
+                            <span>Ghi nhớ đăng nhập</span>
+                        </label>
+
+                        <a href="../html/forgot-password.html" class="forgotPassword">
+                            Quên mật khẩu?
+                        </a>
+                    </div>
+
+                    <button type="submit" class="btnLogin" id="btnLogin">
+                        ĐĂNG NHẬP
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="containerFooter">
+            <div class="contact">
+                <h4>Gọi mua hàng (8:30-21:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0911.010.757</span>
+                    </p>
+
+                    <p>Tất cả các ngày trong tuần</p>
+                </div>
+            </div>
+
+            <div class="contact">
+                <h4>Góp ý, khiếu nại (8:30-20:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0917.257.595</span>
+                    </p>
+
+                    <p>Các ngày trong tuần (trừ ngày lễ)</p>
+                </div>
+            </div>
+
+            <div class="socialMedia">
+                <h4>Nền tảng mạng xã hội</h4>
+
+                <div class="iconSocialMedia">
+                    <a href="#" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+
+                    <a href="#" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="map">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.9317374327557!2d106.79120977589625!3d10.892792489263131!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d9b2d9812e63%3A0xd4c6b932cc0bca0e!2sBcons%20City%20Mall!5e0!3m2!1sen!2s!4v1773054657751!5m2!1sen!2s"
+                    width="600"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/auth-ui.js"></script>
+    <script src="../js/login.js"></script>
+</body>
+</html>

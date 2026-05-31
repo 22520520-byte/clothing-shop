@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý voucher</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink active">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+                <a href="../html/admin-staff.html" class="adminMenuLink" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1>Quản lý voucher</h1>
+                    <p>Tạo, chỉnh sửa và theo dõi mã giảm giá, freeship và ưu đãi đổi điểm</p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+
+                    <a href="../html/admin-voucher-detail.html" class="primaryBtn" id="openAddVoucherBtn">
+                        + Thêm voucher
+                    </a>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="statGrid">
+                    <article class="statCard">
+                        <div class="statIcon">%</div>
+
+                        <div>
+                            <p>Tổng voucher</p>
+                            <h2 id="totalVoucherCount">0</h2>
+                            <span>Tất cả mã giảm giá và ưu đãi</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">✓</div>
+
+                        <div>
+                            <p>Đang hiệu lực</p>
+                            <h2 id="activeVoucherCount">0</h2>
+                            <span>Có thể áp dụng hiện tại</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">★</div>
+
+                        <div>
+                            <p>Đổi điểm</p>
+                            <h2 id="pointVoucherCount">0</h2>
+                            <span>Ưu đãi cần điểm để đổi</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">!</div>
+
+                        <div>
+                            <p>Hết lượt</p>
+                            <h2 id="outVoucherCount">0</h2>
+                            <span>Số lượng còn lại bằng 0</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="contentCard">
+                    <div class="cardHeader">
+                        <div>
+                            <h2>Danh sách voucher</h2>
+                            <p>Nhấn vào một dòng voucher để xem và chỉnh sửa thông tin</p>
+                        </div>
+                    </div>
+
+                    <div class="filterBar">
+                        <input 
+                            type="text" 
+                            class="searchInput" 
+                            id="voucherSearchInput" 
+                            placeholder="Tìm theo mã hoặc tên voucher..."
+                        >
+
+                        <select class="filterSelect" id="voucherTypeFilter">
+                            <option value="all">Tất cả loại</option>
+                            <option value="percent">Giảm theo phần trăm</option>
+                            <option value="fixed">Giảm tiền trực tiếp</option>
+                            <option value="free-ship">Miễn phí vận chuyển</option>
+                            <option value="point">Đổi điểm</option>
+                        </select>
+
+                        <select class="filterSelect" id="voucherStatusFilter">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="active">Đang hiệu lực</option>
+                            <option value="scheduled">Sắp diễn ra</option>
+                            <option value="expired">Hết hạn</option>
+                            <option value="out">Hết lượt</option>
+                            <option value="disabled">Đã tắt</option>
+                        </select>
+                    </div>
+
+                    <div class="tableWrapper">
+                        <table class="adminTable voucherTable">
+                            <thead>
+                                <tr>
+                                    <th>Mã voucher</th>
+                                    <th>Tên chương trình</th>
+                                    <th>Loại</th>
+                                    <th>Giá trị</th>
+                                    <th>Điểm cần đổi</th>
+                                    <th>Đơn tối thiểu</th>
+                                    <th>Số lượng</th>
+                                    <th>Thời gian</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="voucherTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <p class="emptyText" id="emptyVoucherText">
+                        Không tìm thấy voucher phù hợp.
+                    </p>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <template id="voucherRowTemplate">
+        <tr>
+            <td>
+                <div class="voucherCodeCell">
+                    <strong class="voucherCodeText"></strong>
+                    <span class="voucherIdText"></span>
+                </div>
+            </td>
+
+            <td>
+                <div class="voucherNameCell">
+                    <strong class="voucherNameText"></strong>
+                    <span class="voucherDescriptionText"></span>
+                </div>
+            </td>
+
+            <td>
+                <span class="voucherTypeBadge voucherTypeText"></span>
+            </td>
+
+            <td class="voucherValueText"></td>
+            <td class="voucherPointCostText"></td>
+            <td class="voucherMinOrderText"></td>
+            <td class="voucherQuantityText"></td>
+            <td class="voucherDateText"></td>
+
+            <td>
+                <span class="statusBadge voucherStatusText"></span>
+            </td>
+
+            <td>
+                <div class="actionGroup">
+                    <button type="button" class="tableActionBtn deleteBtn" data-action="delete">
+                        Xóa
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </template>
+
+    <script src="../js/admin-vouchers.js"></script>
+</body>
+</html>

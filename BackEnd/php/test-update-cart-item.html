@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Update Cart Item API</title>
+</head>
+<body>
+    <h2>Test Update Cart Item API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước,
+        sau đó thêm sản phẩm bằng <b>test-add-to-cart.html</b>,
+        rồi mở <b>test-cart.html</b> để lấy cart_item_id.
+    </p>
+
+    <div>
+        <label>Cart item ID:</label>
+        <br>
+        <input id="cartItemIdInput" type="number" value="1" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số lượng mới:</label>
+        <br>
+        <input id="quantityInput" type="number" value="2" min="1">
+    </div>
+
+    <br>
+
+    <button id="updateCartItemBtn">Cập nhật số lượng</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updateCartItemBtn").addEventListener("click", function () {
+            const cartItemId = Number(document.getElementById("cartItemIdInput").value);
+            const quantity = Number(document.getElementById("quantityInput").value);
+
+            fetch("./api/cart/update-cart-item.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    cart_item_id: cartItemId,
+                    quantity: quantity
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

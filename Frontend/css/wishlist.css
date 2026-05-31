@@ -1,0 +1,415 @@
+/* 1. Hidden chung */
+
+[hidden]{
+    display:none !important;
+}
+
+/* 2. Trạng thái trang wishlist */
+
+.contentState,
+.wishlistState{
+    margin-bottom:20px;
+    padding:20px;
+    border-radius:16px;
+    border:1px solid #e8e8e8;
+    background:#fff;
+    font-size:15px;
+    line-height:1.6;
+    box-shadow:0 6px 18px rgba(0,0,0,0.03);
+}
+
+.loadingState{
+    color:#555;
+    background:linear-gradient(90deg, #ffffff 0%, #fafafa 100%);
+}
+
+.emptyState{
+    color:#666;
+}
+
+.errorState{
+    color:#c62828;
+    border-color:#f1c7c7;
+    background:#fff8f8;
+}
+
+/* 3. Empty state */
+
+.emptyWishlistBox{
+    min-height:260px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:34px 24px;
+}
+
+.emptyWishlistIcon{
+    width:76px;
+    height:76px;
+    border-radius:50%;
+    background:#f3f3f3;
+    color:#111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    margin-bottom:18px;
+}
+
+.emptyWishlistBox h3{
+    font-size:22px;
+    font-weight:700;
+    color:#111;
+    margin-bottom:10px;
+}
+
+.emptyWishlistBox p{
+    max-width:520px;
+    font-size:15px;
+    color:#666;
+    line-height:1.7;
+    margin-bottom:22px;
+}
+
+.emptyWishlistBox .btnPrimary{
+    min-width:190px;
+    height:46px;
+    padding:0 22px;
+    border-radius:12px;
+    background:#111;
+    color:#fff;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    font-weight:700;
+    transition:all 0.25s ease;
+}
+
+.emptyWishlistBox .btnPrimary:hover{
+    background:#000;
+    transform:translateY(-1px);
+}
+
+/* 4. Nội dung wishlist */
+
+.wishlistContent{
+    width:100%;
+}
+
+/* 5. Toolbar */
+
+.wishlistToolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:22px;
+    padding:16px 18px;
+    border:1px solid #ededed;
+    border-radius:16px;
+    background:#fafafa;
+}
+
+.wishlistSummary{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    color:#555;
+}
+
+.wishlistSummary strong{
+    color:#111;
+    font-size:17px;
+}
+
+/* 6. Grid sản phẩm yêu thích */
+
+.wishlistGrid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:24px;
+    min-height:40px;
+}
+
+/* 7. Card sản phẩm */
+
+.wishlistItem{
+    display:flex;
+    flex-direction:column;
+    background:#fff;
+    border:1px solid #ececec;
+    border-radius:18px;
+    overflow:hidden;
+    transition:all 0.25s ease;
+    box-shadow:0 8px 24px rgba(0,0,0,0.03);
+}
+
+.wishlistItem:hover{
+    transform:translateY(-3px);
+    box-shadow:0 12px 28px rgba(0,0,0,0.07);
+}
+
+.wishlistImage{
+    position:relative;
+    overflow:hidden;
+    background:#fafafa;
+}
+
+.wishlistImageLink{
+    display:block;
+}
+
+.wishlistImageLink:focus-visible{
+    outline:3px solid rgba(17,17,17,0.12);
+    outline-offset:2px;
+}
+
+.wishlistImage img{
+    width:100%;
+    aspect-ratio:3 / 4;
+    object-fit:cover;
+    display:block;
+    transition:transform 0.3s ease;
+}
+
+.wishlistItem:hover .wishlistImage img{
+    transform:scale(1.03);
+}
+
+/* 8. Nút xóa yêu thích */
+
+.removeWishlist{
+    position:absolute;
+    top:12px;
+    right:12px;
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    background:#fff;
+    color:#111;
+    cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.12);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all 0.2s ease;
+}
+
+.removeWishlist:hover{
+    background:#111;
+    color:#fff;
+}
+
+.removeWishlist:focus-visible{
+    outline:3px solid rgba(17,17,17,0.12);
+    outline-offset:2px;
+}
+
+/* 9. Thông tin sản phẩm */
+
+.wishlistInfo{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    padding:18px;
+}
+
+.wishlistName{
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+    min-height:3em;
+    text-decoration:none;
+    color:#111;
+    font-size:17px;
+    font-weight:700;
+    line-height:1.5;
+    margin-bottom:10px;
+}
+
+.wishlistName:hover{
+    color:#000;
+}
+
+.wishlistName:focus-visible{
+    outline:3px solid rgba(17,17,17,0.12);
+    outline-offset:2px;
+    border-radius:4px;
+}
+
+/* 10. Giá sản phẩm */
+
+.wishlistPrice{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.realPrice{
+    font-size:18px;
+    font-weight:800;
+    color:#111;
+}
+
+.oldPrice{
+    font-size:15px;
+    color:#999;
+}
+
+.oldPrice[hidden]{
+    display:none !important;
+}
+
+.oldPrice:empty{
+    display:none;
+}
+
+/* 11. Trạng thái tồn kho */
+
+.stockStatus{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:max-content;
+    min-width:100px;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:800;
+    margin-bottom:16px;
+}
+
+.stockStatus.inStock{
+    background:#e4f8e7;
+    color:#1f8b3d;
+}
+
+.stockStatus.outStock{
+    background:#ffe3e3;
+    color:#c0392b;
+}
+
+/* 12. Nút hành động */
+
+.wishlistActionBtn,
+.addToCartBtn{
+    width:100%;
+    height:46px;
+    margin-top:auto;
+    border:none;
+    border-radius:12px;
+    background:#111;
+    color:#fff;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+    transition:all 0.25s ease;
+}
+
+.wishlistActionBtn:hover,
+.addToCartBtn:hover{
+    background:#000;
+    transform:translateY(-1px);
+}
+
+.wishlistActionBtn:focus-visible,
+.addToCartBtn:focus-visible{
+    outline:3px solid rgba(17,17,17,0.12);
+    outline-offset:2px;
+}
+
+.wishlistActionBtn:disabled,
+.wishlistActionBtn.disabled,
+.addToCartBtn:disabled,
+.addToCartBtn.disabled{
+    background:#cfcfcf;
+    color:#666;
+    cursor:not-allowed;
+    pointer-events:none;
+    transform:none;
+}
+
+.wishlistActionBtn:disabled:hover,
+.wishlistActionBtn.disabled:hover,
+.addToCartBtn:disabled:hover,
+.addToCartBtn.disabled:hover{
+    background:#cfcfcf;
+    transform:none;
+}
+
+/* 13. Responsive */
+
+@media (max-width:1100px){
+    .wishlistGrid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width:768px){
+    .emptyWishlistBox{
+        min-height:220px;
+        padding:28px 16px;
+    }
+
+    .emptyWishlistIcon{
+        width:66px;
+        height:66px;
+        font-size:26px;
+    }
+
+    .emptyWishlistBox h3{
+        font-size:20px;
+    }
+
+    .wishlistToolbar{
+        align-items:flex-start;
+        padding:14px;
+        border-radius:14px;
+    }
+
+    .wishlistSummary{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:4px;
+    }
+
+    .wishlistGrid{
+        grid-template-columns:1fr;
+    }
+
+    .wishlistInfo{
+        padding:16px;
+    }
+
+    .wishlistName{
+        font-size:16px;
+    }
+
+    .realPrice{
+        font-size:17px;
+    }
+}
+
+@media (max-width:480px){
+    .contentState,
+    .wishlistState{
+        padding:16px;
+    }
+
+    .wishlistItem{
+        border-radius:16px;
+    }
+
+    .emptyWishlistBox p{
+        font-size:14px;
+    }
+}

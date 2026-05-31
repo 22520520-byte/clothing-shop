@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Spin Points API</title>
+</head>
+<body>
+    <h2>Test Spin Points API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+    </p>
+
+    <button id="spinPointsBtn">Quay điểm may mắn</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("spinPointsBtn").addEventListener("click", function () {
+            fetch("./api/customer-features/spin-points.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

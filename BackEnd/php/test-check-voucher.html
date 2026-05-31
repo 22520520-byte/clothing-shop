@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Check Voucher API</title>
+</head>
+<body>
+    <h2>Test Check Voucher API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b>,
+        sau đó thêm sản phẩm vào giỏ bằng <b>test-add-to-cart.html</b>.
+        Nếu chưa biết mã voucher, mở API <b>get-vouchers.php</b> để copy code.
+    </p>
+
+    <div>
+        <label>Mã voucher:</label>
+        <br>
+        <input id="voucherCodeInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <button id="checkVoucherBtn">Kiểm tra voucher</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("checkVoucherBtn").addEventListener("click", function () {
+            const voucherCode = document.getElementById("voucherCodeInput").value.trim();
+
+            fetch("./api/vouchers/check-voucher.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    voucher_code: voucherCode
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

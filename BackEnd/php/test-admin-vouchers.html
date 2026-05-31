@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Vouchers API</title>
+</head>
+<body>
+    <h2>Test Admin Vouchers API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+    </p>
+
+    <div>
+        <label>Từ khóa:</label>
+        <br>
+        <input id="keywordInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Loại giảm giá:</label>
+        <br>
+        <select id="discountTypeInput">
+            <option value="all">Tất cả</option>
+            <option value="fixed">fixed - Giảm tiền cố định</option>
+            <option value="percent">percent - Giảm phần trăm</option>
+            <option value="freeship">freeship - Miễn phí vận chuyển</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái:</label>
+        <br>
+        <select id="statusInput">
+            <option value="all">Tất cả</option>
+            <option value="active">active - Đang hoạt động</option>
+            <option value="inactive">inactive - Tạm ẩn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Tình trạng:</label>
+        <br>
+        <select id="stateInput">
+            <option value="all">Tất cả</option>
+            <option value="available">available - Có thể sử dụng</option>
+            <option value="not_started">not_started - Chưa bắt đầu</option>
+            <option value="expired">expired - Đã hết hạn</option>
+            <option value="out_of_quantity">out_of_quantity - Hết lượt</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Sắp xếp:</label>
+        <br>
+        <select id="sortInput">
+            <option value="latest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
+            <option value="end_soon">Sắp hết hạn</option>
+            <option value="used_desc">Dùng nhiều nhất</option>
+            <option value="quantity_desc">Số lượng nhiều nhất</option>
+            <option value="code_asc">Mã A-Z</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="getVouchersBtn">Lấy danh sách voucher admin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getVouchersBtn").addEventListener("click", function () {
+            const keyword = document.getElementById("keywordInput").value.trim();
+            const discountType = document.getElementById("discountTypeInput").value;
+            const status = document.getElementById("statusInput").value;
+            const state = document.getElementById("stateInput").value;
+            const sort = document.getElementById("sortInput").value;
+
+            let url = "./api/admin/vouchers/get-vouchers.php?page=1&limit=10";
+            url += "&keyword=" + encodeURIComponent(keyword);
+            url += "&discount_type=" + encodeURIComponent(discountType);
+            url += "&status=" + encodeURIComponent(status);
+            url += "&state=" + encodeURIComponent(state);
+            url += "&sort=" + encodeURIComponent(sort);
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

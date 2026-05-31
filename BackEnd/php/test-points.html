@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Points API</title>
+</head>
+<body>
+    <h2>Test Points API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+    </p>
+
+    <div>
+        <label>Loại giao dịch:</label>
+        <br>
+        <select id="typeInput">
+            <option value="">Tất cả</option>
+            <option value="earn">earn</option>
+            <option value="use">use</option>
+            <option value="refund">refund</option>
+            <option value="bonus">bonus</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="getPointsBtn">Lấy điểm tích lũy</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getPointsBtn").addEventListener("click", function () {
+            const type = document.getElementById("typeInput").value;
+
+            let url = "./api/customer-features/get-points.php?page=1&limit=10";
+
+            if (type !== "") {
+                url += "&type=" + encodeURIComponent(type);
+            }
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

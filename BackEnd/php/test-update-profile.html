@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Update Profile API</title>
+</head>
+<body>
+    <h2>Test Update Profile API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+    </p>
+
+    <div>
+        <label>Họ tên:</label>
+        <br>
+        <input id="fullNameInput" type="text" value="Khách Test 01 Updated">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Email:</label>
+        <br>
+        <input id="emailInput" type="email" value="khachtest01@example.com">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số điện thoại:</label>
+        <br>
+        <input id="phoneInput" type="text" value="0912345678">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Avatar:</label>
+        <br>
+        <input id="avatarInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Giới tính:</label>
+        <br>
+        <select id="genderInput">
+            <option value="male">Nam</option>
+            <option value="female">Nữ</option>
+            <option value="other" selected>Khác</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ngày sinh:</label>
+        <br>
+        <input id="dateOfBirthInput" type="date" value="2003-05-12">
+    </div>
+
+    <br>
+
+    <button id="updateProfileBtn">Cập nhật thông tin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updateProfileBtn").addEventListener("click", function () {
+            const fullName = document.getElementById("fullNameInput").value.trim();
+            const email = document.getElementById("emailInput").value.trim();
+            const phone = document.getElementById("phoneInput").value.trim();
+            const avatar = document.getElementById("avatarInput").value.trim();
+            const gender = document.getElementById("genderInput").value;
+            const dateOfBirth = document.getElementById("dateOfBirthInput").value;
+
+            fetch("./api/users/update-profile.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    full_name: fullName,
+                    email: email,
+                    phone: phone,
+                    avatar: avatar,
+                    gender: gender,
+                    date_of_birth: dateOfBirth
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

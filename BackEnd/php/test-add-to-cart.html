@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Add To Cart API</title>
+</head>
+<body>
+    <h2>Test Add To Cart API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+    </p>
+
+    <div>
+        <label>SKU sản phẩm:</label>
+        <br>
+        <input id="skuInput" type="text" value="ATB-NAM-BLACK-M">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số lượng:</label>
+        <br>
+        <input id="quantityInput" type="number" value="1" min="1">
+    </div>
+
+    <br>
+
+    <button id="addToCartBtn">Thêm vào giỏ</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("addToCartBtn").addEventListener("click", function () {
+            const sku = document.getElementById("skuInput").value.trim();
+            const quantity = Number(document.getElementById("quantityInput").value);
+
+            fetch("./api/cart/add-to-cart.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    sku: sku,
+                    quantity: quantity
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

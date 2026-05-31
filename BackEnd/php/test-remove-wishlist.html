@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Remove Wishlist API</title>
+</head>
+<body>
+    <h2>Test Remove Wishlist API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+        Sau đó mở <b>test-wishlist.html</b> để lấy wishlist_id hoặc product_id cần xóa.
+    </p>
+
+    <div>
+        <label>Wishlist ID:</label>
+        <br>
+        <input id="wishlistIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Product ID:</label>
+        <br>
+        <input id="productIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Product slug:</label>
+        <br>
+        <input id="productSlugInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <button id="removeWishlistBtn">Xóa khỏi yêu thích</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("removeWishlistBtn").addEventListener("click", function () {
+            const wishlistId = Number(document.getElementById("wishlistIdInput").value);
+            const productId = Number(document.getElementById("productIdInput").value);
+            const productSlug = document.getElementById("productSlugInput").value.trim();
+
+            fetch("./api/customer-features/remove-wishlist.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    wishlist_id: wishlistId,
+                    product_id: productId,
+                    product_slug: productSlug
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

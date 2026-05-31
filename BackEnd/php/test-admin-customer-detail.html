@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Customer Detail API</title>
+</head>
+<body>
+    <h2>Test Admin Customer Detail API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy customer id từ <b>test-admin-customers.html</b>.
+    </p>
+
+    <div>
+        <label>Customer ID:</label>
+        <br>
+        <input id="customerIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <button id="getCustomerDetailBtn">Lấy chi tiết khách hàng admin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getCustomerDetailBtn").addEventListener("click", function () {
+            const customerId = document.getElementById("customerIdInput").value.trim();
+
+            let url = "./api/admin/customers/get-customer-detail.php";
+            url += "?id=" + encodeURIComponent(customerId);
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

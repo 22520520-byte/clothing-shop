@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điểm tích lũy</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/profile.css">
+    <link rel="stylesheet" href="../css/points.css">
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-left">
+                <i class="fa-solid fa-phone"></i>
+                <span>0911.010.757</span>
+            </div>
+
+            <div class="topbar-right">
+                <a href="../html/login.html" id="topbarAccountLink" data-role="topbar-account-link">
+                    <span id="topbarAccountText">Tài khoản</span>
+                </a>
+
+                <a href="../html/cart.html">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                    <span>Giỏ hàng</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../html/home.html">
+                <img src="../img/logo.png" alt="DUHU Shop">
+            </a>
+        </div>
+
+        <nav class="nav-left">
+            <ul class="menu">
+                <li class="drop-down">
+                    <a href="../html/ao-tay-ngan.html">Áo ngắn tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-thun.html">Áo thun</a></li>
+                            <li><a href="../html/ao-polo.html">Áo polo</a></li>
+                            <li><a href="../html/ao-so-mi.html">Áo sơ mi</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/ao-tay-dai.html">Áo dài tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-sweater.html">Áo Sweater</a></li>
+                            <li><a href="../html/ao-hoodie.html">Áo Hoodie</a></li>
+                            <li><a href="../html/ao-khoac.html">Áo Khoác</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/quan.html">Quần</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/quan-dai.html">Quần dài</a></li>
+                            <li><a href="../html/quan-ngan.html">Quần ngắn</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/vay.html">Váy</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/vay-ngan.html">Váy ngắn</a></li>
+                            <li><a href="../html/vay-dai.html">Váy dài</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/phu-kien.html">Phụ kiện</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/mu.html">Mũ</a></li>
+                            <li><a href="../html/quan-lot.html">Quần lót</a></li>
+                            <li><a href="../html/tat.html">Tất</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/flash-sale.html">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Flash Sale</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <form class="text-box" id="searchForm" action="#">
+            <input
+                type="text"
+                id="searchKeyword"
+                name="keyword"
+                placeholder="Tìm kiếm ..."
+            >
+
+            <button type="submit" id="searchButton" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- Points page -->
+    <main class="profilePage" data-page="points">
+        <div class="profileContainer">
+            <div class="breadcrumb">
+                <a href="../html/home.html">Trang chủ</a>
+                <span>/</span>
+                <span aria-current="page">Điểm tích lũy</span>
+            </div>
+
+            <h1 class="pageTitle">Điểm tích lũy</h1>
+
+            <div class="profileLayout">
+                <!-- Sidebar -->
+                <aside class="profileSidebar">
+                    <div class="userBox" id="profileUserBox">
+                        <div class="userAvatar">
+                            <i class="fa-regular fa-user"></i>
+                        </div>
+
+                        <div class="userInfo">
+                            <h3 id="profileUserName">Khách hàng</h3>
+                            <p id="profileUserRank">Thành viên</p>
+                        </div>
+                    </div>
+
+                    <ul class="sidebarMenu">
+                        <li>
+                            <a href="../html/profile.html">
+                                <i class="fa-regular fa-user"></i>
+                                <span>Thông tin tài khoản</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="../html/my-order.html">
+                                <i class="fa-solid fa-bag-shopping"></i>
+                                <span>Đơn hàng của tôi</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="../html/order-history.html">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>Lịch sử mua hàng</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="../html/wishlist.html">
+                                <i class="fa-regular fa-heart"></i>
+                                <span>Sản phẩm yêu thích</span>
+                            </a>
+                        </li>
+
+                        <li class="active">
+                            <a href="../html/points.html">
+                                <i class="fa-solid fa-coins"></i>
+                                <span>Điểm tích lũy</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <button type="button" class="logoutBtn" id="logoutBtn">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </li>
+                    </ul>
+                </aside>
+
+                <!-- Content -->
+                <section class="profileContent">
+                    <!-- Tổng quan điểm -->
+                    <div class="contentCard" data-section="points-summary">
+                        <div class="cardHeader">
+                            <h2>Điểm của bạn</h2>
+                            <p>Theo dõi điểm thưởng tích lũy để đổi ưu đãi khi mua sắm.</p>
+                        </div>
+
+                        <div class="pointsState contentState loadingState" id="pointsSummaryLoadingState">
+                            Đang tải thông tin điểm...
+                        </div>
+
+                        <div class="pointsState contentState errorState" id="pointsSummaryErrorState" hidden>
+                            Có lỗi khi tải thông tin điểm.
+                        </div>
+
+                        <div class="pointsSummaryContent" id="pointsSummaryContent" hidden>
+                            <div class="pointsSummary">
+                                <div class="pointsMain">
+                                    <div class="pointsIcon">
+                                        <i class="fa-solid fa-coins"></i>
+                                    </div>
+
+                                    <div class="pointsInfo">
+                                        <span>Điểm hiện tại</span>
+                                        <h3 id="currentPointValue">0 điểm</h3>
+                                        <p id="pointHintText">Bạn chưa có thông tin điểm thưởng.</p>
+                                    </div>
+                                </div>
+
+                                <div class="pointsRule" id="pointsRuleList">
+                                    <div class="ruleItem">
+                                        <strong id="ruleEarnLabel">---</strong>
+                                        <span id="ruleEarnValue">---</span>
+                                    </div>
+
+                                    <div class="ruleItem">
+                                        <strong id="ruleVoucher20Label">---</strong>
+                                        <span id="ruleVoucher20Value">---</span>
+                                    </div>
+
+                                    <div class="ruleItem">
+                                        <strong id="ruleVoucher50Label">---</strong>
+                                        <span id="ruleVoucher50Value">---</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ưu đãi đổi điểm -->
+                    <div class="contentCard" data-section="reward-list">
+                        <div class="cardHeader">
+                            <h2>Ưu đãi có thể đổi</h2>
+                            <p>Chọn ưu đãi phù hợp với số điểm bạn đang có.</p>
+                        </div>
+
+                        <div class="rewardActions">
+                            <button type="button" class="spinLuckyBtn" id="openLuckyWheelBtn">
+                                <i class="fa-solid fa-gift"></i>
+                                <span>Vòng xoay may mắn</span>
+                            </button>
+                        </div>
+
+                        <div class="pointsState contentState loadingState" id="rewardListLoadingState">
+                            Đang tải danh sách ưu đãi...
+                        </div>
+
+                        <div class="pointsState contentState emptyState" id="rewardListEmptyState" hidden>
+                            <div class="emptyPointsBox">
+                                <div class="emptyPointsIcon">
+                                    <i class="fa-solid fa-ticket"></i>
+                                </div>
+
+                                <h3>Hiện chưa có ưu đãi nào để đổi điểm</h3>
+
+                                <p>
+                                    Khi có ưu đãi đổi điểm mới, danh sách ưu đãi sẽ được hiển thị tại đây.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="pointsState contentState errorState" id="rewardListErrorState" hidden>
+                            Có lỗi khi tải danh sách ưu đãi.
+                        </div>
+
+                        <div class="rewardGrid" id="rewardList" data-role="reward-list" hidden>
+                            <!-- JS render ưu đãi tại đây -->
+                        </div>
+                    </div>
+
+                    <!-- Lịch sử điểm -->
+                    <div class="contentCard" data-section="points-history">
+                        <div class="cardHeader">
+                            <h2>Lịch sử điểm</h2>
+                            <p>Xem các giao dịch cộng và trừ điểm gần đây.</p>
+                        </div>
+
+                        <div class="pointsState contentState loadingState" id="pointsHistoryLoadingState">
+                            Đang tải lịch sử điểm...
+                        </div>
+
+                        <div class="pointsState contentState emptyState" id="pointsHistoryEmptyState" hidden>
+                            <div class="emptyPointsBox">
+                                <div class="emptyPointsIcon">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </div>
+
+                                <h3>Chưa có lịch sử điểm nào</h3>
+
+                                <p>
+                                    Khi bạn được cộng điểm hoặc đổi điểm, lịch sử điểm sẽ được hiển thị tại đây.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="pointsState contentState errorState" id="pointsHistoryErrorState" hidden>
+                            Có lỗi khi tải lịch sử điểm.
+                        </div>
+
+                        <div class="pointsHistoryContent" id="pointsHistoryContent" hidden>
+                            <div class="pointsTable" id="pointsHistoryTable">
+                                <div class="pointsTableHead">
+                                    <div>Ngày</div>
+                                    <div>Nội dung</div>
+                                    <div>Điểm</div>
+                                    <div>Trạng thái</div>
+                                </div>
+
+                                <div id="pointsHistoryList" data-role="points-history-list">
+                                    <!-- JS render lịch sử điểm tại đây -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Template ưu đãi -->
+    <template id="rewardItemTemplate">
+        <div class="rewardItem" data-reward-id="">
+            <div class="rewardTop">
+                <span class="rewardBadge" data-role="reward-badge"></span>
+                <h3 data-role="reward-title"></h3>
+            </div>
+
+            <p data-role="reward-description"></p>
+
+            <strong data-role="reward-point-cost"></strong>
+
+            <button type="button" class="rewardBtn" data-role="reward-action-button">
+                Đổi ngay
+            </button>
+        </div>
+    </template>
+
+    <!-- Template lịch sử điểm -->
+    <template id="pointsHistoryRowTemplate">
+        <div class="pointsRow" data-history-id="">
+            <div data-role="history-date"></div>
+            <div data-role="history-content"></div>
+            <div data-role="history-point"></div>
+
+            <div>
+                <span class="pointsStatus" data-role="history-status"></span>
+            </div>
+        </div>
+    </template>
+
+    <!-- Popup vòng xoay may mắn -->
+    <div class="luckyWheelOverlay" id="luckyWheelPopup" hidden>
+        <div class="luckyWheelPopup">
+            <div class="luckyWheelHeader">
+                <div>
+                    <h3>Vòng xoay may mắn</h3>
+                    <p>Mỗi thành viên được quay để nhận voucher ưu đãi.</p>
+                </div>
+
+                <button type="button" class="closeLuckyWheelBtn" id="closeLuckyWheelBtn" aria-label="Đóng popup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="luckyWheelBody">
+                <div class="luckyWheelNote">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span id="luckyWheelRuleText">Mỗi tài khoản được quay 1 lần trong ngày.</span>
+                </div>
+
+                <div class="luckyWheelWrap">
+                    <div class="wheelPointer">
+                        <i class="fa-solid fa-caret-down"></i>
+                    </div>
+
+                    <div class="luckyWheelDisc" id="luckyWheelDisc">
+                        <div class="wheelCenter">
+                            <span>DUHU</span>
+                        </div>
+
+                        <div class="wheelLabel wheelLabel1">Freeship 15K</div>
+                        <div class="wheelLabel wheelLabel2">Giảm 20K</div>
+                        <div class="wheelLabel wheelLabel3">Giảm 10%</div>
+                        <div class="wheelLabel wheelLabel4">Freeship 30K</div>
+                        <div class="wheelLabel wheelLabel5">Giảm 50K</div>
+                        <div class="wheelLabel wheelLabel6">May mắn lần sau</div>
+                    </div>
+                </div>
+
+                <div class="luckyWheelResult" id="luckyWheelResultBox">
+                    <span>Kết quả</span>
+                    <strong id="luckyWheelResultText">Bạn chưa quay lần nào.</strong>
+                </div>
+            </div>
+
+            <div class="luckyWheelFooter">
+                <button type="button" class="luckyWheelSecondaryBtn" id="cancelLuckyWheelBtn">
+                    Đóng
+                </button>
+
+                <button type="button" class="luckyWheelPrimaryBtn" id="spinLuckyWheelBtn">
+                    Quay ngay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="containerFooter">
+            <div class="contact">
+                <h4>Gọi mua hàng (8:30-21:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0911.010.757</span>
+                    </p>
+
+                    <p>Tất cả các ngày trong tuần</p>
+                </div>
+            </div>
+
+            <div class="contact">
+                <h4>Góp ý, khiếu nại (8:30-20:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0917.257.595</span>
+                    </p>
+
+                    <p>Các ngày trong tuần (trừ ngày lễ)</p>
+                </div>
+            </div>
+
+            <div class="socialMedia">
+                <h4>Nền tảng mạng xã hội</h4>
+
+                <div class="iconSocialMedia">
+                    <a href="#" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+
+                    <a href="#" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="map">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.9317374327557!2d106.79120977589625!3d10.892792489263131!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d9b2d9812e63%3A0xd4c6b932cc0bca0e!2sBcons%20City%20Mall!5e0!3m2!1sen!2s!4v1773054657751!5m2!1sen!2s"
+                    width="600"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/auth-ui.js"></script>
+    <script src="../js/points.js"></script>
+</body>
+</html>

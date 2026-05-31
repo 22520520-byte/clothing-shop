@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Product Detail API</title>
+</head>
+<body>
+    <h2>Test Admin Product Detail API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy product id từ <b>test-admin-products.html</b>.
+    </p>
+
+    <div>
+        <label>Product ID:</label>
+        <br>
+        <input id="productIdInput" type="number" value="1" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Product slug:</label>
+        <br>
+        <input id="productSlugInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <button id="getProductDetailBtn">Lấy chi tiết sản phẩm admin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getProductDetailBtn").addEventListener("click", function () {
+            const productId = document.getElementById("productIdInput").value.trim();
+            const productSlug = document.getElementById("productSlugInput").value.trim();
+
+            let url = "./api/admin/products/get-product-detail.php?";
+
+            if (productId !== "") {
+                url += "id=" + encodeURIComponent(productId);
+            } else {
+                url += "slug=" + encodeURIComponent(productSlug);
+            }
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

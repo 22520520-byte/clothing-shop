@@ -1,0 +1,1130 @@
+/* 1. Checkout page */
+
+.checkoutPage {
+    background: #f7f7f7;
+    min-height: 100vh;
+}
+
+.checkoutContainer {
+    width: min(1200px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 50px;
+}
+
+/* 2. Breadcrumb */
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+    color: #777777;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    color: #555555;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+    color: #111111;
+}
+
+.breadcrumb span:last-child {
+    color: #111111;
+    font-weight: 700;
+}
+
+/* 3. Heading */
+
+.checkoutHeading {
+    margin-bottom: 24px;
+}
+
+.checkoutHeading h1 {
+    margin: 0 0 8px;
+    color: #111111;
+    font-size: 34px;
+    line-height: 1.2;
+    font-weight: 900;
+}
+
+.checkoutHeading p {
+    margin: 0;
+    color: #666666;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* 4. Layout */
+
+.checkoutLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 390px;
+    gap: 24px;
+    align-items: start;
+}
+
+.checkoutLeft {
+    min-width: 0;
+}
+
+.checkoutRight {
+    position: sticky;
+    top: 18px;
+}
+
+/* 5. Card */
+
+.checkoutCard,
+.summaryCard {
+    border: 1px solid #eeeeee;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.05);
+}
+
+.checkoutCard {
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.summaryCard {
+    padding: 22px;
+}
+
+.cardTitle {
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.cardTitle h2 {
+    margin: 0;
+    color: #111111;
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 900;
+}
+
+/* 6. Form */
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.formGroup.fullWidth {
+    grid-column: 1 / -1;
+}
+
+.formGroup label {
+    color: #222222;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+    width: 100%;
+    border: 1px solid #dddddd;
+    border-radius: 13px;
+    background: #ffffff;
+    color: #222222;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formGroup input,
+.formGroup select {
+    height: 44px;
+    padding: 0 13px;
+}
+
+.formGroup textarea {
+    min-height: 108px;
+    padding: 12px 13px;
+    resize: vertical;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+}
+
+.formGroup input:disabled,
+.formGroup select:disabled {
+    background: #f5f5f5;
+    color: #999999;
+    cursor: not-allowed;
+}
+
+/* 7. Option cards */
+
+.shippingOptions,
+.paymentOptions {
+    display: grid;
+    gap: 12px;
+}
+
+.optionCard {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.optionCard:hover {
+    border-color: #111111;
+}
+
+.optionCard input {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    accent-color: #111111;
+}
+
+.optionCard div {
+    flex: 1;
+    min-width: 0;
+}
+
+.optionCard strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #111111;
+    font-size: 15px;
+    line-height: 1.35;
+}
+
+.optionCard p {
+    margin: 0;
+    color: #666666;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.optionCard > span {
+    color: #111111;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.optionCard:has(input:checked) {
+    border-color: #111111;
+    background: #fafafa;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+}
+
+/* 8. QR payment */
+
+.transferProofBox {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #eeeeee;
+}
+
+.transferProofBox[hidden] {
+    display: none;
+}
+
+.qrPaymentBox {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 18px;
+    margin-bottom: 18px;
+    padding: 16px;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    background: #fafafa;
+}
+
+.qrImageBox {
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #eeeeee;
+}
+
+.qrImageBox img {
+    width: 100%;
+    max-width: 150px;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+}
+
+.qrPaymentInfo h3 {
+    margin: 0 0 12px;
+    color: #111111;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.qrPaymentInfo p {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 8px;
+    color: #555555;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.qrPaymentInfo strong {
+    min-width: 105px;
+    color: #111111;
+}
+
+.uploadHint {
+    margin: 0;
+    color: #777777;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.transferPreview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #eeeeee;
+    border-radius: 14px;
+    background: #fafafa;
+}
+
+.transferPreview[hidden] {
+    display: none;
+}
+
+.transferPreview img {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid #eeeeee;
+}
+
+.transferPreview span {
+    color: #333333;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* 9. Checkout states */
+
+.checkoutState {
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 1px solid #eeeeee;
+    border-radius: 14px;
+    background: #fafafa;
+    color: #666666;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.checkoutState[hidden] {
+    display: none;
+}
+
+.checkoutState.errorState {
+    color: #d71920;
+    background: #fff0f0;
+    border-color: #ffd2d2;
+}
+
+.checkoutState.emptyState {
+    color: #8a5a00;
+    background: #fff8eb;
+    border-color: #ffe2ad;
+}
+
+/* 10. Order list */
+
+.orderList {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.orderList[hidden] {
+    display: none;
+}
+
+.orderItem {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.orderItem:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.orderThumb {
+    width: 82px;
+    height: 96px;
+    overflow: hidden;
+    border: 1px solid #eeeeee;
+    border-radius: 14px;
+    background: #fafafa;
+}
+
+.orderThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.orderInfo {
+    min-width: 0;
+}
+
+.orderInfo h3 {
+    margin: 0 0 7px;
+    color: #111111;
+    font-size: 15px;
+    line-height: 1.4;
+    font-weight: 900;
+}
+
+.orderInfo p {
+    margin: 0 0 8px;
+    color: #666666;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.orderItemMeta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+    color: #333333;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.orderInfo strong[data-role="order-item-line-total"] {
+    display: block;
+    color: #d71920;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+/* 11. Summary rows */
+
+.summaryRows {
+    display: grid;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid #eeeeee;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.summaryRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #444444;
+    font-size: 14px;
+}
+
+.summaryRow strong {
+    color: #111111;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.summaryRow.discount strong {
+    color: #16803c;
+}
+
+/* 12. Discount actions */
+
+.discountActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.discountActionBtn {
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid #dddddd;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #111111;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.22s ease;
+}
+
+.discountActionBtn:hover {
+    border-color: #111111;
+    background: #fafafa;
+    transform: translateY(-1px);
+}
+
+.discountActionBtn i {
+    font-size: 15px;
+}
+
+.discountActionBtn[hidden] {
+    display: none;
+}
+
+/* 13. Applied benefits */
+
+.appliedBenefits {
+    display: grid;
+    gap: 10px;
+    padding: 16px 0;
+}
+
+.appliedBenefit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 14px;
+    border: 1px solid #eeeeee;
+    border-radius: 14px;
+    background: #fafafa;
+}
+
+.appliedBenefit[hidden] {
+    display: none;
+}
+
+.appliedBenefitInfo {
+    min-width: 0;
+}
+
+.appliedBenefitInfo strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #111111;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.appliedBenefitInfo p {
+    margin: 0;
+    color: #666666;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.removeBenefitBtn {
+    flex: 0 0 auto;
+    border: none;
+    background: transparent;
+    color: #d71920;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+/* 14. Total and place order */
+
+.summaryTotal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 0;
+    color: #111111;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.summaryTotal strong {
+    color: #d71920;
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.placeOrderBtn {
+    width: 100%;
+    min-height: 52px;
+    border: none;
+    border-radius: 14px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+
+.placeOrderBtn:hover {
+    background: #222222;
+    transform: translateY(-1px);
+}
+
+.placeOrderBtn:disabled {
+    background: #999999;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.backCartLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    color: #555555;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.backCartLink:hover {
+    color: #111111;
+}
+
+/* 15. Popup */
+
+.popupOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.popupOverlay[hidden] {
+    display: none;
+}
+
+.popupBox {
+    width: min(520px, 100%);
+    max-height: calc(100vh - 44px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.voucherPopupBox {
+    width: min(650px, 100%);
+}
+
+.popupHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.popupHeader h3 {
+    margin: 0;
+    color: #111111;
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.popupCloseBtn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: #f5f5f5;
+    color: #555555;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.popupCloseBtn:hover {
+    background: #111111;
+    color: #ffffff;
+}
+
+.popupBody {
+    padding: 22px;
+    overflow: auto;
+}
+
+.popupFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 22px;
+    border-top: 1px solid #eeeeee;
+}
+
+.secondaryPopupBtn,
+.primaryPopupBtn {
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+
+.secondaryPopupBtn {
+    border: 1px solid #dddddd;
+    background: #ffffff;
+    color: #333333;
+}
+
+.secondaryPopupBtn:hover {
+    border-color: #111111;
+}
+
+.primaryPopupBtn {
+    border: none;
+    background: #111111;
+    color: #ffffff;
+}
+
+.primaryPopupBtn:hover {
+    background: #222222;
+}
+
+/* 16. Point popup */
+
+.memberPointInfo {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.memberPointRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #fafafa;
+    border: 1px solid #eeeeee;
+}
+
+.memberPointRow span {
+    color: #666666;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.memberPointRow strong {
+    color: #111111;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.pointResultBox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 14px;
+    background: #fff8eb;
+    border: 1px solid #ffe2ad;
+}
+
+.pointResultBox span {
+    color: #8a5a00;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.pointResultBox strong {
+    color: #d71920;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+/* 17. Voucher popup */
+
+.voucherPopupHint {
+    margin: 0 0 14px;
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.voucherEmptyState {
+    padding: 18px;
+    border: 1px dashed #dddddd;
+    border-radius: 16px;
+    background: #fafafa;
+    text-align: center;
+}
+
+.voucherEmptyState[hidden] {
+    display: none;
+}
+
+.voucherEmptyState p {
+    margin: 0 0 12px;
+    color: #666666;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.goBigVoucherLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.voucherList {
+    display: grid;
+    gap: 12px;
+}
+
+.voucherItem {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 15px;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.voucherItem:hover {
+    border-color: #111111;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.voucherItemContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.voucherItemTop {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.voucherItemTop h4 {
+    margin: 0;
+    color: #d71920;
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+.voucherItemTop span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: #fff0f0;
+    color: #d71920;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.voucherItemContent p {
+    margin: 0 0 10px;
+    color: #555555;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.voucherItemMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 8px;
+}
+
+.voucherItemMeta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: #f5f5f5;
+    color: #555555;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.voucherItemStatus {
+    margin: 0;
+    color: #777777;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.voucherItemStatus.canApply {
+    color: #16803c;
+}
+
+.voucherItemStatus.cannotApply {
+    color: #d71920;
+}
+
+.applyVoucherItemBtn {
+    width: 92px;
+    flex: 0 0 92px;
+    border: none;
+    border-radius: 13px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+
+.applyVoucherItemBtn:hover {
+    background: #222222;
+    transform: translateY(-1px);
+}
+
+.applyVoucherItemBtn:disabled {
+    background: #999999;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 18. Toast */
+
+#checkoutToastContainer {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.checkoutToast {
+    min-width: 260px;
+    max-width: 360px;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: checkoutToastIn 0.25s ease forwards;
+}
+
+.checkoutToast.success {
+    background: #16803c;
+}
+
+.checkoutToast.error {
+    background: #d71920;
+}
+
+.checkoutToast.warning {
+    background: #a86600;
+}
+
+@keyframes checkoutToastIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 19. Responsive */
+
+@media (max-width: 1024px) {
+    .checkoutLayout {
+        grid-template-columns: 1fr;
+    }
+
+    .checkoutRight {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .checkoutContainer {
+        width: min(100% - 24px, 1200px);
+        padding-top: 22px;
+    }
+
+    .checkoutHeading h1 {
+        font-size: 28px;
+    }
+
+    .checkoutCard,
+    .summaryCard {
+        border-radius: 18px;
+    }
+
+    .checkoutCard {
+        padding: 20px;
+    }
+
+    .summaryCard {
+        padding: 20px;
+    }
+
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .qrPaymentBox {
+        grid-template-columns: 1fr;
+    }
+
+    .qrImageBox img {
+        max-width: 180px;
+    }
+
+    .voucherItem {
+        flex-direction: column;
+    }
+
+    .applyVoucherItemBtn {
+        width: 100%;
+        min-height: 42px;
+        flex-basis: auto;
+    }
+
+    #checkoutToastContainer {
+        right: 14px;
+        bottom: 14px;
+        left: 14px;
+    }
+
+    .checkoutToast {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .checkoutContainer {
+        width: min(100% - 18px, 1200px);
+    }
+
+    .checkoutHeading h1 {
+        font-size: 25px;
+    }
+
+    .checkoutCard,
+    .summaryCard {
+        padding: 16px;
+    }
+
+    .cardTitle h2 {
+        font-size: 19px;
+    }
+
+    .optionCard {
+        align-items: flex-start;
+    }
+
+    .discountActions {
+        grid-template-columns: 1fr;
+    }
+
+    .summaryTotal strong {
+        font-size: 21px;
+    }
+
+    .popupOverlay {
+        padding: 12px;
+        align-items: flex-end;
+    }
+
+    .popupBox {
+        max-height: calc(100vh - 24px);
+        border-radius: 18px 18px 0 0;
+    }
+
+    .popupHeader,
+    .popupBody,
+    .popupFooter {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .popupFooter {
+        flex-direction: column;
+    }
+
+    .secondaryPopupBtn,
+    .primaryPopupBtn {
+        width: 100%;
+    }
+
+    .memberPointRow,
+    .pointResultBox {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

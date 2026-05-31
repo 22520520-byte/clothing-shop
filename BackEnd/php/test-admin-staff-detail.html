@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Staff Detail API</title>
+</head>
+<body>
+    <h2>Test Admin Staff Detail API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy staff id từ <b>test-admin-staff.html</b>.
+    </p>
+
+    <div>
+        <label>Staff ID:</label>
+        <br>
+        <input id="staffIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <button id="getStaffDetailBtn">Lấy chi tiết nhân viên admin</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getStaffDetailBtn").addEventListener("click", function () {
+            const staffId = document.getElementById("staffIdInput").value.trim();
+
+            let url = "./api/admin/staff/get-staff-detail.php";
+            url += "?id=" + encodeURIComponent(staffId);
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

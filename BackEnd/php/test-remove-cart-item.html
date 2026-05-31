@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Remove Cart Item API</title>
+</head>
+<body>
+    <h2>Test Remove Cart Item API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b>,
+        sau đó mở <b>test-cart.html</b> để lấy cart_item_id cần xóa.
+    </p>
+
+    <div>
+        <label>Cart item ID:</label>
+        <br>
+        <input id="cartItemIdInput" type="number" value="4" min="1">
+    </div>
+
+    <br>
+
+    <button id="removeCartItemBtn">Xóa sản phẩm khỏi giỏ</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("removeCartItemBtn").addEventListener("click", function () {
+            const cartItemId = Number(document.getElementById("cartItemIdInput").value);
+
+            fetch("./api/cart/remove-cart-item.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    cart_item_id: cartItemId
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

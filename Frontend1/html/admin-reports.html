@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo thống kê</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+             
+
+                <a href="../html/admin-staff.html" class="adminMenuLink" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink active">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1>Báo cáo thống kê</h1>
+                    <p>Theo dõi doanh thu, đơn hàng, khách hàng và sản phẩm bán chạy</p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+
+                    <select class="filterSelect" id="reportRangeFilter">
+                        <option value="all">Toàn bộ dữ liệu</option>
+                        <option value="today">Hôm nay</option>
+                        <option value="7days">7 ngày gần đây</option>
+                        <option value="30days">30 ngày gần đây</option>
+                    </select>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="statGrid">
+                    <article class="statCard">
+                        <div class="statIcon">₫</div>
+
+                        <div>
+                            <p>Tổng doanh thu</p>
+                            <h2 id="reportTotalRevenue">0đ</h2>
+                            <span>Chỉ tính đơn đã hoàn thành</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">□</div>
+
+                        <div>
+                            <p>Tổng đơn hàng</p>
+                            <h2 id="reportTotalOrders">0</h2>
+                            <span>Tất cả đơn trong khoảng lọc</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">✓</div>
+
+                        <div>
+                            <p>Đơn hoàn thành</p>
+                            <h2 id="reportCompletedOrders">0</h2>
+                            <span>Đơn giao thành công</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">↗</div>
+
+                        <div>
+                            <p>Giá trị trung bình</p>
+                            <h2 id="reportAverageOrder">0đ</h2>
+                            <span>Trung bình trên đơn hoàn thành</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="reportGrid">
+                    <div class="contentCard">
+                        <div class="cardHeader">
+                            <div>
+                                <h2>Doanh thu theo ngày</h2>
+                                <p>Thống kê doanh thu từ các đơn hàng đã hoàn thành</p>
+                            </div>
+                        </div>
+
+                        <div class="reportBarList" id="revenueBarList"></div>
+
+                        <p class="emptyText" id="emptyRevenueText">
+                            Chưa có dữ liệu doanh thu.
+                        </p>
+                    </div>
+
+                    <div class="contentCard">
+                        <div class="cardHeader">
+                            <div>
+                                <h2>Trạng thái đơn hàng</h2>
+                                <p>Tỷ lệ đơn hàng theo từng trạng thái</p>
+                            </div>
+                        </div>
+
+                        <div class="statusReportList" id="statusReportList"></div>
+
+                        <p class="emptyText" id="emptyStatusText">
+                            Chưa có dữ liệu đơn hàng.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="reportGrid">
+                    <div class="contentCard">
+                        <div class="cardHeader">
+                            <div>
+                                <h2>Sản phẩm bán chạy</h2>
+                                <p>Xếp hạng theo số lượng đã bán trong đơn hoàn thành</p>
+                            </div>
+                        </div>
+
+                        <div class="tableWrapper">
+                            <table class="adminTable reportTable">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Sản phẩm</th>
+                                        <th>Số lượng bán</th>
+                                        <th>Doanh thu</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="bestSellerTableBody"></tbody>
+                            </table>
+                        </div>
+
+                        <p class="emptyText" id="emptyBestSellerText">
+                            Chưa có sản phẩm bán chạy.
+                        </p>
+                    </div>
+
+                    <div class="contentCard">
+                        <div class="cardHeader">
+                            <div>
+                                <h2>Tổng quan dữ liệu</h2>
+                                <p>Số lượng dữ liệu chính trong hệ thống quản trị</p>
+                            </div>
+                        </div>
+
+                        <div class="overviewList">
+                            <div class="overviewItem">
+                                <span>Sản phẩm đang quản lý</span>
+                                <strong id="overviewProductCount">0</strong>
+                            </div>
+
+                            <div class="overviewItem">
+                                <span>Sản phẩm sắp hết hàng</span>
+                                <strong id="overviewLowStockCount">0</strong>
+                            </div>
+
+                            <div class="overviewItem">
+                                <span>Khách hàng</span>
+                                <strong id="overviewCustomerCount">0</strong>
+                            </div>
+
+                            <div class="overviewItem">
+                                <span>Đơn bị hủy</span>
+                                <strong id="overviewCancelledOrderCount">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <template id="revenueBarTemplate">
+        <div class="reportBarItem">
+            <div class="reportBarHeader">
+                <span class="barDateText"></span>
+                <strong class="barRevenueText"></strong>
+            </div>
+
+            <div class="reportBarTrack">
+                <div class="reportBarFill"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="statusReportTemplate">
+        <div class="statusReportItem">
+            <div class="statusReportTop">
+                <span class="statusBadge statusReportName"></span>
+                <strong class="statusReportCount"></strong>
+            </div>
+
+            <div class="reportBarTrack">
+                <div class="reportBarFill statusReportFill"></div>
+            </div>
+
+            <p class="statusReportPercent"></p>
+        </div>
+    </template>
+
+    <template id="bestSellerRowTemplate">
+        <tr>
+            <td class="bestSellerIndexText"></td>
+            <td class="bestSellerNameText"></td>
+            <td class="bestSellerQuantityText"></td>
+            <td class="bestSellerRevenueText"></td>
+        </tr>
+    </template>
+
+    <script src="../js/admin-reports.js"></script>
+</body>
+</html>

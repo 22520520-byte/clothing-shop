@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/cart.css">
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-left">
+                <i class="fa-solid fa-phone"></i>0911.010.757
+            </div>
+            <div class="topbar-right">
+                <a href="../html/login.html" id="topbarAccountLink" data-role="topbar-account-link">
+    <span id="topbarAccountText">Tài khoản</span>
+</a>
+                <a href="../html/cart.html">
+                    <i class="fa-solid fa-cart-arrow-down"></i>Giỏ hàng
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../html/home.html">
+                <img src="../img/logo.png" alt="DUHU Shop">
+            </a>
+        </div>
+
+        <nav class="nav-left">
+            <ul class="menu">
+                <li class="drop-down">
+                    <a href="../html/ao-tay-ngan.html">Áo ngắn tay</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-thun.html">Áo thun</a></li>
+                            <li><a href="../html/ao-polo.html">Áo polo</a></li>
+                            <li><a href="../html/ao-so-mi.html">Áo sơ mi</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/ao-tay-dai.html">Áo dài tay</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-sweater.html">Áo Sweater</a></li>
+                            <li><a href="../html/ao-hoodie.html">Áo Hoodie</a></li>
+                            <li><a href="../html/ao-khoac.html">Áo Khoác</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/quan.html">Quần</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/quan-dai.html">Quần dài</a></li>
+                            <li><a href="../html/quan-ngan.html">Quần ngắn</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/vay.html">Váy</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/vay-ngan.html">Váy ngắn</a></li>
+                            <li><a href="../html/vay-dai.html">Váy dài</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/phu-kien.html">Phụ kiện</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/mu.html">Mũ</a></li>
+                            <li><a href="../html/quan-lot.html">Quần lót</a></li>
+                            <li><a href="../html/tat.html">Tất</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/flash-sale.html">
+                        <i class="fa-solid fa-bolt"></i>Flash Sale
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <form class="text-box" id="searchForm" action="#">
+            <input type="text" id="searchKeyword" name="keyword" placeholder="Tìm kiếm ...">
+            <button type="submit" id="searchButton" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- Cart page -->
+    <main class="cartPage" data-page="cart">
+        <div class="cartContainer">
+            <div class="breadcrumb">
+                <a href="../html/home.html">Trang chủ</a>
+                <span>/</span>
+                <a href="../html/cart.html">Giỏ hàng</a>
+            </div>
+
+            <div class="cartHeader">
+                <h1>Giỏ hàng của bạn</h1>
+                <p>Có <span id="cartCount">0</span> sản phẩm trong giỏ hàng</p>
+            </div>
+
+            <div class="cartContent">
+                <!-- Left -->
+                <section class="cartLeft">
+                    <div class="cartToolbar">
+                        <label class="selectAllBox" for="selectAllCartItems">
+                            <input type="checkbox" id="selectAllCartItems">
+                            <span>Chọn tất cả</span>
+                        </label>
+
+                        <div class="selectedInfo">
+                            Đã chọn <strong id="selectedCartCount">0</strong> sản phẩm
+                        </div>
+                    </div>
+
+                    <div class="cartTableHeader">
+                        <div>Chọn</div>
+                        <div>Sản phẩm</div>
+                        <div>Đơn giá</div>
+                        <div>Số lượng</div>
+                        <div>Thành tiền</div>
+                        <div>Xóa</div>
+                    </div>
+
+                    <div class="cartState loadingState" id="cartLoadingState">
+                        Đang tải giỏ hàng...
+                    </div>
+
+                    <div class="cartState emptyState" id="cartEmptyState" hidden>
+                        Giỏ hàng của bạn đang trống.
+                    </div>
+
+                    <div class="cartState errorState" id="cartErrorState" hidden>
+                        Có lỗi khi tải dữ liệu giỏ hàng.
+                    </div>
+
+                    <div class="cartItemList" id="cartItemList">
+                        <!-- JS render cart items tại đây -->
+                    </div>
+
+                    <div class="cartActions">
+                        <a href="../html/home.html" class="continueShopping">
+                            <i class="fa-solid fa-arrow-left"></i> Mua thêm sản phẩm
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Right -->
+                <aside class="cartRight">
+                    <div class="summaryBox">
+                        <h2>Tóm tắt đơn hàng</h2>
+
+                        <div class="summaryRow">
+                            <span>Sản phẩm đã chọn</span>
+                            <strong id="summarySelectedCount">0</strong>
+                        </div>
+
+                        <div class="summaryRow">
+                            <span>Tạm tính</span>
+                            <strong id="subtotalPrice">0đ</strong>
+                        </div>
+
+                        <div class="summaryRow">
+                            <span>Phí vận chuyển</span>
+                            <span id="shippingFee">Tính khi thanh toán</span>
+                        </div>
+
+                        <div class="summaryTotal">
+                            <span>Tổng cộng</span>
+                            <strong id="totalPrice">0đ</strong>
+                        </div>
+
+                        <button type="button" class="checkoutBtn" id="checkoutBtn" disabled>
+                            Tiến hành đặt hàng
+                        </button>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Suggest -->
+            <section class="suggestSection">
+                <div class="sectionTitle">
+                    <h2>Sản phẩm có thể bạn thích</h2>
+                </div>
+
+                <div class="suggestState loadingState" id="suggestLoadingState">
+                    Đang tải sản phẩm gợi ý...
+                </div>
+
+                <div class="suggestState emptyState" id="suggestEmptyState" hidden>
+                    Hiện chưa có sản phẩm gợi ý.
+                </div>
+
+                <div class="suggestState errorState" id="suggestErrorState" hidden>
+                    Có lỗi khi tải sản phẩm gợi ý.
+                </div>
+
+                <div class="suggestGrid" id="suggestGrid">
+                    <!-- JS render suggested products tại đây -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <template id="cartItemTemplate">
+        <article class="cartItem" data-cart-item-id="">
+            <div class="cartItemSelect">
+                <label class="cartCheckbox" for="">
+                    <input type="checkbox" class="cartItemCheckbox" data-role="cart-item-checkbox">
+                    <span></span>
+                </label>
+            </div>
+
+            <div class="cartProduct">
+                <a href="#" class="cartProductImage" data-role="cart-product-link">
+                    <img src="" alt="" data-role="cart-product-image">
+                </a>
+
+                <div class="cartProductInfo">
+                    <h3>
+                        <a href="#" class="cartProductName" data-role="cart-product-name"></a>
+                    </h3>
+                    <p class="cartProductVariant" data-role="cart-product-variant"></p>
+                    <p class="cartProductMeta" data-role="cart-product-meta"></p>
+                </div>
+            </div>
+
+            <div class="cartPrice">
+                <strong class="cartUnitPrice" data-role="cart-unit-price">0đ</strong>
+            </div>
+
+            <div class="cartQuantity">
+                <div class="quantityControl">
+                    <button type="button" class="quantityBtn decreaseQtyBtn" data-role="decrease-qty-btn" aria-label="Giảm số lượng">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+
+                    <input type="number" class="quantityInput" data-role="quantity-input" min="1" value="1" readonly>
+
+                    <button type="button" class="quantityBtn increaseQtyBtn" data-role="increase-qty-btn" aria-label="Tăng số lượng">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="cartLineTotal">
+                <strong class="cartItemTotalPrice" data-role="cart-line-total">0đ</strong>
+            </div>
+
+            <div class="cartRemove">
+                <button type="button" class="removeCartItemBtn" data-role="remove-cart-item-btn" aria-label="Xóa sản phẩm">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+        </article>
+    </template>
+
+    <template id="suggestProductTemplate">
+        <article class="suggestCard" data-product-id="">
+            <a href="#" class="suggestImage" data-role="suggest-link">
+                <img src="" alt="" data-role="suggest-image">
+            </a>
+
+            <div class="suggestInfo">
+                <h3>
+                    <a href="#" class="suggestName" data-role="suggest-name"></a>
+                </h3>
+                <p class="suggestPrice" data-role="suggest-price">0đ</p>
+            </div>
+        </article>
+    </template>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="containerFooter">
+            <div class="contact">
+                <h4>Gọi mua hàng (8:30-21:30)</h4>
+                <div class="contactNumber">
+                    <p><i class="fa-solid fa-phone"></i><span>0911.010.757</span></p>
+                    <p>Tất cả các ngày trong tuần</p>
+                </div>
+            </div>
+
+            <div class="contact">
+                <h4>Góp ý, khiếu nại (8:30-20:30)</h4>
+                <div class="contactNumber">
+                    <p><i class="fa-solid fa-phone"></i><span>0917.257.595</span></p>
+                    <p>Các ngày trong tuần (trừ ngày lễ)</p>
+                </div>
+            </div>
+
+            <div class="socialMedia">
+                <h4>Nền tảng mạng xã hội</h4>
+                <div class="iconSocialMedia">
+                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+
+            <div class="map">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.9317374327557!2d106.79120977589625!3d10.892792489263131!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d9b2d9812e63%3A0xd4c6b932cc0bca0e!2sBcons%20City%20Mall!5e0!3m2!1sen!2s!4v1773054657751!5m2!1sen!2s"
+                    width="600"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/cart.js"></script>
+    <script src="../js/auth-ui.js"></script>
+</body>
+</html>

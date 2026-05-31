@@ -1,0 +1,682 @@
+/* 1. Layout trang chi tiết đơn hàng */
+
+.orderDetailPage {
+    padding: 36px 0 60px;
+    background: #f8f8f8;
+}
+
+.orderDetailContainer {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* 2. Breadcrumb */
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 14px;
+    color: #777777;
+    margin-bottom: 20px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #666666;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+    color: #111111;
+}
+
+.breadcrumb span {
+    margin: 0 2px;
+    color: #aaaaaa;
+}
+
+.breadcrumb span:last-child {
+    color: #111111;
+    font-weight: 700;
+}
+
+/* 3. Page heading */
+
+.pageHeading {
+    margin-bottom: 22px;
+}
+
+.pageHeading h1 {
+    margin: 0 0 10px;
+    font-size: 34px;
+    font-weight: 700;
+    color: #111111;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.pageHeading p {
+    margin: 0;
+    font-size: 16px;
+    color: #666666;
+    line-height: 1.7;
+}
+
+/* 4. Trạng thái tải dữ liệu */
+
+.contentState {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #e8e8e8;
+    background: #ffffff;
+    font-size: 15px;
+    line-height: 1.6;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.03);
+}
+
+.loadingState {
+    color: #555555;
+    background: linear-gradient(90deg, #ffffff 0%, #fafafa 100%);
+}
+
+.emptyState {
+    color: #666666;
+}
+
+.errorState {
+    color: #c62828;
+    border-color: #f1c7c7;
+    background: #fff8f8;
+}
+
+/* 5. Wrapper */
+
+.orderDetailWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+#orderDetailContent {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* 6. Card */
+
+.orderCard {
+    background: #ffffff;
+    border: 1px solid #e9e9e9;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+}
+
+.orderSectionInner {
+    padding: 22px 24px;
+}
+
+.orderSectionTitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.orderSectionTitle h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111111;
+}
+
+/* 7. Thông tin khách hàng / đơn hàng */
+
+.orderInfoRows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.orderInfoRow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 18px;
+    border: 1px solid #ededed;
+    border-radius: 14px;
+    background: #fafafa;
+    min-width: 0;
+}
+
+.orderInfoRow.fullWidth {
+    grid-column: 1 / -1;
+}
+
+.orderInfoRow span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666666;
+    line-height: 1.5;
+}
+
+.orderInfoRow strong {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111111;
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+#orderStatusText {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    max-width: 100%;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #f1f1f1;
+    color: #111111;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* 8. Minh chứng chuyển khoản */
+
+.paymentProofBox {
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    background: #fafafa;
+}
+
+.paymentProofHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.paymentProofHeader i {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #111111;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.paymentProofHeader h3 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111111;
+}
+
+.paymentProofHeader p {
+    margin: 0;
+    font-size: 14px;
+    color: #666666;
+    line-height: 1.6;
+}
+
+.paymentProofRows {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.paymentProofRow {
+    padding: 14px 16px;
+    border: 1px solid #ededed;
+    border-radius: 14px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.paymentProofRow span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #666666;
+}
+
+.paymentProofRow strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111111;
+    word-break: break-word;
+}
+
+/* 9. Danh sách sản phẩm */
+
+.orderProductList {
+    border: 1px solid #ececec;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+    min-height: 40px;
+}
+
+.orderProductItem {
+    display: grid;
+    grid-template-columns: 120px 1fr 190px;
+    gap: 18px;
+    padding: 20px 24px;
+    align-items: center;
+    border-bottom: 1px solid #ececec;
+}
+
+.orderProductItem:last-child {
+    border-bottom: none;
+}
+
+.orderProductImage {
+    width: 110px;
+    height: 124px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #f3f3f3;
+    border: 1px solid #eeeeee;
+}
+
+.orderProductImage a {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.orderProductImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.orderProductImage a:focus-visible,
+.orderProductContent h3 a:focus-visible {
+    outline: 3px solid rgba(17, 17, 17, 0.12);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
+.orderProductContent {
+    min-width: 0;
+}
+
+.orderProductContent h3 {
+    margin: 0 0 10px;
+    font-size: 17px;
+    color: #111111;
+    line-height: 1.5;
+}
+
+.orderProductContent h3 a {
+    text-decoration: none;
+    color: #111111;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.orderProductContent h3 a:hover {
+    color: #000000;
+}
+
+.orderProductMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+}
+
+.orderProductMeta span {
+    font-size: 14px;
+    color: #666666;
+    line-height: 1.6;
+}
+
+.orderProductPrice {
+    text-align: right;
+}
+
+.orderOldPrice {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: #999999;
+    text-decoration: line-through;
+}
+
+.orderOldPrice:empty {
+    display: none;
+}
+
+.orderNewPrice {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #111111;
+}
+
+.orderLineTotal {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #e53935;
+}
+
+/* 10. Tổng thanh toán */
+
+.orderSummaryRows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 4px 0;
+}
+
+.orderSummaryRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #efefef;
+    font-size: 15px;
+    color: #444444;
+}
+
+.orderSummaryRow:last-child {
+    border-bottom: none;
+}
+
+.orderSummaryRow span {
+    color: #555555;
+}
+
+.orderSummaryRow strong {
+    font-size: 15px;
+    font-weight: 800;
+    color: #111111;
+    text-align: right;
+}
+
+.orderSummaryRow.discount strong {
+    color: #1f8b3d;
+}
+
+.orderSummaryRow.total {
+    margin-top: 4px;
+    padding-top: 18px;
+    border-top: 1px solid #111111;
+    border-bottom: none;
+    font-size: 18px;
+    font-weight: 800;
+    color: #111111;
+}
+
+.orderSummaryRow.total strong {
+    font-size: 24px;
+    color: #e53935;
+}
+
+/* 11. Ưu đãi đã sử dụng */
+
+#usedBenefitsBox[hidden] {
+    display: none !important;
+}
+
+.usedBenefitsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.usedBenefitItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid #ededed;
+    border-radius: 14px;
+    background: #fafafa;
+}
+
+.usedBenefitItem[hidden] {
+    display: none !important;
+}
+
+.usedBenefitIcon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fff4d6;
+    color: #a06b00;
+    font-size: 17px;
+}
+
+.usedBenefitContent {
+    min-width: 0;
+}
+
+.usedBenefitContent strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #111111;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.usedBenefitContent p {
+    margin: 0;
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* 12. Link quay lại */
+
+.orderDetailBackRow {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.backToOrdersInline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    text-decoration: none;
+    color: #444444;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.backToOrdersInline:hover {
+    color: #111111;
+    border-color: #111111;
+    background: #fafafa;
+}
+
+.backToOrdersInline:focus-visible {
+    outline: 3px solid rgba(17, 17, 17, 0.12);
+    outline-offset: 2px;
+}
+
+/* 13. Responsive */
+
+@media (max-width: 991px) {
+    .pageHeading h1 {
+        font-size: 30px;
+    }
+
+    .orderInfoRows {
+        grid-template-columns: 1fr;
+    }
+
+    .paymentProofRows {
+        grid-template-columns: 1fr;
+    }
+
+    .orderProductItem {
+        grid-template-columns: 100px 1fr;
+    }
+
+    .orderProductPrice {
+        grid-column: 2 / 3;
+        text-align: left;
+    }
+}
+
+@media (max-width: 767px) {
+    .orderDetailPage {
+        padding: 28px 0 40px;
+    }
+
+    .orderDetailContainer {
+        padding: 0 12px;
+    }
+
+    .breadcrumb {
+        margin-bottom: 14px;
+    }
+
+    .pageHeading {
+        margin-bottom: 18px;
+    }
+
+    .pageHeading h1 {
+        font-size: 24px;
+    }
+
+    .pageHeading p {
+        font-size: 15px;
+    }
+
+    .contentState {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .orderCard {
+        border-radius: 16px;
+    }
+
+    .orderSectionInner {
+        padding: 18px 16px;
+    }
+
+    .orderSectionTitle h2 {
+        font-size: 19px;
+    }
+
+    .orderInfoRow {
+        padding: 15px;
+    }
+
+    .paymentProofBox {
+        padding: 16px;
+    }
+
+    .paymentProofHeader {
+        flex-direction: column;
+    }
+
+    .orderProductItem {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 18px 16px;
+    }
+
+    .orderProductImage {
+        width: 100px;
+        height: 112px;
+    }
+
+    .orderProductPrice {
+        grid-column: auto;
+        width: 100%;
+        text-align: left;
+    }
+
+    .orderProductContent h3 {
+        font-size: 16px;
+    }
+
+    .orderNewPrice {
+        font-size: 17px;
+    }
+
+    .orderSummaryRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .orderSummaryRow strong {
+        text-align: left;
+    }
+
+    .orderSummaryRow.total strong {
+        font-size: 22px;
+    }
+
+    .usedBenefitItem {
+        padding: 14px;
+    }
+
+    .orderDetailBackRow {
+        justify-content: flex-start;
+    }
+
+    .backToOrdersInline {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .orderProductImage {
+        width: 96px;
+        height: 108px;
+    }
+
+    .paymentProofHeader h3 {
+        font-size: 17px;
+    }
+
+    .orderSummaryRow.total {
+        font-size: 17px;
+    }
+
+    .usedBenefitItem {
+        flex-direction: column;
+    }
+}

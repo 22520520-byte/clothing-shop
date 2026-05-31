@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý khách hàng</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink active">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+               
+
+                <a href="../html/admin-staff.html" class="adminMenuLink" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1>Quản lý khách hàng</h1>
+                    <p>Theo dõi tài khoản, lịch sử mua hàng và trạng thái khách hàng</p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="statGrid">
+                    <article class="statCard">
+                        <div class="statIcon">♡</div>
+
+                        <div>
+                            <p>Tổng khách hàng</p>
+                            <h2 id="totalCustomerCount">0</h2>
+                            <span>Tất cả khách hàng đã đăng ký</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">✓</div>
+
+                        <div>
+                            <p>Đang hoạt động</p>
+                            <h2 id="activeCustomerCount">0</h2>
+                            <span>Tài khoản còn hoạt động</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">★</div>
+
+                        <div>
+                            <p>Khách VIP</p>
+                            <h2 id="vipCustomerCount">0</h2>
+                            <span>Khách hàng chi tiêu cao</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">×</div>
+
+                        <div>
+                            <p>Bị khóa</p>
+                            <h2 id="lockedCustomerCount">0</h2>
+                            <span>Tài khoản đang bị khóa</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="contentCard">
+                    <div class="cardHeader">
+                        <div>
+                            <h2>Danh sách khách hàng</h2>
+                            <p>Nhấn vào một khách hàng để xem dashboard chi tiết</p>
+                        </div>
+                    </div>
+
+                    <div class="filterBar">
+                        <input 
+                            type="text" 
+                            class="searchInput" 
+                            id="customerSearchInput" 
+                            placeholder="Tìm theo tên, email hoặc số điện thoại..."
+                        >
+
+                        <select class="filterSelect" id="customerRankFilter">
+                            <option value="all">Tất cả hạng</option>
+                            <option value="new">Khách mới</option>
+                            <option value="silver">Bạc</option>
+                            <option value="gold">Vàng</option>
+                            <option value="diamond">Kim cương</option>
+                        </select>
+
+                        <select class="filterSelect" id="customerStatusFilter">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="active">Hoạt động</option>
+                            <option value="locked">Đã khóa</option>
+                        </select>
+                    </div>
+
+                    <div class="tableWrapper">
+                        <table class="adminTable customerTable">
+                            <thead>
+                                <tr>
+                                    <th>Khách hàng</th>
+                                    <th>Liên hệ</th>
+                                    <th>Ngày đăng ký</th>
+                                    <th>Số đơn</th>
+                                    <th>Tổng chi tiêu</th>
+                                    <th>Hạng</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="customerTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <p class="emptyText" id="emptyCustomerText">
+                        Không tìm thấy khách hàng phù hợp.
+                    </p>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <template id="customerRowTemplate">
+        <tr class="clickableCustomerRow">
+            <td>
+                <div class="customerInfoCell">
+                    <div class="customerAvatarText"></div>
+
+                    <div>
+                        <strong class="customerNameText"></strong>
+                        <span class="customerCodeText"></span>
+                    </div>
+                </div>
+            </td>
+
+            <td>
+                <div class="customerContactCell">
+                    <span class="customerEmailText"></span>
+                    <span class="customerPhoneText"></span>
+                </div>
+            </td>
+
+            <td class="customerRegisterDateText"></td>
+            <td class="customerOrderCountText"></td>
+            <td class="customerTotalSpentText"></td>
+
+            <td>
+                <span class="rankBadge customerRankText"></span>
+            </td>
+
+            <td>
+                <span class="statusBadge customerStatusText"></span>
+            </td>
+
+            <td>
+                <div class="actionGroup">
+                    <button type="button" class="tableActionBtn deleteBtn" data-action="delete">
+                        Xóa
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </template>
+
+    <script src="../js/admin-customers.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Update Order Status API</title>
+</head>
+<body>
+    <h2>Test Admin Update Order Status API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy order id hoặc order code từ <b>test-admin-orders.html</b>.
+    </p>
+
+    <div>
+        <label>Order ID:</label>
+        <br>
+        <input id="orderIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Order code:</label>
+        <br>
+        <input id="orderCodeInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái mới:</label>
+        <br>
+        <select id="orderStatusInput">
+            <option value="confirmed">confirmed - Đã xác nhận</option>
+            <option value="shipping">shipping - Đang giao hàng</option>
+            <option value="completed">completed - Hoàn thành</option>
+            <option value="cancelled">cancelled - Đã hủy</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ghi chú:</label>
+        <br>
+        <textarea id="noteInput" rows="3" cols="60">Admin cập nhật trạng thái đơn hàng.</textarea>
+    </div>
+
+    <br>
+
+    <button id="updateOrderStatusBtn">Cập nhật trạng thái đơn hàng</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updateOrderStatusBtn").addEventListener("click", function () {
+            const orderId = document.getElementById("orderIdInput").value.trim();
+            const orderCode = document.getElementById("orderCodeInput").value.trim();
+            const orderStatus = document.getElementById("orderStatusInput").value;
+            const note = document.getElementById("noteInput").value.trim();
+
+            fetch("./api/admin/orders/update-order-status.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    order_id: orderId !== "" ? Number(orderId) : 0,
+                    order_code: orderCode,
+                    order_status: orderStatus,
+                    note: note
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

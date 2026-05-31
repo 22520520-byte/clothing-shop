@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết đơn hàng</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink active">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+               
+
+                <a href="../html/admin-staff.html" class="adminMenuLink" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1>Chi tiết đơn hàng</h1>
+                    <p>Xem thông tin đơn hàng và cập nhật trạng thái xử lý</p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+
+                    <a href="../html/admin-orders.html" class="secondaryBtn">
+                        Quay lại
+                    </a>
+
+                    <button type="button" class="primaryBtn" id="saveOrderStatusHeaderBtn">
+                        Lưu trạng thái
+                    </button>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="contentCard orderDetailMainCard" id="orderDetailMainCard">
+                    <div class="cardHeader">
+                        <div>
+                            <h2>
+                                Đơn hàng
+                                <span id="detailOrderCode">DH000</span>
+                            </h2>
+
+                            <p>
+                                Ngày đặt:
+                                <strong id="detailOrderDate">--/--/----</strong>
+                            </p>
+                        </div>
+
+                        <span class="statusBadge" id="detailOrderStatusBadge">
+                            Chờ xác nhận
+                        </span>
+                    </div>
+
+                    <div class="orderDetailPageGrid">
+                        <div class="detailBox">
+                            <h3>Thông tin khách hàng</h3>
+
+                            <p>
+                                <strong>Họ tên:</strong>
+                                <span id="detailCustomerName">Đang cập nhật</span>
+                            </p>
+
+                            <p>
+                                <strong>Số điện thoại:</strong>
+                                <span id="detailCustomerPhone">Đang cập nhật</span>
+                            </p>
+
+                            <p>
+                                <strong>Địa chỉ:</strong>
+                                <span id="detailCustomerAddress">Đang cập nhật</span>
+                            </p>
+
+                            <p>
+                                <strong>Ghi chú:</strong>
+                                <span id="detailOrderNote">Không có ghi chú</span>
+                            </p>
+                        </div>
+
+                        <div class="detailBox">
+                            <h3>Cập nhật trạng thái</h3>
+
+                            <form class="adminForm" id="orderStatusForm">
+                                <div class="formGroup">
+                                    <label for="detailOrderStatusSelect">Trạng thái đơn hàng</label>
+
+                                    <select class="formSelect" id="detailOrderStatusSelect">
+                                        <option value="pending">Chờ xác nhận</option>
+                                        <option value="shipping">Đang giao</option>
+                                        <option value="completed">Hoàn thành</option>
+                                        <option value="cancelled">Đã hủy</option>
+                                    </select>
+                                </div>
+
+                                <p class="formMessage" id="orderStatusMessage"></p>
+
+                                <div class="formActions">
+                                    <button type="submit" class="primaryBtn" id="saveOrderStatusBtn">
+                                        Lưu trạng thái
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="contentCard orderDetailItemsCard" id="orderDetailItemsCard">
+                    <div class="cardHeader">
+                        <div>
+                            <h2>Sản phẩm trong đơn</h2>
+                            <p>Danh sách sản phẩm khách hàng đã đặt</p>
+                        </div>
+                    </div>
+
+                    <div class="tableWrapper">
+                        <table class="adminTable orderItemTable">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th>Phân loại</th>
+                                    <th>Số lượng</th>
+                                    <th>Đơn giá</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="orderItemTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="contentCard orderDetailSummaryCard" id="orderDetailSummaryCard">
+                    <div class="cardHeader">
+                        <div>
+                            <h2>Tổng thanh toán</h2>
+                            <p>Chi tiết tiền hàng, phí vận chuyển và ưu đãi</p>
+                        </div>
+                    </div>
+
+                    <div class="orderSummaryBox orderDetailSummaryBox">
+                        <div>
+                            <span>Tổng tiền hàng</span>
+                            <strong id="detailSubtotal">0đ</strong>
+                        </div>
+
+                        <div>
+                            <span>Phí vận chuyển</span>
+                            <strong id="detailShippingFee">0đ</strong>
+                        </div>
+
+                        <div class="discountDetailTrigger" id="discountDetailTrigger">
+                            <div>
+                                <span>Giảm giá</span>
+                                <small>Xem chi tiết voucher và đổi điểm</small>
+                            </div>
+
+                            <strong id="detailDiscount">0đ</strong>
+                        </div>
+
+                        <div class="summaryTotalRow">
+                            <span>Tổng thanh toán</span>
+                            <strong id="detailTotal">0đ</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="contentCard" id="orderNotFoundBox" style="display: none;">
+                    <div class="emptyStateBox">
+                        <h2>Không tìm thấy đơn hàng</h2>
+                        <p>Đơn hàng có thể đã bị xóa hoặc mã đơn hàng không hợp lệ.</p>
+
+                        <a href="../html/admin-orders.html" class="primaryBtn">
+                            Quay lại danh sách đơn hàng
+                        </a>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <div class="adminModalOverlay" id="discountDetailModalOverlay">
+        <div class="adminModal discountDetailModal">
+            <div class="adminModalHeader">
+                <div>
+                    <h2>Chi tiết giảm giá</h2>
+                    <p>Thông tin voucher và điểm tích lũy đã được áp dụng cho đơn hàng</p>
+                </div>
+
+                <button type="button" class="modalCloseBtn" id="closeDiscountDetailModalBtn">
+                    ×
+                </button>
+            </div>
+
+            <div class="discountDetailContent">
+                <div class="detailBox discountDetailBox">
+                    <h3>Voucher áp dụng</h3>
+
+                    <div class="discountInfoList">
+                        <div>
+                            <span>Mã voucher</span>
+                            <strong id="discountVoucherCode">Không áp dụng</strong>
+                        </div>
+
+                        <div>
+                            <span>Tên voucher</span>
+                            <strong id="discountVoucherName">Không áp dụng</strong>
+                        </div>
+
+                        <div>
+                            <span>Loại ưu đãi</span>
+                            <strong id="discountVoucherType">Không áp dụng</strong>
+                        </div>
+
+                        <div>
+                            <span>Giá trị voucher</span>
+                            <strong id="discountVoucherValue">0đ</strong>
+                        </div>
+
+                        <div>
+                            <span>Số tiền giảm từ voucher</span>
+                            <strong id="discountVoucherAmount">0đ</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detailBox discountDetailBox">
+                    <h3>Đổi điểm tích lũy</h3>
+
+                    <div class="discountInfoList">
+                        <div>
+                            <span>Số điểm đã dùng</span>
+                            <strong id="discountUsedPoints">0 điểm</strong>
+                        </div>
+
+                        <div>
+                            <span>Tỷ lệ quy đổi</span>
+                            <strong id="discountPointRate">0đ / điểm</strong>
+                        </div>
+
+                        <div>
+                            <span>Số tiền giảm từ điểm</span>
+                            <strong id="discountPointAmount">0đ</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="discountTotalBox">
+                    <span>Tổng giảm giá</span>
+                    <strong id="discountTotalAmount">0đ</strong>
+                </div>
+            </div>
+
+            <div class="formActions">
+                <button type="button" class="primaryBtn" id="closeDiscountDetailBtn">
+                    Đã hiểu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <template id="orderItemRowTemplate">
+        <tr>
+            <td class="itemNameText"></td>
+            <td class="itemVariantText"></td>
+            <td class="itemQuantityText"></td>
+            <td class="itemPriceText"></td>
+            <td class="itemTotalText"></td>
+        </tr>
+    </template>
+
+    <script src="../js/admin-order-detail.js"></script>
+</body>
+</html>

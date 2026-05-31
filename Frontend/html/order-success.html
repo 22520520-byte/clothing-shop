@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt hàng thành công</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/order-success.css">
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-left">
+                <i class="fa-solid fa-phone"></i>
+                <span>0911.010.757</span>
+            </div>
+
+            <div class="topbar-right">
+                <a href="../html/login.html" id="topbarAccountLink" data-role="topbar-account-link">
+                    <span id="topbarAccountText">Tài khoản</span>
+                </a>
+
+                <a href="../html/cart.html">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                    <span>Giỏ hàng</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../html/home.html">
+                <img src="../img/logo.png" alt="DUHU Shop">
+            </a>
+        </div>
+
+        <nav class="nav-left">
+            <ul class="menu">
+                <li class="drop-down">
+                    <a href="../html/ao-tay-ngan.html">Áo ngắn tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-thun.html">Áo thun</a></li>
+                            <li><a href="../html/ao-polo.html">Áo polo</a></li>
+                            <li><a href="../html/ao-so-mi.html">Áo sơ mi</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/ao-tay-dai.html">Áo dài tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-sweater.html">Áo Sweater</a></li>
+                            <li><a href="../html/ao-hoodie.html">Áo Hoodie</a></li>
+                            <li><a href="../html/ao-khoac.html">Áo Khoác</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/quan.html">Quần</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/quan-dai.html">Quần dài</a></li>
+                            <li><a href="../html/quan-ngan.html">Quần ngắn</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/vay.html">Váy</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/vay-ngan.html">Váy ngắn</a></li>
+                            <li><a href="../html/vay-dai.html">Váy dài</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/phu-kien.html">Phụ kiện</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/mu.html">Mũ</a></li>
+                            <li><a href="../html/quan-lot.html">Quần lót</a></li>
+                            <li><a href="../html/tat.html">Tất</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/flash-sale.html">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Flash Sale</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <form class="text-box" id="searchForm" action="#">
+            <input
+                type="text"
+                id="searchKeyword"
+                name="keyword"
+                placeholder="Tìm kiếm ..."
+            >
+
+            <button type="submit" id="searchButton" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- Order success page -->
+    <main class="successPage" data-page="order-success">
+        <div class="successContainer">
+            <div class="breadcrumb">
+                <a href="../html/home.html">Trang chủ</a>
+                <span>/</span>
+                <a href="../html/checkout.html">Thanh toán</a>
+                <span>/</span>
+                <span>Đặt hàng thành công</span>
+            </div>
+
+            <div class="successCard">
+                <!-- Page states -->
+                <div class="successState homeState loadingState" id="orderSuccessLoadingState">
+                    Đang tải thông tin đơn hàng...
+                </div>
+
+                <div class="successState homeState errorState" id="orderSuccessErrorState" hidden>
+                    Có lỗi khi tải thông tin đơn hàng.
+                </div>
+
+                <div class="successState homeState emptyState" id="orderSuccessEmptyState" hidden>
+                    Không có thông tin đơn hàng vừa đặt.
+                </div>
+
+                <!-- Success content -->
+                <div id="orderSuccessContent" hidden>
+                    <div class="successIcon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+
+                    <h1 id="successTitle">Đặt hàng thành công!</h1>
+
+                    <p class="successDesc" id="successDescription">
+                        Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đã được ghi nhận và sẽ được xử lý trong thời gian sớm nhất.
+                    </p>
+
+                    <!-- Order overview -->
+                    <div class="orderInfoGrid">
+                        <div class="infoBox">
+                            <span>Mã đơn hàng</span>
+                            <strong id="successOrderCode">---</strong>
+                        </div>
+
+                        <div class="infoBox">
+                            <span>Thời gian đặt</span>
+                            <strong id="successOrderCreatedAt">--/--/----</strong>
+                        </div>
+
+                        <div class="infoBox">
+                            <span>Trạng thái</span>
+                            <strong id="successOrderStatus">Chờ xác nhận</strong>
+                        </div>
+
+                        <div class="infoBox">
+                            <span>Phương thức thanh toán</span>
+                            <strong id="successPaymentMethod">---</strong>
+                        </div>
+
+                        <div class="infoBox">
+                            <span>Tổng thanh toán</span>
+                            <strong class="totalPrice" id="successGrandTotal">0đ</strong>
+                        </div>
+                    </div>
+
+                    <!-- Receiver info -->
+                    <div class="receiverBox">
+                        <h2>Thông tin nhận hàng</h2>
+
+                        <p>
+                            <strong>Người nhận:</strong>
+                            <span id="successReceiverName">---</span>
+                        </p>
+
+                        <p>
+                            <strong>Số điện thoại:</strong>
+                            <span id="successReceiverPhone">---</span>
+                        </p>
+
+                        <p>
+                            <strong>Email:</strong>
+                            <span id="successReceiverEmail">---</span>
+                        </p>
+
+                        <p>
+                            <strong>Địa chỉ:</strong>
+                            <span id="successReceiverAddress">---</span>
+                        </p>
+
+                        <p>
+                            <strong>Ghi chú:</strong>
+                            <span id="successOrderNote">Không có</span>
+                        </p>
+                    </div>
+
+                    <!-- Ordered products -->
+                    <div class="orderedProducts">
+                        <h2>Sản phẩm đã đặt</h2>
+
+                        <div class="successState homeState emptyState" id="orderedProductEmptyState" hidden>
+                            Chưa có sản phẩm trong đơn hàng.
+                        </div>
+
+                        <div id="orderedProductList" data-role="ordered-product-list" hidden>
+                            <!-- JS render sản phẩm đã đặt tại đây -->
+                        </div>
+                    </div>
+
+                    <!-- Order summary -->
+                    <div class="orderSummaryBox">
+                        <h2>Chi tiết thanh toán</h2>
+
+                        <div class="summaryRow">
+                            <span>Tạm tính</span>
+                            <strong id="successSubtotalAmount">0đ</strong>
+                        </div>
+
+                        <div class="summaryRow">
+                            <span>Phí vận chuyển</span>
+                            <strong id="successShippingFee">0đ</strong>
+                        </div>
+
+                        <div class="summaryRow discount" id="successPointDiscountRow" hidden>
+                            <span>Điểm đã đổi</span>
+                            <strong id="successPointDiscountAmount">-0đ</strong>
+                        </div>
+
+                        <div class="summaryRow discount" id="successVoucherDiscountRow" hidden>
+                            <span>Voucher giảm giá</span>
+                            <strong id="successVoucherDiscountAmount">-0đ</strong>
+                        </div>
+
+                        <div class="summaryRow discount" id="successDiscountTotalRow">
+                            <span>Tổng giảm giá</span>
+                            <strong id="successDiscountAmount">0đ</strong>
+                        </div>
+
+                        <div class="summaryTotal">
+                            <span>Tổng cộng</span>
+                            <strong id="successTotalAmount">0đ</strong>
+                        </div>
+                    </div>
+
+                    <!-- Benefits detail -->
+                    <div class="usedBenefitsBox" id="usedBenefitsBox" hidden>
+                        <h2>Ưu đãi đã sử dụng</h2>
+
+                        <div class="usedBenefitItem" id="usedPointBenefit" hidden>
+                            <div>
+                                <strong>Đổi điểm</strong>
+                                <p id="usedPointBenefitText">Không sử dụng điểm</p>
+                            </div>
+                        </div>
+
+                        <div class="usedBenefitItem" id="usedVoucherBenefit" hidden>
+                            <div>
+                                <strong>Mã giảm giá</strong>
+                                <p id="usedVoucherBenefitText">Không sử dụng voucher</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guest notice -->
+                    <div class="guestOrderNotice" id="guestOrderNotice">
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <p>
+                            Bạn đang đặt hàng với tư cách khách vãng lai. Vui lòng lưu lại mã đơn hàng để tiện theo dõi hoặc liên hệ cửa hàng khi cần hỗ trợ.
+                        </p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="successActions">
+                        <a href="../html/home.html" class="btnPrimary" id="continueShoppingButton">
+                            Tiếp tục mua sắm
+                        </a>
+
+                        <a href="../html/cart.html" class="btnSecondary" id="backToCartButton">
+                            Quay lại giỏ hàng
+                        </a>
+
+                        <a href="../html/my-order.html" class="btnSecondary" id="viewMyOrdersButton" hidden>
+                            Xem đơn hàng của tôi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Template sản phẩm đã đặt -->
+    <template id="orderedProductItemTemplate">
+        <div class="orderedItem" data-product-id="">
+            <div class="orderedThumb">
+                <a href="#" data-role="product-link">
+                    <img src="" alt="" data-role="product-image">
+                </a>
+            </div>
+
+            <div class="orderedText">
+                <h3>
+                    <a href="#" data-role="product-link">
+                        <span data-role="product-name">Tên sản phẩm</span>
+                    </a>
+                </h3>
+
+                <p data-role="product-variant">Màu: --- / Size: ---</p>
+
+                <span data-role="product-price-quantity">0đ x 0</span>
+
+                <strong data-role="product-line-total">0đ</strong>
+            </div>
+        </div>
+    </template>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="containerFooter">
+            <div class="contact">
+                <h4>Gọi mua hàng (8:30-21:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0911.010.757</span>
+                    </p>
+
+                    <p>Tất cả các ngày trong tuần</p>
+                </div>
+            </div>
+
+            <div class="contact">
+                <h4>Góp ý, khiếu nại (8:30-20:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0917.257.595</span>
+                    </p>
+
+                    <p>Các ngày trong tuần (trừ ngày lễ)</p>
+                </div>
+            </div>
+
+            <div class="socialMedia">
+                <h4>Nền tảng mạng xã hội</h4>
+
+                <div class="iconSocialMedia">
+                    <a href="#" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+
+                    <a href="#" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="map">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.9317374327557!2d106.79120977589625!3d10.892792489263131!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d9b2d9812e63%3A0xd4c6b932cc0bca0e!2sBcons%20City%20Mall!5e0!3m2!1sen!2s"
+                    width="600"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/auth-ui.js"></script>
+    <script src="../js/order-success.js"></script>
+</body>
+</html>

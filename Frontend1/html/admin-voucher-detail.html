@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết voucher</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink active">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+                <a href="../html/admin-staff.html" class="adminMenuLink" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1 id="voucherDetailTitle">Chi tiết voucher</h1>
+                    <p id="voucherDetailSubtitle">
+                        Thêm mới hoặc chỉnh sửa thông tin voucher của cửa hàng
+                    </p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+
+                    <a href="../html/admin-vouchers.html" class="secondaryBtn">
+                        Quay lại
+                    </a>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="voucherDetailLayout" id="voucherDetailLayout">
+                    <section class="contentCard">
+                        <div class="cardHeader">
+                            <div>
+                                <h2 id="voucherFormTitle">Thông tin voucher</h2>
+                                <p>Nhập thông tin mã giảm giá, freeship hoặc ưu đãi đổi điểm</p>
+                            </div>
+                        </div>
+
+                        <form class="adminForm" id="voucherDetailForm">
+                            <input type="hidden" id="voucherId">
+
+                            <div class="formGrid">
+                                <div class="formGroup">
+                                    <label for="voucherCode">Mã voucher</label>
+                                    <input 
+                                        type="text" 
+                                        class="formInput" 
+                                        id="voucherCode" 
+                                        placeholder="Ví dụ: SALE50"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="voucherName">Tên chương trình</label>
+                                    <input 
+                                        type="text" 
+                                        class="formInput" 
+                                        id="voucherName" 
+                                        placeholder="Ví dụ: Giảm giá tháng 5"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="voucherType">Loại voucher</label>
+                                    <select class="formSelect" id="voucherType">
+                                        <option value="">Chọn loại voucher</option>
+                                        <option value="percent">Giảm theo phần trăm</option>
+                                        <option value="fixed">Giảm tiền trực tiếp</option>
+                                        <option value="free-ship">Miễn phí vận chuyển</option>
+                                        <option value="point">Đổi điểm</option>
+                                    </select>
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="voucherValue">Giá trị giảm</label>
+                                    <input 
+                                        type="number" 
+                                        class="formInput" 
+                                        id="voucherValue" 
+                                        placeholder="Ví dụ: 10 hoặc 50000"
+                                    >
+                                </div>
+
+                                <div class="formGroup" id="voucherPointGroup">
+                                    <label for="voucherPointCost">Điểm cần đổi</label>
+                                    <input 
+                                        type="number" 
+                                        class="formInput" 
+                                        id="voucherPointCost" 
+                                        placeholder="Ví dụ: 500"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="voucherMinOrder">Đơn tối thiểu</label>
+                                    <input 
+                                        type="number" 
+                                        class="formInput" 
+                                        id="voucherMinOrder" 
+                                        placeholder="Ví dụ: 300000"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="voucherQuantity">Số lượng</label>
+                                    <input 
+                                        type="number" 
+                                        class="formInput" 
+                                        id="voucherQuantity" 
+                                        placeholder="Ví dụ: 100"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="voucherStartDate">Ngày bắt đầu</label>
+                                    <input 
+                                        type="date" 
+                                        class="formInput" 
+                                        id="voucherStartDate"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="voucherEndDate">Ngày kết thúc</label>
+                                    <input 
+                                        type="date" 
+                                        class="formInput" 
+                                        id="voucherEndDate"
+                                    >
+                                </div>
+
+                                <div class="formGroup">
+                                    <label for="voucherStatus">Trạng thái</label>
+                                    <select class="formSelect" id="voucherStatus">
+                                        <option value="enabled">Đang bật</option>
+                                        <option value="disabled">Đã tắt</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="formGroup">
+                                <label for="voucherDescription">Mô tả</label>
+                                <textarea 
+                                    class="formTextarea" 
+                                    id="voucherDescription" 
+                                    placeholder="Nhập mô tả ngắn cho voucher..."
+                                ></textarea>
+                            </div>
+
+                            <p class="formHint">
+                                Với loại “Đổi điểm”, khách hàng cần đủ số điểm đã cấu hình để đổi voucher này.
+                            </p>
+
+                            <p class="formMessage" id="voucherFormMessage"></p>
+
+                            <div class="formActions">
+                                <a href="../html/admin-vouchers.html" class="secondaryBtn">
+                                    Hủy
+                                </a>
+
+                                <button type="submit" class="primaryBtn">
+                                    Lưu voucher
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <aside class="contentCard voucherGuideCard">
+                        <div class="cardHeader">
+                            <div>
+                                <h2>Gợi ý cấu hình</h2>
+                                <p>Cách nhập thông tin cho từng loại voucher</p>
+                            </div>
+                        </div>
+
+                        <div class="voucherGuideList">
+                            <div class="voucherGuideItem">
+                                <strong>Giảm theo phần trăm</strong>
+                                <span>Ví dụ: nhập giá trị 10 nghĩa là giảm 10%.</span>
+                            </div>
+
+                            <div class="voucherGuideItem">
+                                <strong>Giảm tiền trực tiếp</strong>
+                                <span>Ví dụ: nhập 50000 nghĩa là giảm 50.000đ.</span>
+                            </div>
+
+                            <div class="voucherGuideItem">
+                                <strong>Miễn phí vận chuyển</strong>
+                                <span>Giá trị giảm là mức freeship tối đa.</span>
+                            </div>
+
+                            <div class="voucherGuideItem">
+                                <strong>Đổi điểm</strong>
+                                <span>Nhập thêm số điểm khách cần dùng để đổi voucher.</span>
+                            </div>
+                        </div>
+                    </aside>
+                </section>
+
+                <section class="contentCard" id="voucherNotFoundBox" style="display: none;">
+                    <div class="emptyStateBox">
+                        <h2>Không tìm thấy voucher</h2>
+                        <p>Voucher có thể đã bị xóa hoặc mã voucher không hợp lệ.</p>
+
+                        <a href="../html/admin-vouchers.html" class="primaryBtn">
+                            Quay lại danh sách voucher
+                        </a>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/admin-voucher-detail.js"></script>
+</body>
+</html>

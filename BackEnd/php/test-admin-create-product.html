@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Create Product API</title>
+</head>
+<body>
+    <h2>Test Admin Create Product API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Nên kiểm tra category_id, color_id, size_id trong phpMyAdmin trước khi test.
+    </p>
+
+    <div>
+        <label>Category ID:</label>
+        <br>
+        <input id="categoryIdInput" type="number" value="5" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Tên sản phẩm:</label>
+        <br>
+        <input id="nameInput" type="text" size="60" value="Áo thun test admin">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Slug:</label>
+        <br>
+        <input id="slugInput" type="text" size="60" value="ao-thun-test-admin">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Mô tả ngắn:</label>
+        <br>
+        <input id="descriptionInput" type="text" size="80" value="Sản phẩm test thêm mới từ admin API.">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Giá bán:</label>
+        <br>
+        <input id="basePriceInput" type="number" value="199000">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Giá cũ:</label>
+        <br>
+        <input id="oldPriceInput" type="number" value="249000">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Giới tính:</label>
+        <br>
+        <select id="genderInput">
+            <option value="male">Nam</option>
+            <option value="female">Nữ</option>
+            <option value="unisex" selected>Unisex</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Chất liệu:</label>
+        <br>
+        <input id="materialInput" type="text" value="Cotton">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Thương hiệu:</label>
+        <br>
+        <input id="brandInput" type="text" value="Local Brand">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Image URL:</label>
+        <br>
+        <input id="imageUrlInput" type="text" size="80" value="../images/products/ao-thun-basic-nam-1.jpg">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Color ID:</label>
+        <br>
+        <input id="colorIdInput" type="number" value="1" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Size ID:</label>
+        <br>
+        <input id="sizeIdInput" type="number" value="1" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>SKU:</label>
+        <br>
+        <input id="skuInput" type="text" value="TEST-ADMIN-001">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số lượng tồn:</label>
+        <br>
+        <input id="stockInput" type="number" value="20" min="0">
+    </div>
+
+    <br>
+
+    <button id="createProductBtn">Thêm sản phẩm</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("createProductBtn").addEventListener("click", function () {
+            const categoryId = Number(document.getElementById("categoryIdInput").value);
+            const name = document.getElementById("nameInput").value.trim();
+            const slug = document.getElementById("slugInput").value.trim();
+            const shortDescription = document.getElementById("descriptionInput").value.trim();
+
+            const basePrice = Number(document.getElementById("basePriceInput").value);
+            const oldPrice = Number(document.getElementById("oldPriceInput").value);
+
+            const gender = document.getElementById("genderInput").value;
+            const material = document.getElementById("materialInput").value.trim();
+            const brand = document.getElementById("brandInput").value.trim();
+
+            const imageUrl = document.getElementById("imageUrlInput").value.trim();
+
+            const colorId = Number(document.getElementById("colorIdInput").value);
+            const sizeId = Number(document.getElementById("sizeIdInput").value);
+            const sku = document.getElementById("skuInput").value.trim();
+            const stock = Number(document.getElementById("stockInput").value);
+
+            fetch("./api/admin/products/create-product.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    category_id: categoryId,
+                    name: name,
+                    slug: slug,
+                    short_description: shortDescription,
+                    base_price: basePrice,
+                    old_price: oldPrice,
+                    gender: gender,
+                    material: material,
+                    brand: brand,
+                    is_featured: 0,
+                    is_new: 1,
+                    is_sale: 1,
+                    status: "active",
+                    images: [
+                        {
+                            image_url: imageUrl,
+                            is_main: 1
+                        }
+                    ],
+                    variants: [
+                        {
+                            color_id: colorId,
+                            size_id: sizeId,
+                            sku: sku,
+                            stock_quantity: stock,
+                            status: "active"
+                        }
+                    ]
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

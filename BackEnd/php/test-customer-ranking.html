@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Customer Ranking API</title>
+</head>
+<body>
+    <h2>Test Customer Ranking API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+    </p>
+
+    <div>
+        <label>Sắp xếp:</label>
+        <br>
+        <select id="sortInput">
+            <option value="spent_desc">Chi tiêu cao nhất</option>
+            <option value="orders_desc">Nhiều đơn nhất</option>
+            <option value="name_asc">Tên A-Z</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="getCustomerRankingBtn">Lấy xếp hạng khách hàng</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getCustomerRankingBtn").addEventListener("click", function () {
+            const sort = document.getElementById("sortInput").value;
+
+            let url = "./api/reports/get-customer-ranking.php";
+            url += "?page=1&limit=10";
+            url += "&sort=" + encodeURIComponent(sort);
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

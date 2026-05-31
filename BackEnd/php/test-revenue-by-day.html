@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Revenue By Day API</title>
+</head>
+<body>
+    <h2>Test Revenue By Day API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+    </p>
+
+    <div>
+        <label>Từ ngày:</label>
+        <br>
+        <input id="fromDateInput" type="date">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Đến ngày:</label>
+        <br>
+        <input id="toDateInput" type="date">
+    </div>
+
+    <br>
+
+    <button id="getRevenueBtn">Lấy báo cáo doanh thu</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        // 1. Set ngày mặc định
+        const today = new Date();
+        const sevenDaysAgo = new Date();
+
+        sevenDaysAgo.setDate(today.getDate() - 6);
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+
+            return year + "-" + month + "-" + day;
+        }
+
+        document.getElementById("fromDateInput").value = formatDate(sevenDaysAgo);
+        document.getElementById("toDateInput").value = formatDate(today);
+
+
+        // 2. Gọi API
+        document.getElementById("getRevenueBtn").addEventListener("click", function () {
+            const fromDate = document.getElementById("fromDateInput").value;
+            const toDate = document.getElementById("toDateInput").value;
+
+            let url = "./api/reports/get-revenue-by-day.php";
+            url += "?from_date=" + encodeURIComponent(fromDate);
+            url += "&to_date=" + encodeURIComponent(toDate);
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

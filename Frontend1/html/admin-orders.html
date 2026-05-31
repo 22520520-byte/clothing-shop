@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đơn hàng</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink active">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+             
+
+                <a href="../html/admin-staff.html" class="adminMenuLink" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1>Quản lý đơn hàng</h1>
+                    <p>Theo dõi, xem chi tiết và cập nhật trạng thái đơn hàng</p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="statGrid">
+                    <article class="statCard">
+                        <div class="statIcon">□</div>
+
+                        <div>
+                            <p>Tổng đơn hàng</p>
+                            <h2 id="totalOrderCount">0</h2>
+                            <span>Tất cả đơn trong hệ thống</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">!</div>
+
+                        <div>
+                            <p>Chờ xác nhận</p>
+                            <h2 id="pendingOrderCount">0</h2>
+                            <span>Đơn cần xử lý</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">→</div>
+
+                        <div>
+                            <p>Đang giao</p>
+                            <h2 id="shippingOrderCount">0</h2>
+                            <span>Đơn đang vận chuyển</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">✓</div>
+
+                        <div>
+                            <p>Hoàn thành</p>
+                            <h2 id="completedOrderCount">0</h2>
+                            <span>Đơn đã giao thành công</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="contentCard">
+                    <div class="cardHeader">
+                        <div>
+                            <h2>Danh sách đơn hàng</h2>
+                            <p>Nhấn vào một đơn hàng để xem chi tiết và cập nhật trạng thái</p>
+                        </div>
+                    </div>
+
+                    <div class="filterBar">
+                        <input 
+                            type="text" 
+                            class="searchInput" 
+                            id="orderSearchInput" 
+                            placeholder="Tìm theo mã đơn, tên khách hàng hoặc số điện thoại..."
+                        >
+
+                        <select class="filterSelect" id="orderStatusFilter">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="pending">Chờ xác nhận</option>
+                            <option value="shipping">Đang giao</option>
+                            <option value="completed">Hoàn thành</option>
+                            <option value="cancelled">Đã hủy</option>
+                        </select>
+
+                        <select class="filterSelect" id="orderSortFilter">
+                            <option value="newest">Mới nhất</option>
+                            <option value="oldest">Cũ nhất</option>
+                            <option value="highest">Tổng tiền cao nhất</option>
+                            <option value="lowest">Tổng tiền thấp nhất</option>
+                        </select>
+                    </div>
+
+                    <div class="tableWrapper">
+                        <table class="adminTable orderTable">
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="orderTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <p class="emptyText" id="emptyOrderText">
+                        Không tìm thấy đơn hàng phù hợp.
+                    </p>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <template id="orderRowTemplate">
+        <tr class="clickableOrderRow">
+            <td class="orderCodeText"></td>
+
+            <td>
+                <div class="orderCustomerCell">
+                    <strong class="orderCustomerNameText"></strong>
+                    <span class="orderCustomerPhoneText"></span>
+                </div>
+            </td>
+
+            <td class="orderDateText"></td>
+            <td class="orderItemCountText"></td>
+            <td class="orderTotalText"></td>
+
+            <td>
+                <span class="statusBadge orderStatusText"></span>
+            </td>
+
+            <td>
+                <div class="actionGroup">
+                    <button type="button" class="tableActionBtn deleteBtn" data-action="delete">
+                        Xóa
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </template>
+
+    <script src="../js/admin-orders.js"></script>
+</body>
+</html>

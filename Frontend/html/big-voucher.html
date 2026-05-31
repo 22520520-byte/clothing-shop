@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Voucher</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/category.css">
+    <link rel="stylesheet" href="../css/big-voucher.css">
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-left">
+                <i class="fa-solid fa-phone"></i>
+                <span>0911.010.757</span>
+            </div>
+
+            <div class="topbar-right">
+                <a href="../html/login.html" id="topbarAccountLink" data-role="topbar-account-link">
+                    <span id="topbarAccountText">Tài khoản</span>
+                </a>
+
+                <a href="../html/cart.html">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                    <span>Giỏ hàng</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../html/home.html">
+                <img src="../img/logo.png" alt="DUHU Shop">
+            </a>
+        </div>
+
+        <nav class="nav-left">
+            <ul class="menu">
+                <li class="drop-down">
+                    <a href="../html/ao-tay-ngan.html">Áo ngắn tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-thun.html">Áo thun</a></li>
+                            <li><a href="../html/ao-polo.html">Áo polo</a></li>
+                            <li><a href="../html/ao-so-mi.html">Áo sơ mi</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/ao-tay-dai.html">Áo dài tay</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-sweater.html">Áo Sweater</a></li>
+                            <li><a href="../html/ao-hoodie.html">Áo Hoodie</a></li>
+                            <li><a href="../html/ao-khoac.html">Áo Khoác</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/quan.html">Quần</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/quan-dai.html">Quần dài</a></li>
+                            <li><a href="../html/quan-ngan.html">Quần ngắn</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/vay.html">Váy</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/vay-ngan.html">Váy ngắn</a></li>
+                            <li><a href="../html/vay-dai.html">Váy dài</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/phu-kien.html">Phụ kiện</a>
+
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/mu.html">Mũ</a></li>
+                            <li><a href="../html/quan-lot.html">Quần lót</a></li>
+                            <li><a href="../html/tat.html">Tất</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/flash-sale.html">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Flash Sale</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <form class="text-box" id="searchForm" action="#">
+            <input
+                type="text"
+                id="searchKeyword"
+                name="keyword"
+                placeholder="Tìm kiếm ..."
+            >
+
+            <button type="submit" id="searchButton" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- Big voucher page -->
+    <main class="bigVoucherPage" data-page="big-voucher">
+        <div class="bigVoucherContainer">
+            <div class="breadcrumb">
+                <a href="../html/home.html">Trang chủ</a>
+                <span>/</span>
+                <a href="../html/flash-sale.html">Flash Sale</a>
+                <span>/</span>
+                <span aria-current="page">Big Voucher</span>
+            </div>
+
+            <section class="bigVoucherHero" data-end-time="">
+                <div class="bigVoucherHeroContent">
+                    <span class="bigVoucherLabel">Ưu đãi hiếm có</span>
+
+                    <h1>BIG VOUCHER</h1>
+
+                    <p>
+                        Săn các voucher giá trị lớn, số lượng giới hạn và chỉ mở trong thời gian ngắn.
+                        Nhanh tay để không bỏ lỡ ưu đãi tốt nhất.
+                    </p>
+
+                    <div class="bigVoucherCountdown" id="bigVoucherCountdown">
+                        <div class="voucherTimeBox">
+                            <strong id="bigVoucherCountdownDays">00</strong>
+                            <span>Ngày</span>
+                        </div>
+
+                        <div class="voucherTimeBox">
+                            <strong id="bigVoucherCountdownHours">00</strong>
+                            <span>Giờ</span>
+                        </div>
+
+                        <div class="voucherTimeBox">
+                            <strong id="bigVoucherCountdownMinutes">00</strong>
+                            <span>Phút</span>
+                        </div>
+
+                        <div class="voucherTimeBox">
+                            <strong id="bigVoucherCountdownSeconds">00</strong>
+                            <span>Giây</span>
+                        </div>
+                    </div>
+
+                    <div class="bigVoucherHeroActions">
+                        <a href="#bigVoucherListSection" class="heroPrimaryBtn">
+                            Săn voucher ngay
+                        </a>
+
+                        <a href="../html/flash-sale.html" class="heroSecondaryBtn">
+                            Quay lại Flash Sale
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bigVoucherHeroBox">
+                    <span>Voucher nổi bật</span>
+                    <strong id="highlightVoucherText">Hiếm &amp; có hạn</strong>
+                    <small id="highlightVoucherSubtext">Giá trị lớn mỗi đợt mở</small>
+                </div>
+            </section>
+
+            <p class="memberNotice" id="memberNotice">
+                Đăng nhập để lưu và sử dụng Big Voucher khi thanh toán.
+            </p>
+
+            <section class="bigVoucherIntro">
+                <div class="introCard">
+                    <i class="fa-solid fa-ticket"></i>
+
+                    <div>
+                        <strong>Voucher hiếm</strong>
+                        <p>Các mã ưu đãi giá trị cao, không mở thường xuyên.</p>
+                    </div>
+                </div>
+
+                <div class="introCard">
+                    <i class="fa-solid fa-hourglass-half"></i>
+
+                    <div>
+                        <strong>Thời gian giới hạn</strong>
+                        <p>Mỗi đợt mở săn voucher chỉ diễn ra trong thời gian ngắn.</p>
+                    </div>
+                </div>
+
+                <div class="introCard">
+                    <i class="fa-solid fa-bolt"></i>
+
+                    <div>
+                        <strong>Số lượng có hạn</strong>
+                        <p>Voucher có thể hết sớm nếu nhiều người săn cùng lúc.</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="bigVoucherFilterBar" id="bigVoucherFilterBar">
+                <button type="button" class="voucherTab active" data-filter="all">
+                    Tất cả
+                </button>
+
+                <button type="button" class="voucherTab" data-filter="high-value">
+                    Giá trị cao
+                </button>
+
+                <button type="button" class="voucherTab" data-filter="freeship">
+                    Freeship
+                </button>
+
+                <button type="button" class="voucherTab" data-filter="percent">
+                    Giảm theo %
+                </button>
+
+                <button type="button" class="voucherTab" data-filter="limited">
+                    Sắp hết lượt
+                </button>
+            </div>
+
+            <div class="bigVoucherToolbar">
+                <div class="resultCount" id="bigVoucherResultCount" aria-live="polite">
+                    Hiển thị 0 voucher đặc biệt
+                </div>
+
+                <div class="toolbarRight">
+                    <div class="sortBox">
+                        <label for="bigVoucherSort">Sắp xếp:</label>
+
+                        <select id="bigVoucherSort" name="bigVoucherSort">
+                            <option value="default">Mặc định</option>
+                            <option value="value-desc">Giá trị cao nhất</option>
+                            <option value="ending-soon">Sắp hết hạn</option>
+                            <option value="limited-first">Sắp hết lượt</option>
+                            <option value="newest">Mới nhất</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bigVoucherState loadingState" id="bigVoucherLoadingState">
+                Đang tải danh sách Big Voucher...
+            </div>
+
+            <div class="bigVoucherState emptyState" id="bigVoucherEmptyState" hidden>
+                Hiện chưa có Big Voucher nào.
+            </div>
+
+            <div class="bigVoucherState errorState" id="bigVoucherErrorState" hidden>
+                Có lỗi khi tải danh sách Big Voucher.
+            </div>
+
+            <section class="bigVoucherListSection" id="bigVoucherListSection">
+                <div class="bigVoucherGrid" id="bigVoucherList">
+                    <!-- JS render voucher tại đây -->
+                </div>
+            </section>
+
+            <nav class="pagination" id="bigVoucherPagination" hidden>
+                <!-- JS render pagination tại đây -->
+            </nav>
+
+            <div id="voucherToastContainer" aria-live="polite"></div>
+        </div>
+    </main>
+
+    <!-- Template voucher -->
+    <template id="bigVoucherTemplate">
+        <article class="bigVoucherCard" data-voucher-id="">
+            <div class="bigVoucherCardTop">
+                <span class="bigVoucherBadge" data-role="voucher-badge">
+                    Hiếm
+                </span>
+
+                <span class="bigVoucherLimit" data-role="voucher-limit">
+                    Còn 0 lượt
+                </span>
+            </div>
+
+            <div class="bigVoucherCodeBox">
+                <span>Mã voucher</span>
+                <strong data-role="voucher-code">BIG50K</strong>
+            </div>
+
+            <div class="bigVoucherCardBody">
+                <h3 data-role="voucher-title">Tên voucher</h3>
+                <p data-role="voucher-description">Mô tả voucher</p>
+            </div>
+
+            <div class="bigVoucherCardMeta">
+                <div class="metaItem">
+                    <span>Giá trị</span>
+                    <strong data-role="voucher-value">0đ</strong>
+                </div>
+
+                <div class="metaItem">
+                    <span>Điều kiện</span>
+                    <strong data-role="voucher-condition">Đơn từ 0đ</strong>
+                </div>
+
+                <div class="metaItem">
+                    <span>Hạn dùng</span>
+                    <strong data-role="voucher-expiry">--/--/----</strong>
+                </div>
+            </div>
+
+            <div class="bigVoucherProgress">
+                <div class="progressText">
+                    <span data-role="voucher-claimed-text">Đã săn 0%</span>
+                    <span data-role="voucher-stock-text">Còn lại 0 lượt</span>
+                </div>
+
+                <div class="progressBar">
+                    <span data-role="voucher-progress" style="width: 0%;"></span>
+                </div>
+            </div>
+
+            <div class="bigVoucherCardBottom">
+                <button
+                    type="button"
+                    class="bigVoucherBtn"
+                    data-role="voucher-action"
+                    data-status="available">
+                    Săn ngay
+                </button>
+            </div>
+        </article>
+    </template>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="containerFooter">
+            <div class="contact">
+                <h4>Gọi mua hàng (8:30-21:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0911.010.757</span>
+                    </p>
+
+                    <p>Tất cả các ngày trong tuần</p>
+                </div>
+            </div>
+
+            <div class="contact">
+                <h4>Góp ý, khiếu nại (8:30-20:30)</h4>
+
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0917.257.595</span>
+                    </p>
+
+                    <p>Các ngày trong tuần (trừ ngày lễ)</p>
+                </div>
+            </div>
+
+            <div class="socialMedia">
+                <h4>Nền tảng mạng xã hội</h4>
+
+                <div class="iconSocialMedia">
+                    <a href="#" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+
+                    <a href="#" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="map">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.9317374327557!2d106.79120977589625!3d10.892792489263131!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d9b2d9812e63%3A0xd4c6b932cc0bca0e!2sBcons%20City%20Mall!5e0!3m2!1sen!2s"
+                    width="600"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/auth-ui.js"></script>
+    <script src="../js/big-voucher.js"></script>
+</body>
+</html>

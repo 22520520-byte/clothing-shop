@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Update Customer Status API</title>
+</head>
+<body>
+    <h2>Test Admin Update Customer Status API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin/staff</b> trước.
+        Có thể lấy customer id từ <b>test-admin-customers.html</b>.
+    </p>
+
+    <div>
+        <label>Customer ID:</label>
+        <br>
+        <input id="customerIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái mới:</label>
+        <br>
+        <select id="statusInput">
+            <option value="active">active - Đang hoạt động</option>
+            <option value="inactive">inactive - Tạm khóa</option>
+            <option value="blocked">blocked - Bị chặn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ghi chú:</label>
+        <br>
+        <textarea id="noteInput" rows="3" cols="60">Admin cập nhật trạng thái khách hàng.</textarea>
+    </div>
+
+    <br>
+
+    <button id="updateCustomerStatusBtn">Cập nhật trạng thái khách hàng</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updateCustomerStatusBtn").addEventListener("click", function () {
+            const customerId = Number(document.getElementById("customerIdInput").value);
+            const status = document.getElementById("statusInput").value;
+            const note = document.getElementById("noteInput").value.trim();
+
+            fetch("./api/admin/customers/update-customer-status.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    customer_id: customerId,
+                    status: status,
+                    note: note
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

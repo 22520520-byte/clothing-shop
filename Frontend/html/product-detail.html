@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sản phẩm</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/product-detail.css">
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-left">
+                <i class="fa-solid fa-phone"></i>
+                <span>0911.010.757</span>
+            </div>
+
+            <div class="topbar-right">
+                <a href="../html/login.html" id="topbarAccountLink" data-role="topbar-account-link">
+    <span id="topbarAccountText">Tài khoản</span>
+</a>
+                <a href="../html/cart.html">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                    <span>Giỏ hàng</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../html/home.html">
+                <img src="../img/logo.png" alt="DUHU Shop">
+            </a>
+        </div>
+
+        <nav class="nav-left">
+            <ul class="menu">
+                <li class="drop-down">
+                    <a href="../html/ao-tay-ngan.html">Áo ngắn tay</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-thun.html">Áo thun</a></li>
+                            <li><a href="../html/ao-polo.html">Áo polo</a></li>
+                            <li><a href="../html/ao-so-mi.html">Áo sơ mi</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/ao-tay-dai.html">Áo dài tay</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/ao-sweater.html">Áo sweater</a></li>
+                            <li><a href="../html/ao-hoodie.html">Áo hoodie</a></li>
+                            <li><a href="../html/ao-khoac.html">Áo khoác</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/quan.html">Quần</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/quan-dai.html">Quần dài</a></li>
+                            <li><a href="../html/quan-ngan.html">Quần ngắn</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/vay.html">Váy</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/vay-ngan.html">Váy ngắn</a></li>
+                            <li><a href="../html/vay-dai.html">Váy dài</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/phu-kien.html">Phụ kiện</a>
+                    <div class="menu-small">
+                        <ul>
+                            <li><a href="../html/mu.html">Mũ</a></li>
+                            <li><a href="../html/quan-lot.html">Quần lót</a></li>
+                            <li><a href="../html/tat.html">Tất</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="drop-down">
+                    <a href="../html/flash-sale.html">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Flash Sale</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <form class="text-box" id="searchForm" action="#">
+            <input type="text" id="searchKeyword" name="keyword" placeholder="Tìm kiếm ...">
+            <button type="submit" id="searchButton" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- Product detail page -->
+    <main class="productDetailPage" data-page="product-detail">
+        <div class="productDetailContainer" id="productDetailPage" data-product-id="">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="../html/home.html">Trang chủ</a>
+                <span>/</span>
+                <a href="../html/ao-tay-ngan.html" id="breadcrumbCategoryLink">Danh mục</a>
+                <span>/</span>
+                <span id="breadcrumbProductName">Tên sản phẩm</span>
+            </div>
+
+            <!-- Page states -->
+            <div class="productDetailState loadingState" id="productDetailLoadingState" hidden>
+                Đang tải thông tin sản phẩm...
+            </div>
+
+            <div class="productDetailState errorState" id="productDetailErrorState" hidden>
+                Không tìm thấy sản phẩm.
+            </div>
+
+            <div id="productDetailContent">
+                <section class="productDetailLayout">
+                    <!-- Gallery -->
+                    <div class="productGallery">
+                        <div class="galleryThumbs" id="galleryThumbs">
+                            <!-- JS render thumbnail tại đây -->
+                        </div>
+
+                        <div class="galleryMain" id="galleryMain">
+                            <img
+                                id="mainProductImage"
+                                src="../img/placeholder-product.jpg"
+                                alt="Sản phẩm"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="productInfoBox">
+                        <span class="productStatus" id="productStatus">Còn hàng</span>
+
+                        <h1 id="productName">Tên sản phẩm</h1>
+
+                        <div class="productRating">
+                            <div class="stars" id="productStars" aria-label="Đánh giá sản phẩm">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <span id="productRatingText">0.0 • 0 đánh giá</span>
+                        </div>
+
+                        <div class="productPriceBox">
+                            <span class="currentPrice" id="productCurrentPrice">0đ</span>
+                            <span class="oldPrice" id="productOldPrice"></span>
+                            <span class="salePercent" id="productSalePercent"></span>
+                        </div>
+
+                        <div class="productShortDesc" id="productShortDesc">
+                            Mô tả ngắn của sản phẩm sẽ được hiển thị tại đây.
+                        </div>
+
+                        <div class="productOption">
+                            <label>Màu sắc:</label>
+                            <div class="colorList" id="colorList">
+                                <!-- JS render màu sản phẩm tại đây -->
+                            </div>
+                        </div>
+
+                        <div class="productOption">
+                            <div class="optionTop">
+                                <label>Kích thước:</label>
+                                <a href="#" id="openSizeGuide">Bảng thông số - Hướng dẫn chọn size</a>
+                            </div>
+
+                            <div class="sizeList" id="sizeList">
+                                <!-- JS render size sản phẩm tại đây -->
+                            </div>
+                        </div>
+
+                        <div class="productOption">
+                            <label>Số lượng:</label>
+                            <div class="quantityBox">
+                                <button type="button" id="minusQty" aria-label="Giảm số lượng">-</button>
+                                <input type="number" id="quantityInput" value="1" min="1" readonly>
+                                <button type="button" id="plusQty" aria-label="Tăng số lượng">+</button>
+                            </div>
+                        </div>
+
+                        <div class="productButtons">
+                            <button class="addCartBtn" id="addToCartBtn" type="button">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                <span>Thêm vào giỏ hàng</span>
+                            </button>
+
+                            <button class="buyNowBtn" id="buyNowBtn" type="button">
+                                Mua ngay
+                            </button>
+                        </div>
+
+                        <div class="productExtraActions">
+                            <button type="button" id="wishlistBtn">
+                                <i class="fa-regular fa-heart"></i>
+                                <span>Yêu thích</span>
+                            </button>
+
+                            <button type="button" id="shareBtn">
+                                <i class="fa-solid fa-share-nodes"></i>
+                                <span>Chia sẻ</span>
+                            </button>
+                        </div>
+
+                        <div class="policyBox">
+                            <div class="policyItem">
+                                <i class="fa-solid fa-truck-fast"></i>
+                                <div>
+                                    <strong>Miễn phí giao hàng</strong>
+                                    <p>Cho đơn hàng từ 499.000đ</p>
+                                </div>
+                            </div>
+
+                            <div class="policyItem">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                <div>
+                                    <strong>Đổi trả dễ dàng</strong>
+                                    <p>Hỗ trợ trong 7 ngày</p>
+                                </div>
+                            </div>
+
+                            <div class="policyItem">
+                                <i class="fa-solid fa-headset"></i>
+                                <div>
+                                    <strong>Hỗ trợ nhanh</strong>
+                                    <p>Hotline: 0911.010.757</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tabs -->
+                <section class="detailTabsSection">
+                    <div class="detailTabs">
+                        <button class="tabBtn active" type="button" data-tab="desc">Mô tả sản phẩm</button>
+                        <button class="tabBtn" type="button" data-tab="material">Chất liệu</button>
+                        <button class="tabBtn" type="button" data-tab="review">Đánh giá</button>
+                    </div>
+
+                    <div class="tabPanels" id="tabPanels">
+                        <div class="tabContent active" id="desc" data-tab-panel="desc">
+                            <h3>Mô tả sản phẩm</h3>
+                            <div id="productDescription">
+                                <p>Nội dung mô tả sản phẩm sẽ được cập nhật tại đây.</p>
+                            </div>
+                        </div>
+
+                        <div class="tabContent" id="material" data-tab-panel="material">
+                            <h3>Chất liệu</h3>
+                            <div id="productMaterial">
+                                <p>Nội dung chất liệu sẽ được cập nhật tại đây.</p>
+                            </div>
+                        </div>
+
+                        <div class="tabContent" id="review" data-tab-panel="review">
+                            <h3>Đánh giá khách hàng</h3>
+                            <div id="productReviewSummary">
+                                <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+                            </div>
+
+                            <div id="reviewList">
+                                <!-- JS render đánh giá tại đây -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Related products -->
+                <section class="relatedSection">
+                    <div class="sectionTitle">
+                        <h2>Sản phẩm liên quan</h2>
+                    </div>
+
+                    <div class="relatedState loadingState" id="relatedLoadingState" hidden>
+                        Đang tải sản phẩm liên quan...
+                    </div>
+
+                    <div class="relatedState emptyState" id="relatedEmptyState" hidden>
+                        Hiện chưa có sản phẩm liên quan.
+                    </div>
+
+                    <div class="relatedState errorState" id="relatedErrorState" hidden>
+                        Có lỗi khi tải sản phẩm liên quan.
+                    </div>
+
+                    <div class="relatedGrid" id="relatedProductsList" hidden>
+                        <!-- JS render sản phẩm liên quan tại đây -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Template thumbnail ảnh -->
+    <template id="galleryThumbTemplate">
+        <button class="thumb" type="button" data-image="">
+            <img src="" alt="">
+        </button>
+    </template>
+
+    <!-- Template màu sản phẩm -->
+    <template id="colorItemTemplate">
+        <button
+            class="colorItem"
+            type="button"
+            title=""
+            aria-label=""
+            data-color-name=""
+            data-color-value="">
+        </button>
+    </template>
+
+    <!-- Template size sản phẩm -->
+    <template id="sizeItemTemplate">
+        <button class="sizeItem" type="button" data-size=""></button>
+    </template>
+
+    <!-- Template sản phẩm liên quan -->
+    <template id="relatedProductTemplate">
+        <article class="relatedCard" data-product-id="">
+            <a href="#" class="relatedThumb" data-role="related-link">
+                <img src="" alt="" data-role="related-image">
+            </a>
+
+            <div class="relatedInfo">
+                <h3 class="relatedName">
+                    <a href="#" data-role="related-link-text"></a>
+                </h3>
+
+                <div class="relatedPriceBox">
+                    <span class="relatedCurrentPrice" data-role="related-price-current"></span>
+                    <span class="relatedOldPrice" data-role="related-price-old"></span>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <!-- Size guide popup -->
+    <div class="sizeGuideOverlay" id="sizeGuideOverlay" hidden></div>
+
+    <div class="sizeGuidePopup" id="sizeGuidePopup" hidden>
+        <div class="sizeGuideHeader">
+            <h3>Bảng thông số size</h3>
+            <button class="closeSizeGuide" id="closeSizeGuide" type="button" aria-label="Đóng bảng size">
+                &times;
+            </button>
+        </div>
+
+        <div class="sizeGuideBody">
+            <p class="sizeGuideNote">
+                Bảng size chỉ mang tính tham khảo. Nếu thích mặc rộng, bạn có thể chọn lớn hơn 1 size.
+            </p>
+
+            <div class="sizeGuideTableWrap">
+                <table class="sizeGuideTable">
+                    <thead>
+                        <tr>
+                            <th>Size</th>
+                            <th>Chiều cao</th>
+                            <th>Cân nặng</th>
+                            <th>Vai</th>
+                            <th>Ngực</th>
+                            <th>Dài áo</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="sizeGuideTableBody">
+                        <tr>
+                            <td>S</td>
+                            <td>1m55 - 1m62</td>
+                            <td>45 - 52kg</td>
+                            <td>42cm</td>
+                            <td>96cm</td>
+                            <td>66cm</td>
+                        </tr>
+                        <tr>
+                            <td>M</td>
+                            <td>1m60 - 1m68</td>
+                            <td>52 - 60kg</td>
+                            <td>44cm</td>
+                            <td>100cm</td>
+                            <td>68cm</td>
+                        </tr>
+                        <tr>
+                            <td>L</td>
+                            <td>1m65 - 1m73</td>
+                            <td>60 - 68kg</td>
+                            <td>46cm</td>
+                            <td>104cm</td>
+                            <td>70cm</td>
+                        </tr>
+                        <tr>
+                            <td>XL</td>
+                            <td>1m70 - 1m78</td>
+                            <td>68 - 78kg</td>
+                            <td>48cm</td>
+                            <td>108cm</td>
+                            <td>72cm</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="sizeGuideTips">
+                <h4>Lưu ý khi chọn size</h4>
+                <ul>
+                    <li>Form regular: chọn đúng size thường mặc.</li>
+                    <li>Form oversize: có thể chọn đúng size vẫn rộng thoải mái.</li>
+                    <li>Nếu ở giữa 2 mức cân nặng, ưu tiên chọn size lớn hơn để dễ mặc hơn.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="containerFooter">
+            <div class="contact">
+                <h4>Gọi mua hàng (8:30-21:30)</h4>
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0911.010.757</span>
+                    </p>
+                    <p>Tất cả các ngày trong tuần</p>
+                </div>
+            </div>
+
+            <div class="contact">
+                <h4>Góp ý, khiếu nại (8:30-20:30)</h4>
+                <div class="contactNumber">
+                    <p>
+                        <i class="fa-solid fa-phone"></i>
+                        <span>0917.257.595</span>
+                    </p>
+                    <p>Các ngày trong tuần (trừ ngày lễ)</p>
+                </div>
+            </div>
+
+            <div class="socialMedia">
+                <h4>Nền tảng mạng xã hội</h4>
+                <div class="iconSocialMedia">
+                    <a href="#" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+                    <a href="#" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="map">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.9317374327557!2d106.79120977589625!3d10.892792489263131!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d9b2d9812e63%3A0xd4c6b932cc0bca0e!2sBcons%20City%20Mall!5e0!3m2!1svi!2s!4v1773054657751!5m2!1svi!2s"
+                    width="600"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/product-detail.js"></script>
+    <script src="../js/auth-ui.js"></script>
+</body>
+</html>

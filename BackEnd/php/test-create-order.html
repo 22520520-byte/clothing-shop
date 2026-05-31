@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Create Order API</title>
+</head>
+<body>
+    <h2>Test Create Order API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b>,
+        sau đó thêm sản phẩm vào giỏ bằng <b>test-add-to-cart.html</b>,
+        rồi mới tạo đơn hàng.
+    </p>
+
+    <div>
+        <label>Tên người nhận:</label>
+        <br>
+        <input id="receiverNameInput" type="text" value="Khách Test 01">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Số điện thoại:</label>
+        <br>
+        <input id="receiverPhoneInput" type="text" value="0912345678">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Địa chỉ giao hàng:</label>
+        <br>
+        <input id="shippingAddressInput" type="text" size="70" value="123 Đường Test, Linh Xuân, Thành phố Thủ Đức, TP. Hồ Chí Minh">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Phương thức thanh toán:</label>
+        <br>
+        <select id="paymentMethodInput">
+            <option value="cod">COD</option>
+            <option value="bank_transfer">Chuyển khoản</option>
+            <option value="momo">MoMo</option>
+            <option value="vnpay">VNPay</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Voucher code:</label>
+        <br>
+        <input id="voucherCodeInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Điểm muốn dùng:</label>
+        <br>
+        <input id="pointsToUseInput" type="number" value="0" min="0">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ghi chú:</label>
+        <br>
+        <textarea id="noteInput" rows="3" cols="70">Giao hàng giờ hành chính giúp tôi.</textarea>
+    </div>
+
+    <br>
+
+    <button id="createOrderBtn">Tạo đơn hàng</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("createOrderBtn").addEventListener("click", function () {
+            const receiverName = document.getElementById("receiverNameInput").value.trim();
+            const receiverPhone = document.getElementById("receiverPhoneInput").value.trim();
+            const shippingAddress = document.getElementById("shippingAddressInput").value.trim();
+            const paymentMethod = document.getElementById("paymentMethodInput").value;
+            const voucherCode = document.getElementById("voucherCodeInput").value.trim();
+            const pointsToUse = Number(document.getElementById("pointsToUseInput").value);
+            const note = document.getElementById("noteInput").value.trim();
+
+            fetch("./api/orders/create-order.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    receiver_name: receiverName,
+                    receiver_phone: receiverPhone,
+                    shipping_address: shippingAddress,
+                    payment_method: paymentMethod,
+                    voucher_code: voucherCode,
+                    points_to_use: pointsToUse,
+                    note: note
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

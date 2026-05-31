@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý sản phẩm</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink active">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+                <a href="../html/admin-staff.html" class="adminMenuLink" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1>Quản lý sản phẩm</h1>
+                    <p>Thêm, chỉnh sửa, ẩn/hiện và theo dõi tồn kho sản phẩm</p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+
+                    <a href="../html/admin-product-detail.html" class="primaryBtn" id="openAddProductBtn">
+                        + Thêm sản phẩm
+                    </a>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="statGrid">
+                    <article class="statCard">
+                        <div class="statIcon">▦</div>
+
+                        <div>
+                            <p>Tổng sản phẩm</p>
+                            <h2 id="totalProductCount">0</h2>
+                            <span>Tất cả sản phẩm trong hệ thống</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">✓</div>
+
+                        <div>
+                            <p>Đang bán</p>
+                            <h2 id="activeProductCount">0</h2>
+                            <span>Sản phẩm đang hiển thị</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">!</div>
+
+                        <div>
+                            <p>Sắp hết hàng</p>
+                            <h2 id="lowStockProductCount">0</h2>
+                            <span>Tồn kho từ 1 đến 5</span>
+                        </div>
+                    </article>
+
+                    <article class="statCard">
+                        <div class="statIcon">×</div>
+
+                        <div>
+                            <p>Đang ẩn</p>
+                            <h2 id="hiddenProductCount">0</h2>
+                            <span>Sản phẩm chưa hiển thị</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="contentCard">
+                    <div class="cardHeader">
+                        <div>
+                            <h2>Danh sách sản phẩm</h2>
+                            <p>Nhấn vào một dòng sản phẩm để xem và chỉnh sửa thông tin</p>
+                        </div>
+                    </div>
+
+                    <div class="filterBar">
+                        <input 
+                            type="text" 
+                            class="searchInput" 
+                            id="productSearchInput" 
+                            placeholder="Tìm theo tên hoặc mã sản phẩm..."
+                        >
+
+                        <select class="filterSelect" id="productGroupFilter">
+                            <option value="all">Tất cả nhóm sản phẩm</option>
+                            <option value="Áo ngắn tay">Áo ngắn tay</option>
+                            <option value="Áo dài tay">Áo dài tay</option>
+                            <option value="Quần">Quần</option>
+                            <option value="Váy">Váy</option>
+                            <option value="Phụ kiện">Phụ kiện</option>
+                        </select>
+
+                        <select class="filterSelect" id="categoryFilter">
+                            <option value="all">Tất cả danh mục</option>
+                            <option value="Áo thun">Áo thun</option>
+                            <option value="Áo polo">Áo polo</option>
+                            <option value="Áo sơ mi">Áo sơ mi</option>
+                            <option value="Áo hoodie">Áo hoodie</option>
+                            <option value="Áo sweater">Áo sweater</option>
+                            <option value="Áo khoác">Áo khoác</option>
+                            <option value="Quần dài">Quần dài</option>
+                            <option value="Quần ngắn">Quần ngắn</option>
+                            <option value="Quần lót">Quần lót</option>
+                            <option value="Váy ngắn">Váy ngắn</option>
+                            <option value="Váy dài">Váy dài</option>
+                            <option value="Mũ">Mũ</option>
+                            <option value="Tất">Tất</option>
+                            <option value="Phụ kiện">Phụ kiện</option>
+                        </select>
+
+                        <select class="filterSelect" id="stockFilter">
+                            <option value="all">Tất cả tồn kho</option>
+                            <option value="in-stock">Còn hàng</option>
+                            <option value="low-stock">Sắp hết hàng</option>
+                            <option value="out-stock">Hết hàng</option>
+                        </select>
+                    </div>
+
+                    <div class="tableWrapper">
+                        <table class="adminTable productTable">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th>Nhóm sản phẩm</th>
+                                    <th>Danh mục</th>
+                                    <th>Giá bán</th>
+                                    <th>Giá gốc</th>
+                                    <th>Tồn kho</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="productTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <p class="emptyText" id="emptyProductText">
+                        Không tìm thấy sản phẩm phù hợp.
+                    </p>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <template id="productRowTemplate">
+        <tr>
+            <td>
+                <div class="productInfoCell">
+                    <div class="productThumbBox">
+                        <img src="" alt="" class="productThumbImg">
+                        <span class="productThumbText"></span>
+                    </div>
+
+                    <div>
+                        <strong class="productNameText"></strong>
+                        <span class="productCodeText"></span>
+                    </div>
+                </div>
+            </td>
+
+            <td class="productGroupText"></td>
+            <td class="productCategoryText"></td>
+            <td class="productPriceText"></td>
+            <td class="productOldPriceText"></td>
+
+            <td>
+                <span class="stockBadge productStockText"></span>
+            </td>
+
+            <td>
+                <span class="statusBadge productStatusText"></span>
+            </td>
+
+            <td>
+                <div class="actionGroup">
+                    <button type="button" class="tableActionBtn deleteBtn" data-action="delete">
+                        Xóa
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </template>
+
+    <script src="../js/admin-products.js"></script>
+</body>
+</html>

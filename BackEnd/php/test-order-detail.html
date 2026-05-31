@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Order Detail API</title>
+</head>
+<body>
+    <h2>Test Order Detail API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+        Sau đó mở <b>test-my-orders.html</b> để lấy id hoặc order_code.
+    </p>
+
+    <div>
+        <label>Order ID:</label>
+        <br>
+        <input id="orderIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Order code:</label>
+        <br>
+        <input id="orderCodeInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <button id="getOrderDetailBtn">Lấy chi tiết đơn hàng</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getOrderDetailBtn").addEventListener("click", function () {
+            const orderId = document.getElementById("orderIdInput").value.trim();
+            const orderCode = document.getElementById("orderCodeInput").value.trim();
+
+            let url = "./api/orders/get-order-detail.php?";
+
+            if (orderId !== "") {
+                url += "id=" + encodeURIComponent(orderId);
+            } else {
+                url += "order_code=" + encodeURIComponent(orderCode);
+            }
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

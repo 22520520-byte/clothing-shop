@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết khách hàng</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="adminPage">
+        <aside class="adminSidebar">
+            <div class="adminLogo">
+                <h2>FASHION</h2>
+                <span>Admin Panel</span>
+            </div>
+
+            <div class="adminUserBox">
+                <div class="adminAvatar" id="adminAvatar">A</div>
+
+                <div>
+                    <h3 id="adminName">Quản trị viên</h3>
+                    <p id="adminRole">Chủ cửa hàng</p>
+                </div>
+            </div>
+
+            <nav class="adminMenu">
+                <a href="../html/admin-dashboard.html" class="adminMenuLink">
+                    <span>⌂</span>
+                    Tổng quan
+                </a>
+
+                <a href="../html/admin-products.html" class="adminMenuLink">
+                    <span>▦</span>
+                    Quản lý sản phẩm
+                </a>
+
+                <a href="../html/admin-orders.html" class="adminMenuLink">
+                    <span>□</span>
+                    Quản lý đơn hàng
+                </a>
+
+                <a href="../html/admin-customers.html" class="adminMenuLink active">
+                    <span>♡</span>
+                    Quản lý khách hàng
+                </a>
+
+                <a href="../html/admin-vouchers.html" class="adminMenuLink">
+                    <span>%</span>
+                    Quản lý voucher
+                </a>
+
+                
+
+                <a href="../html/admin-staff.html" class="adminMenuLink" data-owner-only="true">
+                    <span>☷</span>
+                    Quản lý nhân viên
+                </a>
+
+                <a href="../html/admin-reports.html" class="adminMenuLink">
+                    <span>↗</span>
+                    Báo cáo thống kê
+                </a>
+            </nav>
+
+            <button type="button" class="adminLogoutBtn" id="adminLogoutBtn">
+                Đăng xuất
+            </button>
+        </aside>
+
+        <main class="adminMain">
+            <header class="adminHeader">
+                <div>
+                    <h1>Chi tiết khách hàng</h1>
+                    <p>Quản lý thông tin tài khoản, đơn hàng, yêu thích và điểm tích lũy của khách hàng</p>
+                </div>
+
+                <div class="adminHeaderActions">
+                    <span class="adminDate" id="adminCurrentDate"></span>
+
+                    <a href="../html/admin-customers.html" class="secondaryBtn">
+                        Quay lại
+                    </a>
+                </div>
+            </header>
+
+            <section class="adminContent">
+                <section class="customerDetailWorkspace" id="customerDetailWorkspace">
+                    <aside class="customerDetailSidePanel">
+                        <div class="customerProfileCard">
+                            <div class="customerProfileAvatar" id="detailCustomerAvatar">
+                                K
+                            </div>
+
+                            <div class="customerProfileInfo">
+                                <span id="detailCustomerCode">KH000</span>
+                                <h2 id="detailCustomerName">Tên khách hàng</h2>
+                                <p id="detailCustomerContact">email@gmail.com · 0900000000</p>
+                            </div>
+
+                            <div class="customerProfileBadges">
+                                <span class="rankBadge" id="detailCustomerRankBadge">Khách mới</span>
+                                <span class="statusBadge" id="detailCustomerStatusBadge">Hoạt động</span>
+                            </div>
+                        </div>
+
+                        <nav class="customerDetailMenu">
+                            <button type="button" class="customerDetailMenuItem active" data-customer-tab="account">
+                                <span>♙</span>
+
+                                <div>
+                                    <strong>Thông tin tài khoản</strong>
+                                    <small>Hồ sơ cá nhân</small>
+                                </div>
+                            </button>
+
+                            <button type="button" class="customerDetailMenuItem" data-customer-tab="orders">
+                                <span>▣</span>
+
+                                <div>
+                                    <strong>Đơn hàng</strong>
+                                    <small>Quản lý đơn của khách</small>
+                                </div>
+                            </button>
+
+                            <button type="button" class="customerDetailMenuItem" data-customer-tab="history">
+                                <span>↺</span>
+
+                                <div>
+                                    <strong>Lịch sử mua hàng</strong>
+                                    <small>Các đơn hàng gần đây</small>
+                                </div>
+                            </button>
+
+                            <button type="button" class="customerDetailMenuItem" data-customer-tab="wishlist">
+                                <span>♡</span>
+
+                                <div>
+                                    <strong>Sản phẩm yêu thích</strong>
+                                    <small>Sản phẩm khách đã lưu</small>
+                                </div>
+                            </button>
+
+                            <button type="button" class="customerDetailMenuItem" data-customer-tab="points">
+                                <span>●</span>
+
+                                <div>
+                                    <strong>Điểm tích lũy</strong>
+                                    <small>Điểm hiện có và lịch sử</small>
+                                </div>
+                            </button>
+                        </nav>
+                    </aside>
+
+                    <section class="customerDetailContent">
+                        <section class="customerTabPanel active" id="customerTabAccount" data-customer-panel="account">
+                            <div class="contentCard">
+                                <div class="cardHeader">
+                                    <div>
+                                        <h2>Thông tin tài khoản</h2>
+                                        <p>Thông tin cá nhân của khách hàng, chỉ dùng để xem và đối chiếu</p>
+                                    </div>
+                                </div>
+
+                                <div class="customerAccountTop">
+                                    <div class="customerAccountAvatar" id="accountAvatarText">K</div>
+
+                                    <div>
+                                        <h3 id="accountHeaderName">Tên khách hàng</h3>
+                                        <p id="accountHeaderContact">email@gmail.com · 0900000000</p>
+                                    </div>
+                                </div>
+
+                                <form class="adminForm readonlyCustomerForm" id="customerAccountReadonlyForm">
+                                    <div class="formGrid">
+                                        <div class="formGroup">
+                                            <label for="accountFullName">Họ và tên</label>
+                                            <input 
+                                                type="text" 
+                                                class="formInput" 
+                                                id="accountFullName" 
+                                                readonly
+                                            >
+                                        </div>
+
+                                        <div class="formGroup">
+                                            <label for="accountEmail">Email</label>
+                                            <input 
+                                                type="email" 
+                                                class="formInput" 
+                                                id="accountEmail" 
+                                                readonly
+                                            >
+                                        </div>
+
+                                        <div class="formGroup">
+                                            <label for="accountPhone">Số điện thoại</label>
+                                            <input 
+                                                type="text" 
+                                                class="formInput" 
+                                                id="accountPhone" 
+                                                readonly
+                                            >
+                                        </div>
+
+                                        <div class="formGroup">
+                                            <label for="accountBirthDate">Ngày sinh</label>
+                                            <input 
+                                                type="date" 
+                                                class="formInput" 
+                                                id="accountBirthDate" 
+                                                readonly
+                                            >
+                                        </div>
+
+                                        <div class="formGroup">
+                                            <label for="accountProvince">Tỉnh/Thành phố</label>
+                                            <input 
+                                                type="text" 
+                                                class="formInput" 
+                                                id="accountProvince" 
+                                                readonly
+                                            >
+                                        </div>
+
+                                        <div class="formGroup">
+                                            <label for="accountDistrict">Quận/Huyện</label>
+                                            <input 
+                                                type="text" 
+                                                class="formInput" 
+                                                id="accountDistrict" 
+                                                readonly
+                                            >
+                                        </div>
+
+                                        <div class="formGroup">
+                                            <label for="accountWard">Phường/Xã</label>
+                                            <input 
+                                                type="text" 
+                                                class="formInput" 
+                                                id="accountWard" 
+                                                readonly
+                                            >
+                                        </div>
+
+                                        <div class="formGroup">
+                                            <label for="accountStatus">Trạng thái tài khoản</label>
+                                            <input 
+                                                type="text" 
+                                                class="formInput" 
+                                                id="accountStatus" 
+                                                readonly
+                                            >
+                                        </div>
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label for="accountDetailAddress">Địa chỉ chi tiết</label>
+                                        <input 
+                                            type="text" 
+                                            class="formInput" 
+                                            id="accountDetailAddress" 
+                                            readonly
+                                        >
+                                    </div>
+
+                                    <div class="formGroup">
+                                        <label>Giới tính</label>
+
+                                        <div class="readonlyRadioGroup">
+                                            <label>
+                                                <input 
+                                                    type="radio" 
+                                                    name="accountGender" 
+                                                    id="accountGenderMale" 
+                                                    value="male" 
+                                                    disabled
+                                                >
+                                                Nam
+                                            </label>
+
+                                            <label>
+                                                <input 
+                                                    type="radio" 
+                                                    name="accountGender" 
+                                                    id="accountGenderFemale" 
+                                                    value="female" 
+                                                    disabled
+                                                >
+                                                Nữ
+                                            </label>
+
+                                            <label>
+                                                <input 
+                                                    type="radio" 
+                                                    name="accountGender" 
+                                                    id="accountGenderOther" 
+                                                    value="other" 
+                                                    disabled
+                                                >
+                                                Khác
+                                            </label>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+
+                        <section class="customerTabPanel" id="customerTabOrders" data-customer-panel="orders">
+                            <div class="contentCard">
+                                <div class="cardHeader">
+                                    <div>
+                                        <h2>Đơn hàng của khách hàng</h2>
+                                        <p>Admin có thể theo dõi và cập nhật trạng thái từng đơn hàng của khách</p>
+                                    </div>
+                                </div>
+
+                                <div class="customerOrderCardList" id="customerOrderCardList"></div>
+
+                                <p class="emptyText" id="emptyCustomerOrderCardText">
+                                    Khách hàng chưa có đơn hàng nào.
+                                </p>
+                            </div>
+                        </section>
+
+                        <section class="customerTabPanel" id="customerTabHistory" data-customer-panel="history">
+                            <div class="contentCard">
+                                <div class="cardHeader">
+                                    <div>
+                                        <h2>Lịch sử mua hàng</h2>
+                                        <p>Danh sách đơn hàng gần đây của khách hàng</p>
+                                    </div>
+                                </div>
+
+                                <div class="tableWrapper">
+                                    <table class="adminTable customerOrderHistoryTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Mã đơn</th>
+                                                <th>Ngày đặt</th>
+                                                <th>Số sản phẩm</th>
+                                                <th>Tổng tiền</th>
+                                                <th>Trạng thái</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="customerOrderHistoryBody"></tbody>
+                                    </table>
+                                </div>
+
+                                <p class="emptyText" id="emptyCustomerOrderText">
+                                    Khách hàng chưa có đơn hàng nào.
+                                </p>
+                            </div>
+                        </section>
+
+                        <section class="customerTabPanel" id="customerTabWishlist" data-customer-panel="wishlist">
+                            <div class="contentCard">
+                                <div class="cardHeader">
+                                    <div>
+                                        <h2>Sản phẩm yêu thích</h2>
+                                        <p>Nhấn vào một sản phẩm để xem chi tiết sản phẩm dạng chỉ xem</p>
+                                    </div>
+                                </div>
+
+                                <div class="customerWishlistReadonlyLayout">
+                                    <div>
+                                        <div class="customerWishlistList wishlistSingleColumnList" id="customerWishlistList"></div>
+
+                                        <p class="emptyText" id="emptyWishlistText">
+                                            Khách hàng chưa có sản phẩm yêu thích.
+                                        </p>
+                                    </div>
+
+                                    <div class="wishlistProductDetailCard" id="wishlistProductDetailCard">
+                                        <div class="wishlistProductDetailEmpty" id="wishlistProductDetailEmpty">
+                                            <h3>Chọn sản phẩm để xem chi tiết</h3>
+                                            <p>Thông tin chi tiết sản phẩm sẽ hiển thị tại đây.</p>
+                                        </div>
+
+                                        <div class="wishlistProductDetailContent" id="wishlistProductDetailContent">
+                                            <div class="wishlistProductDetailTop">
+                                                <div class="wishlistProductDetailImageBox">
+                                                    <img src="" alt="Ảnh sản phẩm" id="wishlistDetailImage">
+                                                    <span id="wishlistDetailImageText">S</span>
+                                                </div>
+
+                                                <div>
+                                                    <span id="wishlistDetailProductCode">SP000</span>
+                                                    <h3 id="wishlistDetailProductName">Tên sản phẩm</h3>
+                                                    <p id="wishlistDetailProductPrice">0đ</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="overviewList wishlistProductReadonlyInfo">
+                                                <div class="overviewItem">
+                                                    <span>Nhóm sản phẩm</span>
+                                                    <strong id="wishlistDetailProductGroup">Đang cập nhật</strong>
+                                                </div>
+
+                                                <div class="overviewItem">
+                                                    <span>Loại sản phẩm</span>
+                                                    <strong id="wishlistDetailProductCategory">Đang cập nhật</strong>
+                                                </div>
+
+                                                <div class="overviewItem">
+                                                    <span>Giá bán</span>
+                                                    <strong id="wishlistDetailProductSalePrice">0đ</strong>
+                                                </div>
+
+                                                <div class="overviewItem">
+                                                    <span>Giá gốc</span>
+                                                    <strong id="wishlistDetailProductOldPrice">0đ</strong>
+                                                </div>
+
+                                                <div class="overviewItem">
+                                                    <span>Chất liệu</span>
+                                                    <strong id="wishlistDetailProductMaterial">Đang cập nhật</strong>
+                                                </div>
+
+                                                <div class="overviewItem">
+                                                    <span>Tổng tồn kho</span>
+                                                    <strong id="wishlistDetailProductStock">0 sản phẩm</strong>
+                                                </div>
+
+                                                <div class="overviewItem">
+                                                    <span>Màu sắc</span>
+                                                    <strong id="wishlistDetailProductColors">Đang cập nhật</strong>
+                                                </div>
+
+                                                <div class="overviewItem">
+                                                    <span>Trạng thái</span>
+                                                    <strong id="wishlistDetailProductStatus">Đang cập nhật</strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="wishlistProductSizeBox">
+                                                <h4>Kích thước và số lượng</h4>
+                                                <div id="wishlistDetailProductSizes"></div>
+                                            </div>
+
+                                            <div class="wishlistProductDescriptionBox">
+                                                <h4>Mô tả sản phẩm</h4>
+                                                <p id="wishlistDetailProductDescription">Chưa có mô tả.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="customerTabPanel" id="customerTabPoints" data-customer-panel="points">
+                            <div class="contentCard">
+                                <div class="cardHeader">
+                                    <div>
+                                        <h2>Điểm tích lũy</h2>
+                                        <p>Theo dõi điểm hiện có, điểm đã tích và điểm đã sử dụng</p>
+                                    </div>
+                                </div>
+
+                                <section class="statGrid customerInnerStatGrid">
+                                    <article class="statCard">
+                                        <div class="statIcon">★</div>
+
+                                        <div>
+                                            <p>Điểm hiện có</p>
+                                            <h2 id="pointsCurrent">0 điểm</h2>
+                                            <span>Điểm khả dụng</span>
+                                        </div>
+                                    </article>
+
+                                    <article class="statCard">
+                                        <div class="statIcon">+</div>
+
+                                        <div>
+                                            <p>Tổng điểm đã tích</p>
+                                            <h2 id="pointsEarned">0 điểm</h2>
+                                            <span>Điểm cộng từ mua hàng</span>
+                                        </div>
+                                    </article>
+
+                                    <article class="statCard">
+                                        <div class="statIcon">−</div>
+
+                                        <div>
+                                            <p>Tổng điểm đã dùng</p>
+                                            <h2 id="pointsUsed">0 điểm</h2>
+                                            <span>Điểm đã quy đổi</span>
+                                        </div>
+                                    </article>
+                                </section>
+
+                                <div class="pointHistoryBox">
+                                    <h3>Lịch sử điểm gần đây</h3>
+
+                                    <div id="pointTransactionList"></div>
+
+                                    <p class="emptyText" id="emptyPointTransactionText">
+                                        Chưa có giao dịch điểm.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+                </section>
+
+                <section class="contentCard" id="customerNotFoundBox" style="display: none;">
+                    <div class="emptyStateBox">
+                        <h2>Không tìm thấy khách hàng</h2>
+                        <p>Khách hàng có thể đã bị xóa hoặc mã khách hàng không hợp lệ.</p>
+
+                        <a href="../html/admin-customers.html" class="primaryBtn">
+                            Quay lại danh sách khách hàng
+                        </a>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <template id="customerOrderCardTemplate">
+        <article class="customerOrderCard">
+            <div class="customerOrderCardHeader">
+                <div>
+                    <span>Mã đơn hàng</span>
+                    <h3 class="customerOrderCardCode"></h3>
+                </div>
+
+                <span class="statusBadge customerOrderCardStatus"></span>
+            </div>
+
+            <div class="customerOrderInfoGrid">
+                <div class="customerOrderInfoBox">
+                    <span>Ngày đặt hàng</span>
+                    <strong class="customerOrderCardDate"></strong>
+                </div>
+
+                <div class="customerOrderInfoBox">
+                    <span>Phương thức thanh toán</span>
+                    <strong class="customerOrderPaymentMethod"></strong>
+                </div>
+
+                <div class="customerOrderInfoBox">
+                    <span>Trạng thái hiện tại</span>
+                    <strong class="customerOrderCurrentStatusText"></strong>
+                </div>
+
+                <div class="customerOrderInfoBox">
+                    <span>Người nhận</span>
+                    <strong class="customerOrderReceiverName"></strong>
+                </div>
+
+                <div class="customerOrderInfoBox">
+                    <span>Số điện thoại nhận hàng</span>
+                    <strong class="customerOrderReceiverPhone"></strong>
+                </div>
+
+                <div class="customerOrderInfoBox customerOrderAddressBox">
+                    <span>Địa chỉ nhận hàng</span>
+                    <strong class="customerOrderReceiverAddress"></strong>
+                </div>
+            </div>
+
+            <div class="customerOrderProductBox">
+                <div class="customerOrderProductHeader">
+                    <div>
+                        <span>Sản phẩm trong đơn</span>
+                        <strong class="customerOrderProductCount"></strong>
+                    </div>
+
+                    <a href="#" class="secondaryBtn customerOrderDetailLink">
+                        Xem chi tiết
+                    </a>
+                </div>
+
+                <div class="customerOrderProductList"></div>
+            </div>
+
+            <div class="customerOrderTotalBox">
+                <div>
+                    <span>Tổng tiền</span>
+                    <strong class="customerOrderTotalText"></strong>
+                </div>
+
+                <div class="customerOrderStatusControl">
+                    <select class="formSelect customerOrderStatusSelect">
+                        <option value="pending">Chờ xác nhận</option>
+                        <option value="shipping">Đang giao</option>
+                        <option value="completed">Hoàn thành</option>
+                        <option value="cancelled">Đã hủy</option>
+                    </select>
+
+                    <button type="button" class="primaryBtn customerOrderUpdateBtn">
+                        Cập nhật trạng thái
+                    </button>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <template id="customerOrderProductTemplate">
+        <div class="customerOrderProductItem">
+            <div>
+                <strong class="customerOrderProductName"></strong>
+                <span class="customerOrderProductVariant"></span>
+            </div>
+
+            <div>
+                <span class="customerOrderProductQuantity"></span>
+                <strong class="customerOrderProductPrice"></strong>
+            </div>
+        </div>
+    </template>
+
+    <template id="customerOrderRowTemplate">
+        <tr>
+            <td class="customerOrderCodeText"></td>
+            <td class="customerOrderDateText"></td>
+            <td class="customerOrderItemCountText"></td>
+            <td class="customerOrderTotalText"></td>
+
+            <td>
+                <span class="statusBadge customerOrderStatusText"></span>
+            </td>
+        </tr>
+    </template>
+
+    <template id="customerWishlistItemTemplate">
+        <button type="button" class="customerWishlistItem wishlistReadonlyItem">
+            <div class="wishlistThumbBox">
+                <img src="" alt="" class="wishlistThumbImg">
+                <span class="wishlistThumbText"></span>
+            </div>
+
+            <div class="wishlistReadonlyItemInfo">
+                <strong class="wishlistProductNameText"></strong>
+                <span class="wishlistProductPriceText"></span>
+            </div>
+
+            <span class="wishlistReadonlyItemArrow">›</span>
+        </button>
+    </template>
+
+    <template id="pointTransactionTemplate">
+        <div class="pointTransactionItem">
+            <div>
+                <strong class="pointTransactionTitleText"></strong>
+                <span class="pointTransactionDateText"></span>
+            </div>
+
+            <span class="pointTransactionValueText"></span>
+        </div>
+    </template>
+
+    <script src="../js/admin-customer-detail.js"></script>
+</body>
+</html>

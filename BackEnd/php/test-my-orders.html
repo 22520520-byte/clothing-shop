@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test My Orders API</title>
+</head>
+<body>
+    <h2>Test My Orders API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+        Nếu chưa có đơn hàng thì tạo đơn bằng <b>test-create-order.html</b>.
+    </p>
+
+    <div>
+        <label>Loại đơn:</label>
+        <br>
+        <select id="typeInput">
+            <option value="all">Tất cả</option>
+            <option value="current">Đơn hiện tại</option>
+            <option value="history">Lịch sử đơn hàng</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái cụ thể:</label>
+        <br>
+        <select id="statusInput">
+            <option value="">Không lọc</option>
+            <option value="pending">pending</option>
+            <option value="confirmed">confirmed</option>
+            <option value="shipping">shipping</option>
+            <option value="completed">completed</option>
+            <option value="cancelled">cancelled</option>
+        </select>
+    </div>
+
+    <br>
+
+    <button id="getOrdersBtn">Lấy danh sách đơn hàng</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("getOrdersBtn").addEventListener("click", function () {
+            const type = document.getElementById("typeInput").value;
+            const status = document.getElementById("statusInput").value;
+
+            let url = "./api/orders/get-my-orders.php?page=1&limit=10&type=" + encodeURIComponent(type);
+
+            if (status !== "") {
+                url += "&status=" + encodeURIComponent(status);
+            }
+
+            fetch(url, {
+                method: "GET",
+                credentials: "same-origin"
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

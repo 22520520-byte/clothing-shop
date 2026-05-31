@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Cancel Order API</title>
+</head>
+<body>
+    <h2>Test Cancel Order API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng <b>test-login.html</b> trước.
+        Sau đó mở <b>test-my-orders.html</b> để lấy id hoặc order_code của đơn cần hủy.
+    </p>
+
+    <div>
+        <label>Order ID:</label>
+        <br>
+        <input id="orderIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Order code:</label>
+        <br>
+        <input id="orderCodeInput" type="text" value="">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Lý do hủy:</label>
+        <br>
+        <textarea id="cancelReasonInput" rows="3" cols="70">Khách hàng muốn thay đổi sản phẩm.</textarea>
+    </div>
+
+    <br>
+
+    <button id="cancelOrderBtn">Hủy đơn hàng</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("cancelOrderBtn").addEventListener("click", function () {
+            const orderId = document.getElementById("orderIdInput").value.trim();
+            const orderCode = document.getElementById("orderCodeInput").value.trim();
+            const cancelReason = document.getElementById("cancelReasonInput").value.trim();
+
+            const confirmCancel = confirm("Bạn có chắc muốn hủy đơn hàng này không?");
+
+            if (!confirmCancel) {
+                return;
+            }
+
+            fetch("./api/orders/cancel-order.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    order_id: orderId !== "" ? Number(orderId) : 0,
+                    order_code: orderCode,
+                    cancel_reason: cancelReason
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>

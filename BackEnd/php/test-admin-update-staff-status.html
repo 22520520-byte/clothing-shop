@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Admin Update Staff Status API</title>
+</head>
+<body>
+    <h2>Test Admin Update Staff Status API</h2>
+
+    <p>
+        Lưu ý: Bạn cần đăng nhập bằng tài khoản <b>owner/admin</b> trước.
+        Có thể lấy staff id từ <b>test-admin-staff.html</b>.
+    </p>
+
+    <div>
+        <label>Staff ID:</label>
+        <br>
+        <input id="staffIdInput" type="number" value="" min="1">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái tài khoản:</label>
+        <br>
+        <select id="statusInput">
+            <option value="active" selected>active - Đang hoạt động</option>
+            <option value="inactive">inactive - Tạm khóa</option>
+            <option value="blocked">blocked - Bị chặn</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Trạng thái làm việc:</label>
+        <br>
+        <select id="workStatusInput">
+            <option value="working" selected>working - Đang làm việc</option>
+            <option value="on_leave">on_leave - Nghỉ phép</option>
+            <option value="resigned">resigned - Đã nghỉ việc</option>
+        </select>
+    </div>
+
+    <br>
+
+    <div>
+        <label>Ghi chú:</label>
+        <br>
+        <textarea id="noteInput" rows="3" cols="60">Admin cập nhật trạng thái nhân viên.</textarea>
+    </div>
+
+    <br>
+
+    <button id="updateStaffStatusBtn">Cập nhật trạng thái nhân viên</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("updateStaffStatusBtn").addEventListener("click", function () {
+            const staffId = Number(document.getElementById("staffIdInput").value);
+            const status = document.getElementById("statusInput").value;
+            const workStatus = document.getElementById("workStatusInput").value;
+            const note = document.getElementById("noteInput").value.trim();
+
+            fetch("./api/admin/staff/update-staff-status.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    staff_id: staffId,
+                    status: status,
+                    work_status: workStatus,
+                    note: note
+                })
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                document.getElementById("result").textContent = JSON.stringify(data, null, 4);
+            })
+            .catch(function (error) {
+                document.getElementById("result").textContent = error;
+            });
+        });
+    </script>
+</body>
+</html>
