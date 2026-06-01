@@ -1,24 +1,10 @@
-// 1. Khai báo key localStorage
-const ADMIN_CURRENT_USER_KEY = "admin_current_user";
-const ADMIN_IS_LOGIN_KEY = "admin_is_login";
+// =========================================================
+// File: Frontend1/js/admin-login.js
+// Mục đích: Đăng nhập admin bằng API backend thật
+// =========================================================
 
-// 2. Khai báo tài khoản quản trị demo
-const adminAccounts = [
-    {
-        username: "owner",
-        password: "123456",
-        fullName: "Chủ cửa hàng",
-        role: "owner"
-    },
-    {
-        username: "staff",
-        password: "123456",
-        fullName: "Nhân viên bán hàng",
-        role: "staff"
-    }
-];
 
-// 3. Lấy element từ DOM
+// 1. Lấy element từ DOM
 const adminLoginForm = document.getElementById("adminLoginForm");
 const adminUsernameInput = document.getElementById("adminUsername");
 const adminPasswordInput = document.getElementById("adminPassword");
@@ -26,9 +12,12 @@ const rememberAdminInput = document.getElementById("rememberAdmin");
 const togglePasswordBtn = document.getElementById("togglePasswordBtn");
 const formMessage = document.getElementById("formMessage");
 
-// 4. Hiển thị thông báo
+
+// 2. Hiển thị thông báo
 function showMessage(message, type = "error") {
-    if (!formMessage) return;
+    if (!formMessage) {
+        return;
+    }
 
     formMessage.textContent = message;
 
@@ -39,18 +28,37 @@ function showMessage(message, type = "error") {
     }
 }
 
-// 5. Xóa thông báo
+
+// 3. Xóa thông báo
 function clearMessage() {
-    if (!formMessage) return;
+    if (!formMessage) {
+        return;
+    }
 
     formMessage.textContent = "";
     formMessage.classList.remove("success");
 }
 
-// 6. Kiểm tra dữ liệu form
-function validateLoginForm(username, password) {
-    if (!username) {
-        showMessage("Vui lòng nhập tên đăng nhập.");
+
+// 4. Bật/tắt trạng thái loading
+function setLoginLoading(isLoading) {
+    const submitButton = adminLoginForm
+        ? adminLoginForm.querySelector("button[type='submit']")
+        : null;
+
+    if (!submitButton) {
+        return;
+    }
+
+    submitButton.disabled = isLoading;
+    submitButton.textContent = isLoading ? "Đang đăng nhập..." : "Đăng nhập";
+}
+
+
+// 5. Kiểm tra dữ liệu form
+function validateLoginForm(account, password) {
+    if (!account) {
+        showMessage("Vui lòng nhập email hoặc số điện thoại.");
         adminUsernameInput.focus();
         return false;
     }
@@ -64,64 +72,107 @@ function validateLoginForm(username, password) {
     return true;
 }
 
-// 7. Tìm tài khoản quản trị
-function findAdminAccount(username, password) {
-    return adminAccounts.find(function(account) {
-        return account.username === username && account.password === password;
-    });
+
+// 6. Lấy user từ response login
+function getUserFromLoginResponse(responseData) {
+    if (!responseData || !responseData.data) {
+        return null;
+    }
+
+    return responseData.data.user || null;
 }
 
-// 8. Lưu trạng thái đăng nhập quản trị
-function saveAdminLogin(account) {
-    const adminUser = {
-        username: account.username,
-        fullName: account.fullName,
-        role: account.role,
-        loginAt: new Date().toISOString()
-    };
 
-    localStorage.setItem(ADMIN_CURRENT_USER_KEY, JSON.stringify(adminUser));
-    localStorage.setItem(ADMIN_IS_LOGIN_KEY, "true");
+// 7. Kiểm tra tài khoản có quyền vào admin không
+function validateAdminUser(user) {
+    if (!user) {
+        return false;
+    }
+
+    return window.AdminApi.isAdminRole(user);
 }
+
+
+// 8. Lưu ghi nhớ tài khoản
+function saveRememberedAdmin(account) {
+    if (!rememberAdminInput) {
+        return;
+    }
+
+    if (rememberAdminInput.checked) {
+        localStorage.setItem("admin_remember_username", account);
+    } else {
+        localStorage.removeItem("admin_remember_username");
+    }
+}
+
 
 // 9. Xử lý đăng nhập
-function handleAdminLogin(event) {
+async function handleAdminLogin(event) {
     event.preventDefault();
 
     clearMessage();
 
-    const username = adminUsernameInput.value.trim();
+    const account = adminUsernameInput.value.trim();
     const password = adminPasswordInput.value.trim();
 
-    const isValid = validateLoginForm(username, password);
+    const isValid = validateLoginForm(account, password);
 
-    if (!isValid) return;
-
-    const account = findAdminAccount(username, password);
-
-    if (!account) {
-        showMessage("Tên đăng nhập hoặc mật khẩu không đúng.");
+    if (!isValid) {
         return;
     }
 
-    saveAdminLogin(account);
+    try {
+        setLoginLoading(true);
 
-    if (rememberAdminInput.checked) {
-        localStorage.setItem("admin_remember_username", username);
-    } else {
-        localStorage.removeItem("admin_remember_username");
+        const responseData = await window.AdminApi.post("auth/login.php", {
+            account: account,
+            email: account,
+            phone: account,
+            password: password
+        });
+
+        const user = getUserFromLoginResponse(responseData);
+
+        if (!validateAdminUser(user)) {
+            window.AdminApi.clearAdminLocalAuth();
+
+            try {
+                await window.AdminApi.post("auth/logout.php", {});
+            } catch (logoutError) {
+                // Bỏ qua lỗi logout
+            }
+
+            showMessage("Tài khoản này không có quyền vào trang quản trị.");
+            return;
+        }
+
+        window.AdminApi.saveAdminLocalAuth(user);
+        saveRememberedAdmin(account);
+
+        showMessage("Đăng nhập thành công. Đang chuyển trang...", "success");
+
+        setTimeout(function () {
+            window.location.href = "../html/admin-dashboard.html";
+        }, 700);
+    } catch (error) {
+        const message = window.AdminApi.getApiErrorMessage(
+            error,
+            "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản."
+        );
+
+        showMessage(message);
+    } finally {
+        setLoginLoading(false);
     }
-
-    showMessage("Đăng nhập thành công. Đang chuyển trang...", "success");
-
-    setTimeout(function() {
-        window.location.href = "../html/admin-dashboard.html";
-    }, 700);
 }
+
 
 // 10. Ẩn hiện mật khẩu
 function handleTogglePassword() {
-    if (!adminPasswordInput || !togglePasswordBtn) return;
+    if (!adminPasswordInput || !togglePasswordBtn) {
+        return;
+    }
 
     const isPassword = adminPasswordInput.type === "password";
 
@@ -129,25 +180,36 @@ function handleTogglePassword() {
     togglePasswordBtn.textContent = isPassword ? "Ẩn" : "Hiện";
 }
 
-// 11. Tự điền tên đăng nhập nếu đã ghi nhớ
+
+// 11. Tự điền tài khoản nếu đã ghi nhớ
 function loadRememberedAdmin() {
     const rememberedUsername = localStorage.getItem("admin_remember_username");
 
-    if (!rememberedUsername) return;
+    if (!rememberedUsername || !adminUsernameInput || !rememberAdminInput) {
+        return;
+    }
 
     adminUsernameInput.value = rememberedUsername;
     rememberAdminInput.checked = true;
 }
 
-// 12. Kiểm tra nếu đã đăng nhập
-function redirectIfLoggedIn() {
-    const isLogin = localStorage.getItem(ADMIN_IS_LOGIN_KEY) === "true";
-    const currentAdmin = localStorage.getItem(ADMIN_CURRENT_USER_KEY);
 
-    if (isLogin && currentAdmin) {
+// 12. Kiểm tra nếu đã đăng nhập thật bằng session
+async function redirectIfLoggedIn() {
+    const localAdmin = window.AdminApi.getCurrentAdminFromLocal();
+
+    if (!localAdmin) {
+        return;
+    }
+
+    try {
+        await window.AdminApi.getCurrentAdminFromSession();
         window.location.href = "../html/admin-dashboard.html";
+    } catch (error) {
+        window.AdminApi.clearAdminLocalAuth();
     }
 }
+
 
 // 13. Gắn sự kiện cho trang đăng nhập
 function bindAdminLoginEvents() {
@@ -168,9 +230,15 @@ function bindAdminLoginEvents() {
     }
 }
 
+
 // 14. Khởi tạo trang đăng nhập quản trị
-function initAdminLoginPage() {
-    redirectIfLoggedIn();
+async function initAdminLoginPage() {
+    if (!window.AdminApi) {
+        showMessage("Thiếu file admin-api.js. Vui lòng kiểm tra lại thứ tự nhúng script.");
+        return;
+    }
+
+    await redirectIfLoggedIn();
     loadRememberedAdmin();
     bindAdminLoginEvents();
 }

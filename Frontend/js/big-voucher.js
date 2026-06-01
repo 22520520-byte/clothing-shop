@@ -1,28 +1,34 @@
-// 1. Chờ HTML tải xong
+// =========================================================
+// File: Frontend/js/big-voucher.js
+// Mục đích: Trang Big Voucher lấy voucher thật từ API,
+//           lưu voucher đã săn vào localStorage theo user
+// =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. Kiểm tra đúng trang Big Voucher
     const bigVoucherPage = document.querySelector(".bigVoucherPage");
 
     if (!bigVoucherPage) {
         return;
     }
 
-    // 2. Key localStorage
 
+    // 2. Key localStorage
     const CURRENT_USER_STORAGE_KEY = "current_user";
     const IS_LOGIN_STORAGE_KEY = "is_login";
     const BIG_VOUCHER_END_TIME_KEY = "big_voucher_end_time";
     const SAVED_VOUCHERS_STORAGE_KEY = "saved_vouchers";
 
-    // 3. Biến trạng thái
 
+    // 3. Biến trạng thái
+    let bigVouchers = [];
     let currentFilter = "all";
     let currentSort = "default";
     let currentKeyword = "";
     let countdownTimer = null;
 
-    // 4. Lấy DOM chung
 
+    // 4. Lấy DOM chung
     const searchForm = document.getElementById("searchForm");
     const searchKeywordInput = document.getElementById("searchKeyword");
 
@@ -50,14 +56,395 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const voucherToastContainer = document.getElementById("voucherToastContainer");
 
-    // 5. Dữ liệu voucher mẫu
 
-    const bigVouchers = createBigVoucherData();
+    // 5. Gọi API GET
+    async function getApi(endpoint) {
+        if (window.CustomerApi && typeof window.CustomerApi.get === "function") {
+            return await window.CustomerApi.get(endpoint);
+        }
 
-    // 6. Tạo dữ liệu voucher
+        const response = await fetch("../../BackEnd/php/api/" + endpoint, {
+            method: "GET",
+            credentials: "same-origin"
+        });
 
-    function createBigVoucherData() {
-        const endTime = getBigVoucherEndTime();
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            throw data;
+        }
+
+        return data;
+    }
+
+
+    // 6. Hàm tiện ích định dạng
+    function formatPrice(price) {
+        if (window.CustomerApi && typeof window.CustomerApi.formatPrice === "function") {
+            return window.CustomerApi.formatPrice(price);
+        }
+
+        return Number(price || 0).toLocaleString("vi-VN") + "đ";
+    }
+
+    function formatDate(timestamp) {
+        if (!timestamp) {
+            return "--/--/----";
+        }
+
+        const date = new Date(Number(timestamp));
+
+        if (Number.isNaN(date.getTime())) {
+            return "--/--/----";
+        }
+
+        return date.toLocaleDateString("vi-VN");
+    }
+
+    function getStoredOrNewEndTime() {
+        const htmlEndTime = bigVoucherHero?.dataset.endTime || "";
+
+        if (htmlEndTime) {
+            return new Date(htmlEndTime).getTime();
+        }
+
+        const savedEndTime = Number(localStorage.getItem(BIG_VOUCHER_END_TIME_KEY) || 0);
+
+        if (savedEndTime && savedEndTime > Date.now()) {
+            return savedEndTime;
+        }
+
+        const newEndTime = Date.now() + 24 * 60 * 60 * 1000;
+
+        localStorage.setItem(BIG_VOUCHER_END_TIME_KEY, String(newEndTime));
+
+        return newEndTime;
+    }
+
+    function getBigVoucherEndTime() {
+        const activeExpireTimes = bigVouchers
+            .map(function (voucher) {
+                return Number(voucher.expiresAt || 0);
+            })
+            .filter(function (time) {
+                return time > Date.now();
+            });
+
+        if (activeExpireTimes.length > 0) {
+            return Math.min.apply(null, activeExpireTimes);
+        }
+
+        return getStoredOrNewEndTime();
+    }
+
+    function formatVoucherValue(voucher) {
+        if (voucher.discountType === "amount") {
+            return formatPrice(voucher.discountValue);
+        }
+
+        if (voucher.discountType === "percent") {
+            return voucher.discountValue + "% tối đa " + formatPrice(voucher.maxDiscount);
+        }
+
+        if (voucher.discountType === "shipping") {
+            return "Freeship tối đa " + formatPrice(voucher.maxDiscount);
+        }
+
+        return "Ưu đãi";
+    }
+
+    function formatVoucherCondition(voucher) {
+        return "Đơn từ " + formatPrice(voucher.minOrderValue);
+    }
+
+    function getVoucherRemaining(voucher) {
+        return Math.max(
+            Number(voucher.totalQuantity || 0) - Number(voucher.claimedQuantity || 0),
+            0
+        );
+    }
+
+    function getVoucherClaimedPercent(voucher) {
+        if (!voucher.totalQuantity || voucher.totalQuantity <= 0) {
+            return 0;
+        }
+
+        return Math.min(
+            Math.round((Number(voucher.claimedQuantity || 0) / Number(voucher.totalQuantity || 0)) * 100),
+            100
+        );
+    }
+
+    function getVoucherComparableValue(voucher) {
+        if (voucher.discountType === "amount") {
+            return Number(voucher.discountValue || 0);
+        }
+
+        if (voucher.discountType === "percent") {
+            return Number(voucher.maxDiscount || 0);
+        }
+
+        if (voucher.discountType === "shipping") {
+            return Number(voucher.maxDiscount || voucher.discountValue || 0);
+        }
+
+        return 0;
+    }
+
+    function isBigVoucherEnded() {
+        return Date.now() >= getBigVoucherEndTime();
+    }
+
+    function isVoucherExpired(voucher) {
+        return Date.now() >= Number(voucher.expiresAt || 0) || isBigVoucherEnded();
+    }
+
+    function showToast(message, type) {
+        if (!voucherToastContainer) {
+            alert(message);
+            return;
+        }
+
+        const toast = document.createElement("div");
+
+        toast.className = "voucherToast " + (type || "success");
+        toast.textContent = message;
+
+        voucherToastContainer.appendChild(toast);
+
+        setTimeout(function () {
+            toast.remove();
+        }, 2600);
+    }
+
+
+    // 7. Đọc ghi localStorage
+    function getDataFromStorage(key, fallbackValue) {
+        const rawData = localStorage.getItem(key);
+
+        if (!rawData) {
+            return fallbackValue;
+        }
+
+        try {
+            return JSON.parse(rawData);
+        } catch (error) {
+            console.error("Lỗi đọc localStorage:", error);
+            return fallbackValue;
+        }
+    }
+
+    function saveDataToStorage(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+
+
+    // 8. Kiểm tra đăng nhập
+    function getCurrentUser() {
+        if (window.CustomerApi && typeof window.CustomerApi.getCurrentCustomerFromLocal === "function") {
+            return window.CustomerApi.getCurrentCustomerFromLocal();
+        }
+
+        const isLogin = localStorage.getItem(IS_LOGIN_STORAGE_KEY) === "true";
+        const currentUserData = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+
+        if (!isLogin) {
+            return null;
+        }
+
+        if (!currentUserData) {
+            return {
+                id: "member",
+                fullName: "Thành viên"
+            };
+        }
+
+        try {
+            const parsedUser = JSON.parse(currentUserData);
+
+            if (typeof parsedUser === "string") {
+                return {
+                    id: parsedUser,
+                    fullName: parsedUser
+                };
+            }
+
+            return parsedUser;
+        } catch (error) {
+            return {
+                id: currentUserData,
+                fullName: currentUserData
+            };
+        }
+    }
+
+    function isUserLoggedIn() {
+        return Boolean(getCurrentUser());
+    }
+
+    function getCurrentUserKey() {
+        const currentUser = getCurrentUser();
+
+        if (!currentUser) {
+            return "";
+        }
+
+        return (
+            currentUser.id ||
+            currentUser.userId ||
+            currentUser.email ||
+            currentUser.phone ||
+            currentUser.username ||
+            currentUser.fullName ||
+            currentUser.name ||
+            "member"
+        );
+    }
+
+    function getCurrentUserName() {
+        const currentUser = getCurrentUser();
+
+        if (!currentUser) {
+            return "";
+        }
+
+        return (
+            currentUser.fullName ||
+            currentUser.name ||
+            currentUser.username ||
+            currentUser.email ||
+            "thành viên"
+        );
+    }
+
+    function getLoginRedirectUrl() {
+        return "../html/login.html?redirect=" + encodeURIComponent("../html/big-voucher.html");
+    }
+
+
+    // 9. Lưu voucher theo từng tài khoản
+    function getSavedVoucherMap() {
+        const savedData = getDataFromStorage(SAVED_VOUCHERS_STORAGE_KEY, {});
+
+        if (Array.isArray(savedData)) {
+            return {
+                member: savedData
+            };
+        }
+
+        if (!savedData || typeof savedData !== "object") {
+            return {};
+        }
+
+        return savedData;
+    }
+
+    function getCurrentUserSavedVouchers() {
+        const userKey = getCurrentUserKey();
+
+        if (!userKey) {
+            return [];
+        }
+
+        const savedMap = getSavedVoucherMap();
+        const savedVouchers = savedMap[userKey];
+
+        if (!Array.isArray(savedVouchers)) {
+            return [];
+        }
+
+        return savedVouchers;
+    }
+
+    function saveCurrentUserVouchers(savedVouchers) {
+        const userKey = getCurrentUserKey();
+
+        if (!userKey) {
+            return;
+        }
+
+        const savedMap = getSavedVoucherMap();
+
+        savedMap[userKey] = savedVouchers;
+        saveDataToStorage(SAVED_VOUCHERS_STORAGE_KEY, savedMap);
+    }
+
+    function isVoucherSaved(voucher) {
+        const savedVouchers = getCurrentUserSavedVouchers();
+
+        return savedVouchers.some(function (savedVoucher) {
+            return (
+                String(savedVoucher.id || "") === String(voucher.id || "") ||
+                String(savedVoucher.code || "") === String(voucher.code || "")
+            );
+        });
+    }
+
+    function createSavedVoucherData(voucher) {
+        return {
+            id: voucher.id,
+            code: voucher.code,
+            title: voucher.title,
+            name: voucher.title,
+            description: voucher.description,
+
+            discountType: voucher.discountType,
+            discountValue: voucher.discountValue,
+            maxDiscount: voucher.maxDiscount,
+
+            minOrderValue: voucher.minOrderValue,
+            minOrder: voucher.minOrderValue,
+
+            expiry: formatDate(voucher.expiresAt),
+            expiresAt: voucher.expiresAt,
+
+            source: "big-voucher",
+            used: false,
+            savedAt: new Date().toISOString()
+        };
+    }
+
+    function saveVoucher(voucher) {
+        if (!isUserLoggedIn()) {
+            showToast("Vui lòng đăng nhập để lưu Big Voucher.", "warning");
+
+            setTimeout(function () {
+                window.location.href = getLoginRedirectUrl();
+            }, 900);
+
+            return;
+        }
+
+        if (isVoucherExpired(voucher)) {
+            showToast("Voucher này đã hết hạn.", "warning");
+            return;
+        }
+
+        if (getVoucherRemaining(voucher) <= 0) {
+            showToast("Voucher này đã hết lượt.", "warning");
+            return;
+        }
+
+        if (isVoucherSaved(voucher)) {
+            showToast("Voucher này đã được lưu trước đó.", "warning");
+            return;
+        }
+
+        const savedVouchers = getCurrentUserSavedVouchers();
+
+        savedVouchers.unshift(createSavedVoucherData(voucher));
+        saveCurrentUserVouchers(savedVouchers);
+
+        showToast("Đã lưu voucher " + voucher.code + ".", "success");
+
+        renderPage();
+        updateMemberNotice();
+    }
+
+
+    // 10. Dữ liệu fallback khi API chưa có voucher
+    function createFallbackBigVoucherData() {
+        const endTime = getStoredOrNewEndTime();
         const now = Date.now();
 
         return [
@@ -160,312 +547,160 @@ document.addEventListener("DOMContentLoaded", function () {
         ];
     }
 
-    // 7. Hàm tiện ích định dạng
 
-    function formatPrice(price) {
-        return Number(price || 0).toLocaleString("vi-VN") + "đ";
+    // 11. Chuẩn hóa voucher từ API
+    function normalizeDiscountType(type) {
+        if (type === "fixed" || type === "amount") {
+            return "amount";
+        }
+
+        if (type === "freeship" || type === "shipping") {
+            return "shipping";
+        }
+
+        if (type === "percent") {
+            return "percent";
+        }
+
+        return "amount";
     }
 
-    function formatDate(timestamp) {
-        return new Date(timestamp).toLocaleDateString("vi-VN");
-    }
-
-    function formatVoucherValue(voucher) {
-        if (voucher.discountType === "amount") {
-            return formatPrice(voucher.discountValue);
+    function getVoucherType(voucher) {
+        if (voucher.discountType === "shipping") {
+            return "freeship";
         }
 
         if (voucher.discountType === "percent") {
-            return voucher.discountValue + "% tối đa " + formatPrice(voucher.maxDiscount);
+            return "percent";
         }
 
+        if (getVoucherComparableValue(voucher) >= 50000) {
+            return "high-value";
+        }
+
+        return "normal";
+    }
+
+    function getVoucherBadge(voucher) {
         if (voucher.discountType === "shipping") {
-            return "Freeship tối đa " + formatPrice(voucher.maxDiscount);
+            return "Freeship";
         }
 
-        return "Ưu đãi";
-    }
-
-    function formatVoucherCondition(voucher) {
-        return "Đơn từ " + formatPrice(voucher.minOrderValue);
-    }
-
-    function getVoucherRemaining(voucher) {
-        return Math.max(Number(voucher.totalQuantity || 0) - Number(voucher.claimedQuantity || 0), 0);
-    }
-
-    function getVoucherClaimedPercent(voucher) {
-        if (!voucher.totalQuantity || voucher.totalQuantity <= 0) {
-            return 0;
+        if (voucher.discountType === "percent") {
+            return "Giảm %";
         }
 
-        return Math.min(
-            Math.round((Number(voucher.claimedQuantity || 0) / Number(voucher.totalQuantity || 0)) * 100),
+        if (getVoucherComparableValue(voucher) >= 100000) {
+            return "Hiếm";
+        }
+
+        if (getVoucherComparableValue(voucher) >= 50000) {
+            return "Giá trị cao";
+        }
+
+        return "Voucher";
+    }
+
+    function normalizeVoucherFromApi(apiVoucher) {
+        const discountType = normalizeDiscountType(apiVoucher.discount_type || apiVoucher.discountType);
+        const discountValue = Number(apiVoucher.discount_value || apiVoucher.discountValue || 0);
+        const maxDiscount = Number(
+            apiVoucher.max_discount_amount ||
+            apiVoucher.maxDiscount ||
+            apiVoucher.max_discount ||
+            discountValue ||
+            0
+        );
+
+        const totalQuantity = Number(
+            apiVoucher.usage_limit ||
+            apiVoucher.total_quantity ||
+            apiVoucher.totalQuantity ||
             100
         );
-    }
 
-    function getVoucherComparableValue(voucher) {
-        if (voucher.discountType === "amount") {
-            return Number(voucher.discountValue || 0);
+        let claimedQuantity = Number(
+            apiVoucher.used_count ||
+            apiVoucher.used_quantity ||
+            apiVoucher.claimedQuantity ||
+            0
+        );
+
+        if (apiVoucher.remaining_quantity !== undefined && apiVoucher.remaining_quantity !== null) {
+            claimedQuantity = Math.max(totalQuantity - Number(apiVoucher.remaining_quantity || 0), 0);
         }
 
-        return Number(voucher.maxDiscount || 0);
+        const endTime = apiVoucher.end_date
+            ? new Date(apiVoucher.end_date).getTime()
+            : getStoredOrNewEndTime();
+
+        const startTime = apiVoucher.start_date
+            ? new Date(apiVoucher.start_date).getTime()
+            : Date.now();
+
+        const voucher = {
+            id: String(apiVoucher.id || apiVoucher.code || ""),
+            code: apiVoucher.code || "",
+            type: "",
+            badge: "",
+
+            title: apiVoucher.name || apiVoucher.title || apiVoucher.code || "Voucher",
+            description: apiVoucher.description || "Ưu đãi đặc biệt dành cho khách hàng.",
+
+            discountType: discountType,
+            discountValue: discountValue,
+            maxDiscount: maxDiscount,
+
+            minOrderValue: Number(
+                apiVoucher.min_order_value ||
+                apiVoucher.minOrderValue ||
+                apiVoucher.min_order ||
+                0
+            ),
+
+            totalQuantity: totalQuantity,
+            claimedQuantity: claimedQuantity,
+
+            createdAt: startTime,
+            expiresAt: endTime,
+
+            raw: apiVoucher
+        };
+
+        voucher.type = getVoucherType(voucher);
+        voucher.badge = getVoucherBadge(voucher);
+
+        return voucher;
     }
 
-    function isVoucherExpired(voucher) {
-        return Date.now() >= Number(voucher.expiresAt || 0) || isBigVoucherEnded();
-    }
 
-    function showToast(message, type) {
-        if (!voucherToastContainer) {
-            alert(message);
-            return;
-        }
-
-        const toast = document.createElement("div");
-        toast.className = "voucherToast " + (type || "success");
-        toast.textContent = message;
-
-        voucherToastContainer.appendChild(toast);
-
-        setTimeout(function () {
-            toast.remove();
-        }, 2600);
-    }
-
-    // 8. Đọc ghi localStorage
-
-    function getDataFromStorage(key, fallbackValue) {
-        const rawData = localStorage.getItem(key);
-
-        if (!rawData) {
-            return fallbackValue;
-        }
-
+    // 12. Load voucher từ API
+    async function loadBigVouchersFromApi() {
         try {
-            return JSON.parse(rawData);
-        } catch (error) {
-            console.error("Lỗi đọc localStorage:", error);
-            return fallbackValue;
-        }
-    }
+            const response = await getApi("vouchers/get-vouchers.php?page=1&limit=100&available_only=1&sort=end_soon");
+            const data = response.data || {};
+            const apiVouchers = Array.isArray(data.vouchers) ? data.vouchers : [];
 
-    function saveDataToStorage(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
-    }
+            const normalizedVouchers = apiVouchers
+                .map(normalizeVoucherFromApi)
+                .filter(function (voucher) {
+                    return voucher.code && getVoucherComparableValue(voucher) > 0;
+                });
 
-    // 9. Kiểm tra đăng nhập
-
-    function getCurrentUser() {
-        const isLogin = localStorage.getItem(IS_LOGIN_STORAGE_KEY) === "true";
-        const currentUserData = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
-
-        if (!isLogin) {
-            return null;
-        }
-
-        if (!currentUserData) {
-            return {
-                id: "member",
-                fullName: "Thành viên"
-            };
-        }
-
-        try {
-            const parsedUser = JSON.parse(currentUserData);
-
-            if (typeof parsedUser === "string") {
-                return {
-                    id: parsedUser,
-                    fullName: parsedUser
-                };
+            if (normalizedVouchers.length > 0) {
+                bigVouchers = normalizedVouchers;
+                return;
             }
 
-            return parsedUser;
+            bigVouchers = createFallbackBigVoucherData();
         } catch (error) {
-            return {
-                id: currentUserData,
-                fullName: currentUserData
-            };
+            console.warn("Không tải được voucher từ API, dùng dữ liệu fallback:", error);
+            bigVouchers = createFallbackBigVoucherData();
         }
     }
 
-    function isUserLoggedIn() {
-        return Boolean(getCurrentUser());
-    }
 
-    function getCurrentUserKey() {
-        const currentUser = getCurrentUser();
-
-        if (!currentUser) {
-            return "";
-        }
-
-        return (
-            currentUser.id ||
-            currentUser.userId ||
-            currentUser.email ||
-            currentUser.phone ||
-            currentUser.username ||
-            currentUser.fullName ||
-            currentUser.name ||
-            "member"
-        );
-    }
-
-    function getCurrentUserName() {
-        const currentUser = getCurrentUser();
-
-        if (!currentUser) {
-            return "";
-        }
-
-        return (
-            currentUser.fullName ||
-            currentUser.name ||
-            currentUser.username ||
-            currentUser.email ||
-            "thành viên"
-        );
-    }
-
-    // 10. Lưu voucher theo từng tài khoản
-
-    function getSavedVoucherMap() {
-        const savedData = getDataFromStorage(SAVED_VOUCHERS_STORAGE_KEY, {});
-
-        if (Array.isArray(savedData)) {
-            return {
-                member: savedData
-            };
-        }
-
-        if (!savedData || typeof savedData !== "object") {
-            return {};
-        }
-
-        return savedData;
-    }
-
-    function getCurrentUserSavedVouchers() {
-        const userKey = getCurrentUserKey();
-
-        if (!userKey) {
-            return [];
-        }
-
-        const savedMap = getSavedVoucherMap();
-        const savedVouchers = savedMap[userKey];
-
-        if (!Array.isArray(savedVouchers)) {
-            return [];
-        }
-
-        return savedVouchers;
-    }
-
-    function saveCurrentUserVouchers(savedVouchers) {
-        const userKey = getCurrentUserKey();
-
-        if (!userKey) {
-            return;
-        }
-
-        const savedMap = getSavedVoucherMap();
-        savedMap[userKey] = savedVouchers;
-
-        saveDataToStorage(SAVED_VOUCHERS_STORAGE_KEY, savedMap);
-    }
-
-    function isVoucherSaved(voucherId) {
-        const savedVouchers = getCurrentUserSavedVouchers();
-
-        return savedVouchers.some(function (voucher) {
-            return voucher.id === voucherId;
-        });
-    }
-
-    function createSavedVoucherData(voucher) {
-        return {
-            id: voucher.id,
-            code: voucher.code,
-            title: voucher.title,
-            description: voucher.description,
-            discountType: voucher.discountType,
-            discountValue: voucher.discountValue,
-            maxDiscount: voucher.maxDiscount,
-            minOrderValue: voucher.minOrderValue,
-            minOrder: voucher.minOrderValue,
-            expiry: formatDate(voucher.expiresAt),
-            expiresAt: voucher.expiresAt,
-            source: "big-voucher",
-            used: false,
-            savedAt: new Date().toISOString()
-        };
-    }
-
-    function saveVoucher(voucher) {
-        if (!isUserLoggedIn()) {
-            showToast("Vui lòng đăng nhập để lưu Big Voucher.", "warning");
-
-            setTimeout(function () {
-                window.location.href = "../html/login.html";
-            }, 900);
-
-            return;
-        }
-
-        if (isVoucherExpired(voucher)) {
-            showToast("Voucher này đã hết hạn.", "warning");
-            return;
-        }
-
-        if (getVoucherRemaining(voucher) <= 0) {
-            showToast("Voucher này đã hết lượt.", "warning");
-            return;
-        }
-
-        if (isVoucherSaved(voucher.id)) {
-            showToast("Voucher này đã được lưu trước đó.", "warning");
-            return;
-        }
-
-        const savedVouchers = getCurrentUserSavedVouchers();
-        savedVouchers.push(createSavedVoucherData(voucher));
-
-        saveCurrentUserVouchers(savedVouchers);
-
-        showToast("Đã lưu voucher " + voucher.code + ".", "success");
-        renderPage();
-        updateMemberNotice();
-    }
-
-    // 11. Countdown Big Voucher
-
-    function getBigVoucherEndTime() {
-        const htmlEndTime = bigVoucherHero?.dataset.endTime || "";
-
-        if (htmlEndTime) {
-            return new Date(htmlEndTime).getTime();
-        }
-
-        const savedEndTime = Number(localStorage.getItem(BIG_VOUCHER_END_TIME_KEY) || 0);
-
-        if (savedEndTime && savedEndTime > Date.now()) {
-            return savedEndTime;
-        }
-
-        const newEndTime = Date.now() + 24 * 60 * 60 * 1000;
-        localStorage.setItem(BIG_VOUCHER_END_TIME_KEY, String(newEndTime));
-
-        return newEndTime;
-    }
-
-    function isBigVoucherEnded() {
-        return Date.now() >= getBigVoucherEndTime();
-    }
-
+    // 13. Countdown Big Voucher
     function updateCountdown() {
         const endTime = getBigVoucherEndTime();
         const distance = Math.max(endTime - Date.now(), 0);
@@ -499,8 +734,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 1000);
     }
 
-    // 12. Cập nhật thông tin thành viên
 
+    // 14. Cập nhật thông tin thành viên
     function updateMemberNotice() {
         if (!memberNotice) {
             return;
@@ -515,7 +750,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const savedCount = getCurrentUserSavedVouchers().length;
         const userName = getCurrentUserName();
 
-        memberNotice.textContent = "Xin chào " + userName + ", bạn đang có " + savedCount + " Big Voucher đã lưu.";
+        memberNotice.textContent =
+            "Xin chào " +
+            userName +
+            ", bạn đang có " +
+            savedCount +
+            " voucher đã lưu.";
+
         memberNotice.classList.add("isLogin");
     }
 
@@ -529,6 +770,8 @@ document.addEventListener("DOMContentLoaded", function () {
         })[0];
 
         if (!bestVoucher) {
+            highlightVoucherText.textContent = "---";
+            highlightVoucherSubtext.textContent = "Chưa có voucher nổi bật";
             return;
         }
 
@@ -536,8 +779,8 @@ document.addEventListener("DOMContentLoaded", function () {
         highlightVoucherSubtext.textContent = formatVoucherValue(bestVoucher);
     }
 
-    // 13. Lọc voucher
 
+    // 15. Lọc voucher
     function filterVouchersByTab(vouchers, filterValue) {
         if (filterValue === "all") {
             return vouchers;
@@ -546,13 +789,14 @@ document.addEventListener("DOMContentLoaded", function () {
         if (filterValue === "limited") {
             return vouchers.filter(function (voucher) {
                 const remaining = getVoucherRemaining(voucher);
+
                 return remaining > 0 && remaining <= Math.ceil(Number(voucher.totalQuantity || 0) * 0.25);
             });
         }
 
         if (filterValue === "high-value") {
             return vouchers.filter(function (voucher) {
-                return voucher.type === "high-value" || getVoucherComparableValue(voucher) >= 100000;
+                return voucher.type === "high-value" || getVoucherComparableValue(voucher) >= 50000;
             });
         }
 
@@ -577,8 +821,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 14. Sắp xếp voucher
 
+    // 16. Sắp xếp voucher
     function sortVouchers(vouchers, sortValue) {
         const clonedVouchers = [...vouchers];
 
@@ -619,8 +863,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return vouchers;
     }
 
-    // 15. Hiển thị trạng thái
 
+    // 17. Hiển thị trạng thái
     function showState(type) {
         bigVoucherLoadingState?.classList.remove("show");
         bigVoucherEmptyState?.classList.remove("show");
@@ -658,8 +902,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 16. Tạo card voucher
 
+    // 18. Tạo card voucher
     function getVoucherButtonState(voucher) {
         if (isVoucherExpired(voucher)) {
             return {
@@ -677,7 +921,7 @@ document.addEventListener("DOMContentLoaded", function () {
             };
         }
 
-        if (isUserLoggedIn() && isVoucherSaved(voucher.id)) {
+        if (isUserLoggedIn() && isVoucherSaved(voucher)) {
             return {
                 text: "Đã lưu",
                 status: "saved",
@@ -727,6 +971,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (voucherCard) {
             voucherCard.dataset.voucherId = voucher.id;
+            voucherCard.dataset.voucherCode = voucher.code;
             voucherCard.classList.toggle("isSaved", buttonState.status === "saved");
             voucherCard.classList.toggle("isExpired", buttonState.status === "expired");
             voucherCard.classList.toggle("isSoldOut", buttonState.status === "sold-out");
@@ -786,8 +1031,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return clone;
     }
 
-    // 17. Render voucher
 
+    // 19. Render voucher
     function renderVouchers(vouchers) {
         clearVoucherList();
         updateResultCount(vouchers.length);
@@ -823,15 +1068,16 @@ document.addEventListener("DOMContentLoaded", function () {
             updateHighlightVoucher();
         } catch (error) {
             console.error("Lỗi render Big Voucher:", error);
+
             clearVoucherList();
             updateResultCount(0);
             showState("error");
         }
     }
 
-    // 18. Xử lý sự kiện filter
 
-    bigVoucherFilterBar?.addEventListener("click", function (event) {
+    // 20. Xử lý filter
+    function handleFilterClick(event) {
         const tab = event.target.closest(".voucherTab");
 
         if (!tab) {
@@ -847,28 +1093,34 @@ document.addEventListener("DOMContentLoaded", function () {
         tab.classList.add("active");
 
         renderPage();
-    });
+    }
 
-    // 19. Xử lý sự kiện sort
 
-    bigVoucherSort?.addEventListener("change", function () {
+    // 21. Xử lý sort
+    function handleSortChange() {
         currentSort = bigVoucherSort.value || "default";
+
         renderPage();
-    });
+    }
 
-    // 20. Xử lý tìm kiếm
 
-    searchForm?.addEventListener("submit", function (event) {
+    // 22. Xử lý tìm kiếm
+    function handleSearchSubmit(event) {
         event.preventDefault();
 
-        currentKeyword = searchKeywordInput?.value || "";
+        const keyword = searchKeywordInput ? searchKeywordInput.value.trim() : "";
 
-        renderPage();
-    });
+        if (!keyword) {
+            showToast("Vui lòng nhập từ khóa tìm kiếm.", "warning");
+            return;
+        }
 
-    // 21. Xử lý săn voucher
+        window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
+    }
 
-    bigVoucherList?.addEventListener("click", function (event) {
+
+    // 23. Xử lý săn voucher
+    function handleVoucherListClick(event) {
         const actionButton = event.target.closest('[data-role="voucher-action"]');
 
         if (!actionButton) {
@@ -882,7 +1134,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const voucher = bigVouchers.find(function (item) {
-            return item.id === voucherId;
+            return String(item.id) === String(voucherId);
         });
 
         if (!voucher) {
@@ -891,15 +1143,40 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         saveVoucher(voucher);
-    });
+    }
 
-    // 22. Khởi tạo trang
 
-    function initBigVoucherPage() {
+    // 24. Gắn sự kiện
+    function bindEvents() {
+        if (bigVoucherFilterBar) {
+            bigVoucherFilterBar.addEventListener("click", handleFilterClick);
+        }
+
+        if (bigVoucherSort) {
+            bigVoucherSort.addEventListener("change", handleSortChange);
+        }
+
+        if (searchForm) {
+            searchForm.addEventListener("submit", handleSearchSubmit);
+        }
+
+        if (bigVoucherList) {
+            bigVoucherList.addEventListener("click", handleVoucherListClick);
+        }
+    }
+
+
+    // 25. Khởi tạo trang
+    async function initBigVoucherPage() {
+        bindEvents();
+
         showState("loading");
         clearVoucherList();
         updateResultCount(0);
         updateMemberNotice();
+
+        await loadBigVouchersFromApi();
+
         updateHighlightVoucher();
         startCountdown();
 
@@ -910,8 +1187,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     initBigVoucherPage();
 
-    // 23. Dọn interval khi rời trang
 
+    // 26. Dọn interval khi rời trang
     window.addEventListener("beforeunload", function () {
         if (countdownTimer) {
             clearInterval(countdownTimer);

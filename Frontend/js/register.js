@@ -1,46 +1,19 @@
-// 1. Khởi tạo trang đăng ký
+// =========================================================
+// File: Frontend/js/register.js
+// Mục đích: Đăng ký khách hàng bằng API backend thật
+// =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. Kiểm tra đúng trang đăng ký
     const registerPage = document.querySelector('[data-page="register"]');
 
     if (!registerPage) {
         return;
     }
 
-    // 2. Key localStorage
 
-    const USERS_STORAGE_KEY = "users";
-    const USER_POINTS_STORAGE_KEY = "user_points";
-
-    // 3. Dữ liệu tài khoản mẫu
-
-    const defaultUsers = [
-        {
-            id: "user001",
-            fullName: "Nguyễn Văn A",
-            username: "vana",
-            email: "vana@gmail.com",
-            phone: "0911010757",
-            password: "123456",
-            role: "customer",
-            points: 1200
-        },
-        {
-            id: "user002",
-            fullName: "Trần Thị B",
-            username: "tranb",
-            email: "tranb@gmail.com",
-            phone: "0917257595",
-            password: "123456",
-            role: "customer",
-            points: 500
-        }
-    ];
-
-    // 4. Lấy DOM
-
+    // 2. Lấy DOM
     const registerForm = document.getElementById("registerForm");
-
     const registerFullName = document.getElementById("registerFullName");
     const registerEmail = document.getElementById("registerEmail");
     const registerUsername = document.getElementById("registerUsername");
@@ -52,43 +25,44 @@ document.addEventListener("DOMContentLoaded", function () {
     const registerErrorState = document.getElementById("registerErrorState");
     const registerSuccessState = document.getElementById("registerSuccessState");
     const btnRegister = document.getElementById("btnRegister");
+
     const togglePasswordButtons = document.querySelectorAll(".togglePassword");
 
     const searchForm = document.getElementById("searchForm");
     const searchKeyword = document.getElementById("searchKeyword");
 
-    // 5. Hàm tiện ích
 
-    function normalizeText(value) {
-        return String(value || "").trim().toLowerCase();
-    }
-
+    // 3. Kiểm tra dữ liệu rỗng
     function isEmpty(value) {
         return String(value || "").trim() === "";
     }
 
+
+    // 4. Kiểm tra email
     function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         return emailRegex.test(email);
     }
 
+
+    // 5. Kiểm tra tên đăng nhập
     function isValidUsername(username) {
         const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
 
         return usernameRegex.test(username);
     }
 
+
+    // 6. Kiểm tra số điện thoại Việt Nam đơn giản
     function isValidPhone(phone) {
         const phoneRegex = /^0\d{9}$/;
 
         return phoneRegex.test(phone);
     }
 
-    function generateUserId() {
-        return "user" + Date.now();
-    }
 
+    // 7. Ẩn thông báo
     function hideFormStates() {
         if (registerErrorState) {
             registerErrorState.hidden = true;
@@ -101,6 +75,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+
+    // 8. Hiển thị lỗi
     function showError(message) {
         hideFormStates();
 
@@ -110,6 +86,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+
+    // 9. Hiển thị thành công
     function showSuccess(message) {
         hideFormStates();
 
@@ -119,6 +97,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+
+    // 10. Loading nút đăng ký
     function setRegisterButtonLoading(isLoading) {
         if (!btnRegister) {
             return;
@@ -128,109 +108,8 @@ document.addEventListener("DOMContentLoaded", function () {
         btnRegister.textContent = isLoading ? "ĐANG ĐĂNG KÝ..." : "ĐĂNG KÝ";
     }
 
-    // 6. Đọc ghi localStorage
 
-    function getDataFromStorage(key, fallbackValue) {
-        const rawData = localStorage.getItem(key);
-
-        if (!rawData) {
-            return fallbackValue;
-        }
-
-        try {
-            return JSON.parse(rawData);
-        } catch (error) {
-            console.error("Lỗi đọc localStorage:", error);
-            return fallbackValue;
-        }
-    }
-
-    function saveDataToStorage(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
-    }
-
-    function getUsersFromStorage() {
-        const users = getDataFromStorage(USERS_STORAGE_KEY, []);
-
-        if (!Array.isArray(users) || users.length === 0) {
-            saveDataToStorage(USERS_STORAGE_KEY, defaultUsers);
-            initDefaultUserPoints(defaultUsers);
-            return defaultUsers;
-        }
-
-        return users;
-    }
-
-    function saveUsersToStorage(users) {
-        saveDataToStorage(USERS_STORAGE_KEY, users);
-    }
-
-    function getUserPointMap() {
-        const pointMap = getDataFromStorage(USER_POINTS_STORAGE_KEY, {});
-
-        if (!pointMap || typeof pointMap !== "object" || Array.isArray(pointMap)) {
-            return {};
-        }
-
-        return pointMap;
-    }
-
-    function saveUserPointMap(pointMap) {
-        saveDataToStorage(USER_POINTS_STORAGE_KEY, pointMap);
-    }
-
-    // 7. Đồng bộ điểm
-
-    function getUserKey(user) {
-        if (!user) {
-            return "";
-        }
-
-        return (
-            user.id ||
-            user.userId ||
-            user.email ||
-            user.phone ||
-            user.username ||
-            user.fullName ||
-            user.name ||
-            "member"
-        );
-    }
-
-    function initDefaultUserPoints(users) {
-        const pointMap = getUserPointMap();
-
-        users.forEach(function (user) {
-            const userKey = getUserKey(user);
-
-            if (!userKey) {
-                return;
-            }
-
-            if (typeof pointMap[userKey] !== "number") {
-                pointMap[userKey] = Number(user.points || 0);
-            }
-        });
-
-        saveUserPointMap(pointMap);
-    }
-
-    function initNewUserPoints(user) {
-        const userKey = getUserKey(user);
-
-        if (!userKey) {
-            return;
-        }
-
-        const pointMap = getUserPointMap();
-        pointMap[userKey] = Number(user.points || 0);
-
-        saveUserPointMap(pointMap);
-    }
-
-    // 8. Redirect sau đăng ký
-
+    // 11. Kiểm tra redirect an toàn
     function isSafeRedirectUrl(url) {
         if (!url) {
             return false;
@@ -256,6 +135,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
     }
 
+
+    // 12. Lấy redirect sau đăng ký
     function getRedirectUrlFromParam() {
         const params = new URLSearchParams(window.location.search);
         const redirectUrl = params.get("redirect");
@@ -267,6 +148,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return "";
     }
 
+
+    // 13. Lấy link đăng nhập sau đăng ký
     function getLoginUrlAfterRegister() {
         const redirectUrl = getRedirectUrlFromParam();
 
@@ -277,44 +160,15 @@ document.addEventListener("DOMContentLoaded", function () {
         return "../html/login.html?redirect=" + encodeURIComponent(redirectUrl);
     }
 
-    // 9. Kiểm tra tài khoản tồn tại
 
-    function isEmailExists(email) {
-        const users = getUsersFromStorage();
-        const normalizedEmail = normalizeText(email);
-
-        return users.some(function (user) {
-            return normalizeText(user.email) === normalizedEmail;
-        });
-    }
-
-    function isUsernameExists(username) {
-        const users = getUsersFromStorage();
-        const normalizedUsername = normalizeText(username);
-
-        return users.some(function (user) {
-            return normalizeText(user.username) === normalizedUsername;
-        });
-    }
-
-    function isPhoneExists(phone) {
-        const users = getUsersFromStorage();
-        const normalizedPhone = normalizeText(phone);
-
-        return users.some(function (user) {
-            return normalizeText(user.phone) === normalizedPhone;
-        });
-    }
-
-    // 10. Kiểm tra dữ liệu đăng ký
-
+    // 14. Validate form đăng ký
     function validateRegisterForm() {
-        const fullName = registerFullName?.value.trim() || "";
-        const email = registerEmail?.value.trim() || "";
-        const username = registerUsername?.value.trim() || "";
-        const phone = registerPhone?.value.trim() || "";
-        const password = registerPassword?.value.trim() || "";
-        const confirm = confirmPassword?.value.trim() || "";
+        const fullName = registerFullName ? registerFullName.value.trim() : "";
+        const email = registerEmail ? registerEmail.value.trim() : "";
+        const username = registerUsername ? registerUsername.value.trim() : "";
+        const phone = registerPhone ? registerPhone.value.trim() : "";
+        const password = registerPassword ? registerPassword.value.trim() : "";
+        const confirm = confirmPassword ? confirmPassword.value.trim() : "";
 
         if (isEmpty(fullName)) {
             showError("Vui lòng nhập họ và tên.");
@@ -340,26 +194,8 @@ document.addEventListener("DOMContentLoaded", function () {
             return false;
         }
 
-        if (isEmailExists(email)) {
-            showError("Email này đã được sử dụng.");
-            registerEmail?.focus();
-            return false;
-        }
-
-        if (isEmpty(username)) {
-            showError("Vui lòng nhập tên đăng nhập.");
-            registerUsername?.focus();
-            return false;
-        }
-
-        if (!isValidUsername(username)) {
+        if (username && !isValidUsername(username)) {
             showError("Tên đăng nhập phải từ 4-20 ký tự, chỉ gồm chữ, số hoặc dấu gạch dưới.");
-            registerUsername?.focus();
-            return false;
-        }
-
-        if (isUsernameExists(username)) {
-            showError("Tên đăng nhập này đã tồn tại.");
             registerUsername?.focus();
             return false;
         }
@@ -372,12 +208,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!isValidPhone(phone)) {
             showError("Số điện thoại không hợp lệ. Ví dụ: 0911010757.");
-            registerPhone?.focus();
-            return false;
-        }
-
-        if (isPhoneExists(phone)) {
-            showError("Số điện thoại này đã được sử dụng.");
             registerPhone?.focus();
             return false;
         }
@@ -415,33 +245,26 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
     }
 
-    // 11. Tạo tài khoản mới
 
-    function createNewUser() {
+    // 15. Lấy dữ liệu gửi API
+    function getRegisterData() {
         return {
-            id: generateUserId(),
+            full_name: registerFullName.value.trim(),
             fullName: registerFullName.value.trim(),
-            username: registerUsername.value.trim(),
+
             email: registerEmail.value.trim(),
             phone: registerPhone.value.trim(),
+
+            username: registerUsername ? registerUsername.value.trim() : "",
+
             password: registerPassword.value.trim(),
-            role: "customer",
-            points: 0,
-            createdAt: new Date().toISOString()
+            confirm_password: confirmPassword ? confirmPassword.value.trim() : ""
         };
     }
 
-    function saveNewUser(user) {
-        const users = getUsersFromStorage();
 
-        users.push(user);
-        saveUsersToStorage(users);
-        initNewUserPoints(user);
-    }
-
-    // 12. Xử lý đăng ký
-
-    function handleRegisterSubmit(event) {
+    // 16. Xử lý đăng ký
+    async function handleRegisterSubmit(event) {
         event.preventDefault();
 
         hideFormStates();
@@ -450,23 +273,37 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        setRegisterButtonLoading(true);
+        if (!window.CustomerApi) {
+            showError("Thiếu file customer-api.js. Vui lòng kiểm tra lại thứ tự nhúng script.");
+            return;
+        }
 
-        setTimeout(function () {
-            const newUser = createNewUser();
+        const registerData = getRegisterData();
 
-            saveNewUser(newUser);
+        try {
+            setRegisterButtonLoading(true);
+
+            await window.CustomerApi.post("auth/register.php", registerData);
 
             showSuccess("Đăng ký thành công. Đang chuyển về trang đăng nhập...");
 
             setTimeout(function () {
                 window.location.href = getLoginUrlAfterRegister();
-            }, 1000);
-        }, 400);
+            }, 900);
+        } catch (error) {
+            showError(
+                window.CustomerApi.getApiErrorMessage(
+                    error,
+                    "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin."
+                )
+            );
+        } finally {
+            setRegisterButtonLoading(false);
+        }
     }
 
-    // 13. Hiện ẩn mật khẩu
 
+    // 17. Hiện ẩn mật khẩu
     function togglePasswordVisibility(button) {
         const targetId = button.getAttribute("data-target");
         const input = document.getElementById(targetId);
@@ -493,16 +330,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+
+    // 18. Xử lý click hiện ẩn mật khẩu
     function handleTogglePasswordClick(event) {
         togglePasswordVisibility(event.currentTarget);
     }
 
-    // 14. Xử lý tìm kiếm
 
+    // 19. Xử lý tìm kiếm
     function handleSearchSubmit(event) {
         event.preventDefault();
 
-        const keyword = searchKeyword?.value.trim() || "";
+        const keyword = searchKeyword ? searchKeyword.value.trim() : "";
 
         if (!keyword) {
             alert("Vui lòng nhập từ khóa tìm kiếm.");
@@ -512,30 +351,70 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
     }
 
-    // 15. Gắn sự kiện
 
+    // 20. Nếu đã đăng nhập thì chuyển về home
+    async function redirectIfLoggedIn() {
+        if (!window.CustomerApi) {
+            return;
+        }
+
+        const localUser = window.CustomerApi.getCurrentCustomerFromLocal();
+
+        if (!localUser) {
+            return;
+        }
+
+        try {
+            await window.CustomerApi.getCurrentCustomerFromSession();
+
+            window.location.href = "../html/home.html";
+        } catch (error) {
+            window.CustomerApi.clearCustomerLocalAuth();
+        }
+    }
+
+
+    // 21. Gắn sự kiện
     function bindEvents() {
-        registerForm?.addEventListener("submit", handleRegisterSubmit);
+        if (registerForm) {
+            registerForm.addEventListener("submit", handleRegisterSubmit);
+        }
 
-        togglePasswordButtons?.forEach(function (button) {
-            button.addEventListener("click", handleTogglePasswordClick);
+        if (togglePasswordButtons) {
+            togglePasswordButtons.forEach(function (button) {
+                button.addEventListener("click", handleTogglePasswordClick);
+            });
+        }
+
+        if (searchForm) {
+            searchForm.addEventListener("submit", handleSearchSubmit);
+        }
+
+        const inputs = [
+            registerFullName,
+            registerEmail,
+            registerUsername,
+            registerPhone,
+            registerPassword,
+            confirmPassword,
+            agreeTerms
+        ];
+
+        inputs.forEach(function (input) {
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener("input", hideFormStates);
+            input.addEventListener("change", hideFormStates);
         });
-
-        searchForm?.addEventListener("submit", handleSearchSubmit);
     }
 
-    // 16. Khởi tạo dữ liệu
 
-    function initRegisterData() {
-        const users = getUsersFromStorage();
-        initDefaultUserPoints(users);
-    }
-
-    // 17. Khởi tạo trang
-
-    function initRegisterPage() {
-        initRegisterData();
+    // 22. Khởi tạo trang đăng ký
+    async function initRegisterPage() {
         bindEvents();
+        await redirectIfLoggedIn();
     }
 
     initRegisterPage();

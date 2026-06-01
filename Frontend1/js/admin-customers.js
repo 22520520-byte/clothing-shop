@@ -1,111 +1,25 @@
-// 1. Khai báo key localStorage
-const ADMIN_CURRENT_USER_KEY = "admin_current_user";
-const ADMIN_IS_LOGIN_KEY = "admin_is_login";
-const ADMIN_CUSTOMERS_KEY = "admin_customers";
+// =========================================================
+// File: Frontend1/js/admin-customers.js
+// Mục đích: Gắn trang quản lý khách hàng admin với API backend thật
+// =========================================================
 
-// 2. Dữ liệu khách hàng mẫu
-const demoAdminCustomers = [
-    {
-        id: "KH001",
-        fullName: "Nguyễn Minh Anh",
-        email: "minhanh@gmail.com",
-        phone: "0901234567",
-        address: "12 Nguyễn Huệ, Quận 1, TP.HCM",
-        registerDate: "2026-04-02",
-        orderCount: 8,
-        totalSpent: 5200000,
-        rank: "gold",
-        status: "active",
-        points: 1250,
-        totalPointsEarned: 1800,
-        totalPointsUsed: 550,
-        wishlistCount: 6,
-        lastOrderDate: "2026-05-18"
-    },
-    {
-        id: "KH002",
-        fullName: "Trần Hoàng Nam",
-        email: "hoangnam@gmail.com",
-        phone: "0912345678",
-        address: "45 Võ Văn Ngân, TP Thủ Đức, TP.HCM",
-        registerDate: "2026-04-12",
-        orderCount: 4,
-        totalSpent: 2350000,
-        rank: "silver",
-        status: "active",
-        points: 650,
-        totalPointsEarned: 900,
-        totalPointsUsed: 250,
-        wishlistCount: 3,
-        lastOrderDate: "2026-05-18"
-    },
-    {
-        id: "KH003",
-        fullName: "Lê Phương Thảo",
-        email: "phuongthao@gmail.com",
-        phone: "0987654321",
-        address: "88 Lê Văn Sỹ, Quận 3, TP.HCM",
-        registerDate: "2026-03-25",
-        orderCount: 12,
-        totalSpent: 9800000,
-        rank: "diamond",
-        status: "active",
-        points: 3200,
-        totalPointsEarned: 4500,
-        totalPointsUsed: 1300,
-        wishlistCount: 12,
-        lastOrderDate: "2026-05-17"
-    },
-    {
-        id: "KH004",
-        fullName: "Phạm Quốc Huy",
-        email: "quochuy@gmail.com",
-        phone: "0934567890",
-        address: "25 Cách Mạng Tháng 8, Quận 10, TP.HCM",
-        registerDate: "2026-05-01",
-        orderCount: 1,
-        totalSpent: 430000,
-        rank: "new",
-        status: "locked",
-        points: 40,
-        totalPointsEarned: 40,
-        totalPointsUsed: 0,
-        wishlistCount: 1,
-        lastOrderDate: "2026-05-17"
-    },
-    {
-        id: "KH005",
-        fullName: "Võ Thanh Trúc",
-        email: "thanhtruc@gmail.com",
-        phone: "0977123456",
-        address: "70 Phan Văn Trị, Gò Vấp, TP.HCM",
-        registerDate: "2026-05-10",
-        orderCount: 0,
-        totalSpent: 0,
-        rank: "new",
-        status: "active",
-        points: 0,
-        totalPointsEarned: 0,
-        totalPointsUsed: 0,
-        wishlistCount: 2,
-        lastOrderDate: ""
-    }
-];
 
-// 3. Lấy element thông tin admin
+// 1. Lấy element thông tin admin
 const adminAvatar = document.getElementById("adminAvatar");
 const adminName = document.getElementById("adminName");
 const adminRole = document.getElementById("adminRole");
 const adminCurrentDate = document.getElementById("adminCurrentDate");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
 
-// 4. Lấy element thống kê
+
+// 2. Lấy element thống kê khách hàng
 const totalCustomerCount = document.getElementById("totalCustomerCount");
 const activeCustomerCount = document.getElementById("activeCustomerCount");
 const vipCustomerCount = document.getElementById("vipCustomerCount");
 const lockedCustomerCount = document.getElementById("lockedCustomerCount");
 
-// 5. Lấy element bộ lọc và bảng
+
+// 3. Lấy element bộ lọc và bảng khách hàng
 const customerSearchInput = document.getElementById("customerSearchInput");
 const customerRankFilter = document.getElementById("customerRankFilter");
 const customerStatusFilter = document.getElementById("customerStatusFilter");
@@ -113,23 +27,44 @@ const customerTableBody = document.getElementById("customerTableBody");
 const emptyCustomerText = document.getElementById("emptyCustomerText");
 const customerRowTemplate = document.getElementById("customerRowTemplate");
 
-// 6. Format tiền Việt Nam
+
+// 4. Biến lưu dữ liệu khách hàng
+let currentAdminUser = null;
+let adminCustomers = [];
+let customerSummary = null;
+
+
+// 5. Format tiền Việt Nam
 function formatPrice(price) {
+    if (window.AdminApi && window.AdminApi.formatPrice) {
+        return window.AdminApi.formatPrice(price);
+    }
+
     return Number(price || 0).toLocaleString("vi-VN") + "đ";
 }
 
-// 7. Format ngày Việt Nam
+
+// 6. Format ngày Việt Nam
 function formatDate(dateString) {
-    if (!dateString) return "Chưa có";
+    if (!dateString) {
+        return "Chưa có";
+    }
 
     const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+        return dateString;
+    }
 
     return date.toLocaleDateString("vi-VN");
 }
 
-// 8. Render ngày hiện tại
+
+// 7. Render ngày hiện tại
 function renderCurrentDate() {
-    if (!adminCurrentDate) return;
+    if (!adminCurrentDate) {
+        return;
+    }
 
     const today = new Date();
 
@@ -141,162 +76,131 @@ function renderCurrentDate() {
     });
 }
 
-// 9. Kiểm tra đăng nhập admin
-function checkAdminLogin() {
-    const isLogin = localStorage.getItem(ADMIN_IS_LOGIN_KEY) === "true";
-    const currentAdmin = localStorage.getItem(ADMIN_CURRENT_USER_KEY);
 
-    if (!isLogin || !currentAdmin) {
-        window.location.href = "../html/admin-login.html";
-        return null;
+// 8. Lấy chữ đại diện
+function getFirstLetter(text) {
+    if (!text) {
+        return "K";
     }
 
-    try {
-        return JSON.parse(currentAdmin);
-    } catch (error) {
-        localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-        localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
-
-        window.location.href = "../html/admin-login.html";
-        return null;
-    }
+    return text.trim().charAt(0).toUpperCase();
 }
+
+
+// 9. Lấy nhãn vai trò admin
+function getAdminRoleLabel(roleCode, roleName) {
+    if (roleCode === "owner") {
+        return "Chủ cửa hàng";
+    }
+
+    if (roleCode === "admin") {
+        return "Quản trị viên";
+    }
+
+    if (roleCode === "staff") {
+        return "Nhân viên";
+    }
+
+    return roleName || "Quản trị viên";
+}
+
 
 // 10. Hiển thị thông tin admin
 function renderAdminInfo(adminUser) {
-    if (!adminUser) return;
+    if (!adminUser) {
+        return;
+    }
 
-    const fullName = adminUser.fullName || "Quản trị viên";
-    const roleText = adminUser.role === "owner" ? "Chủ cửa hàng" : "Nhân viên";
+    const fullName = adminUser.fullName || adminUser.full_name || "Quản trị viên";
+    const roleCode = adminUser.role || "";
+    const roleName = adminUser.roleName || "";
 
     if (adminName) {
         adminName.textContent = fullName;
     }
 
     if (adminRole) {
-        adminRole.textContent = roleText;
+        adminRole.textContent = getAdminRoleLabel(roleCode, roleName);
     }
 
     if (adminAvatar) {
-        adminAvatar.textContent = fullName.charAt(0).toUpperCase();
+        adminAvatar.textContent = getFirstLetter(fullName);
     }
 
     const ownerOnlyLinks = document.querySelectorAll("[data-owner-only='true']");
 
-    ownerOnlyLinks.forEach(function(link) {
-        if (adminUser.role !== "owner") {
-            link.style.display = "none";
-        }
+    ownerOnlyLinks.forEach(function (link) {
+        link.style.display = roleCode === "owner" ? "" : "none";
     });
 }
 
-// 11. Đăng xuất admin
-function handleAdminLogout() {
-    localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-    localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
 
-    window.location.href = "../html/admin-login.html";
+// 11. Lấy hạng khách hàng từ API
+function getCustomerRankCode(customer) {
+    if (customer.customer_profile && customer.customer_profile.membership_level) {
+        return customer.customer_profile.membership_level;
+    }
+
+    if (customer.membership_level) {
+        return customer.membership_level;
+    }
+
+    return "normal";
 }
 
-// 12. Chuẩn hóa khách hàng
-function normalizeCustomer(customer, index) {
-    const defaultCustomer = demoAdminCustomers[index] || demoAdminCustomers[0];
+
+// 12. Lấy nhãn hạng khách hàng
+function getCustomerRankInfo(rank) {
+    if (rank === "silver") {
+        return {
+            text: "Bạc",
+            className: "rankSilver"
+        };
+    }
+
+    if (rank === "gold") {
+        return {
+            text: "Vàng",
+            className: "rankGold"
+        };
+    }
+
+    if (rank === "diamond") {
+        return {
+            text: "Kim cương",
+            className: "rankDiamond"
+        };
+    }
 
     return {
-        id: customer.id || "KH" + String(index + 1).padStart(3, "0"),
-        fullName: customer.fullName || defaultCustomer.fullName || "Khách hàng",
-        email: customer.email || defaultCustomer.email || "Chưa cập nhật",
-        phone: customer.phone || defaultCustomer.phone || "Chưa cập nhật",
-        address: customer.address || defaultCustomer.address || "Chưa cập nhật",
-        registerDate: customer.registerDate || defaultCustomer.registerDate || new Date().toISOString().slice(0, 10),
-        orderCount: Number(customer.orderCount || 0),
-        totalSpent: Number(customer.totalSpent || 0),
-        rank: customer.rank || "new",
-        status: customer.status || "active",
-        points: Number(customer.points || 0),
-        totalPointsEarned: Number(customer.totalPointsEarned || 0),
-        totalPointsUsed: Number(customer.totalPointsUsed || 0),
-        wishlistCount: Number(customer.wishlistCount || 0),
-        lastOrderDate: customer.lastOrderDate || ""
+        text: "Khách mới",
+        className: "rankNew"
     };
 }
 
-// 13. Lấy danh sách khách hàng
-function getCustomers() {
-    const savedCustomers = localStorage.getItem(ADMIN_CUSTOMERS_KEY);
 
-    if (!savedCustomers) {
-        localStorage.setItem(ADMIN_CUSTOMERS_KEY, JSON.stringify(demoAdminCustomers));
-        return demoAdminCustomers;
+// 13. Lấy trạng thái khách hàng
+function getCustomerStatusCode(customer) {
+    if (customer.status) {
+        return customer.status;
     }
 
-    try {
-        const customers = JSON.parse(savedCustomers);
-
-        const normalizedCustomers = customers.map(function(customer, index) {
-            return normalizeCustomer(customer, index);
-        });
-
-        localStorage.setItem(ADMIN_CUSTOMERS_KEY, JSON.stringify(normalizedCustomers));
-
-        return normalizedCustomers;
-    } catch (error) {
-        localStorage.setItem(ADMIN_CUSTOMERS_KEY, JSON.stringify(demoAdminCustomers));
-        return demoAdminCustomers;
-    }
+    return "active";
 }
 
-// 14. Lưu danh sách khách hàng
-function saveCustomers(customers) {
-    localStorage.setItem(ADMIN_CUSTOMERS_KEY, JSON.stringify(customers));
-}
 
-// 15. Tạo link chi tiết khách hàng
-function getAdminCustomerDetailUrl(customerId) {
-    return "../html/admin-customer-detail.html?id=" + encodeURIComponent(customerId);
-}
-
-// 16. Lấy chữ đại diện khách hàng
-function getCustomerFirstLetter(fullName) {
-    if (!fullName) return "K";
-
-    return fullName.trim().charAt(0).toUpperCase();
-}
-
-// 17. Lấy thông tin hạng khách hàng
-function getCustomerRankInfo(rank) {
-    switch (rank) {
-        case "silver":
-            return {
-                text: "Bạc",
-                className: "rankSilver"
-            };
-
-        case "gold":
-            return {
-                text: "Vàng",
-                className: "rankGold"
-            };
-
-        case "diamond":
-            return {
-                text: "Kim cương",
-                className: "rankDiamond"
-            };
-
-        default:
-            return {
-                text: "Khách mới",
-                className: "rankNew"
-            };
-    }
-}
-
-// 18. Lấy thông tin trạng thái khách hàng
+// 14. Lấy nhãn trạng thái khách hàng
 function getCustomerStatusInfo(status) {
-    if (status === "locked") {
+    if (status === "blocked") {
         return {
-            text: "Đã khóa",
+            text: "Bị khóa",
+            className: "statusCancelled"
+        };
+    }
+
+    if (status === "inactive") {
+        return {
+            text: "Tạm khóa",
             className: "statusCancelled"
         };
     }
@@ -307,73 +211,237 @@ function getCustomerStatusInfo(status) {
     };
 }
 
-// 19. Render thống kê khách hàng
-function renderCustomerStats(customers) {
-    const activeCustomers = customers.filter(function(customer) {
-        return customer.status === "active";
-    });
 
-    const vipCustomers = customers.filter(function(customer) {
+// 15. Lấy tổng đơn hàng của khách
+function getCustomerOrderCount(customer) {
+    if (customer.order_summary && customer.order_summary.total_orders !== undefined) {
+        return Number(customer.order_summary.total_orders || 0);
+    }
+
+    return Number(customer.total_orders || 0);
+}
+
+
+// 16. Lấy tổng chi tiêu của khách
+function getCustomerTotalSpent(customer) {
+    if (customer.order_summary && customer.order_summary.total_spent !== undefined) {
+        return Number(customer.order_summary.total_spent || 0);
+    }
+
+    return Number(customer.total_spent || 0);
+}
+
+
+// 17. Chuẩn hóa khách hàng từ API
+function normalizeCustomer(customer) {
+    const rank = getCustomerRankCode(customer);
+    const status = getCustomerStatusCode(customer);
+
+    return {
+        id: customer.id,
+        code: "KH" + String(customer.id).padStart(3, "0"),
+        fullName: customer.full_name || customer.fullName || "Khách hàng",
+        email: customer.email || "Chưa cập nhật",
+        phone: customer.phone || "Chưa cập nhật",
+        registerDate: customer.created_at || "",
+        orderCount: getCustomerOrderCount(customer),
+        totalSpent: getCustomerTotalSpent(customer),
+        rank: rank,
+        status: status,
+        points: customer.customer_profile && customer.customer_profile.points_balance !== undefined
+            ? Number(customer.customer_profile.points_balance || 0)
+            : 0,
+        raw: customer
+    };
+}
+
+
+// 18. Render thống kê khách hàng
+function renderCustomerStats() {
+    const totalCustomers = customerSummary && customerSummary.total_customers !== undefined
+        ? Number(customerSummary.total_customers || 0)
+        : adminCustomers.length;
+
+    const activeCustomers = customerSummary && customerSummary.active_customers !== undefined
+        ? Number(customerSummary.active_customers || 0)
+        : adminCustomers.filter(function (customer) {
+            return customer.status === "active";
+        }).length;
+
+    const vipCustomers = adminCustomers.filter(function (customer) {
         return customer.rank === "gold" || customer.rank === "diamond";
-    });
+    }).length;
 
-    const lockedCustomers = customers.filter(function(customer) {
-        return customer.status === "locked";
-    });
+    const lockedCustomers = customerSummary && customerSummary.inactive_customers !== undefined
+        ? Number(customerSummary.inactive_customers || 0)
+        : adminCustomers.filter(function (customer) {
+            return customer.status !== "active";
+        }).length;
 
     if (totalCustomerCount) {
-        totalCustomerCount.textContent = customers.length;
+        totalCustomerCount.textContent = totalCustomers;
     }
 
     if (activeCustomerCount) {
-        activeCustomerCount.textContent = activeCustomers.length;
+        activeCustomerCount.textContent = activeCustomers;
     }
 
     if (vipCustomerCount) {
-        vipCustomerCount.textContent = vipCustomers.length;
+        vipCustomerCount.textContent = vipCustomers;
     }
 
     if (lockedCustomerCount) {
-        lockedCustomerCount.textContent = lockedCustomers.length;
+        lockedCustomerCount.textContent = lockedCustomers;
     }
 }
 
-// 20. Lọc khách hàng
-function getFilteredCustomers(customers) {
-    const searchValue = customerSearchInput ? customerSearchInput.value.trim().toLowerCase() : "";
-    const rankValue = customerRankFilter ? customerRankFilter.value : "all";
-    const statusValue = customerStatusFilter ? customerStatusFilter.value : "all";
 
-    return customers.filter(function(customer) {
+// 19. Lọc khách hàng trên frontend
+function getFilteredCustomers() {
+    const searchValue = customerSearchInput
+        ? customerSearchInput.value.trim().toLowerCase()
+        : "";
+
+    const rankValue = customerRankFilter
+        ? customerRankFilter.value
+        : "all";
+
+    const statusValue = customerStatusFilter
+        ? customerStatusFilter.value
+        : "all";
+
+    return adminCustomers.filter(function (customer) {
         const fullName = customer.fullName.toLowerCase();
         const email = customer.email.toLowerCase();
         const phone = customer.phone.toLowerCase();
-        const customerId = customer.id.toLowerCase();
+        const customerCode = customer.code.toLowerCase();
 
         const matchSearch =
             fullName.includes(searchValue) ||
             email.includes(searchValue) ||
             phone.includes(searchValue) ||
-            customerId.includes(searchValue);
+            customerCode.includes(searchValue);
 
-        const matchRank =
-            rankValue === "all" ||
-            customer.rank === rankValue;
+        let matchRank = true;
 
-        const matchStatus =
-            statusValue === "all" ||
-            customer.status === statusValue;
+        if (rankValue !== "all") {
+            if (rankValue === "new") {
+                matchRank = customer.rank === "normal";
+            } else {
+                matchRank = customer.rank === rankValue;
+            }
+        }
+
+        let matchStatus = true;
+
+        if (statusValue === "active") {
+            matchStatus = customer.status === "active";
+        }
+
+        if (statusValue === "locked") {
+            matchStatus = customer.status !== "active";
+        }
 
         return matchSearch && matchRank && matchStatus;
     });
 }
 
-// 21. Render bảng khách hàng
-function renderCustomerTable() {
-    if (!customerTableBody || !customerRowTemplate) return;
 
-    const customers = getCustomers();
-    const filteredCustomers = getFilteredCustomers(customers);
+// 20. Tạo link chi tiết khách hàng
+function getAdminCustomerDetailUrl(customerId) {
+    return "../html/admin-customer-detail.html?id=" + encodeURIComponent(customerId);
+}
+
+
+// 21. Render một dòng khách hàng
+function renderCustomerRow(customer) {
+    const rowFragment = customerRowTemplate.content.cloneNode(true);
+    const row = rowFragment.querySelector("tr");
+
+    const rankInfo = getCustomerRankInfo(customer.rank);
+    const statusInfo = getCustomerStatusInfo(customer.status);
+
+    const customerAvatar = rowFragment.querySelector(".customerAvatarText");
+    const customerNameText = rowFragment.querySelector(".customerNameText");
+    const customerCodeText = rowFragment.querySelector(".customerCodeText");
+    const customerEmailText = rowFragment.querySelector(".customerEmailText");
+    const customerPhoneText = rowFragment.querySelector(".customerPhoneText");
+    const customerRegisterDateText = rowFragment.querySelector(".customerRegisterDateText");
+    const customerOrderCountText = rowFragment.querySelector(".customerOrderCountText");
+    const customerTotalSpentText = rowFragment.querySelector(".customerTotalSpentText");
+    const customerRankText = rowFragment.querySelector(".customerRankText");
+    const customerStatusText = rowFragment.querySelector(".customerStatusText");
+    const actionButton = rowFragment.querySelector("[data-action]");
+
+    if (row) {
+        row.dataset.customerId = customer.id;
+        row.classList.add("clickableCustomerRow");
+        row.title = "Nhấn để xem chi tiết khách hàng";
+    }
+
+    if (customerAvatar) {
+        customerAvatar.textContent = getFirstLetter(customer.fullName);
+    }
+
+    if (customerNameText) {
+        customerNameText.textContent = customer.fullName;
+    }
+
+    if (customerCodeText) {
+        customerCodeText.textContent = customer.code;
+    }
+
+    if (customerEmailText) {
+        customerEmailText.textContent = customer.email;
+    }
+
+    if (customerPhoneText) {
+        customerPhoneText.textContent = customer.phone;
+    }
+
+    if (customerRegisterDateText) {
+        customerRegisterDateText.textContent = formatDate(customer.registerDate);
+    }
+
+    if (customerOrderCountText) {
+        customerOrderCountText.textContent = customer.orderCount + " đơn";
+    }
+
+    if (customerTotalSpentText) {
+        customerTotalSpentText.textContent = formatPrice(customer.totalSpent);
+    }
+
+    if (customerRankText) {
+        customerRankText.textContent = rankInfo.text;
+        customerRankText.className = "customerRankText rankBadge";
+        customerRankText.classList.add(rankInfo.className);
+    }
+
+    if (customerStatusText) {
+        customerStatusText.textContent = statusInfo.text;
+        customerStatusText.className = "customerStatusText statusBadge";
+        customerStatusText.classList.add(statusInfo.className);
+    }
+
+    if (actionButton) {
+        actionButton.textContent = customer.status === "active" ? "Khóa" : "Mở";
+        actionButton.dataset.action = "toggle-status";
+        actionButton.title = customer.status === "active"
+            ? "Khóa tài khoản khách hàng"
+            : "Mở lại tài khoản khách hàng";
+    }
+
+    return rowFragment;
+}
+
+
+// 22. Render bảng khách hàng
+function renderCustomerTable() {
+    if (!customerTableBody || !customerRowTemplate) {
+        return;
+    }
+
+    const filteredCustomers = getFilteredCustomers();
 
     customerTableBody.innerHTML = "";
 
@@ -381,76 +449,135 @@ function renderCustomerTable() {
         emptyCustomerText.classList.toggle("show", filteredCustomers.length === 0);
     }
 
-    filteredCustomers.forEach(function(customer) {
-        const rowFragment = customerRowTemplate.content.cloneNode(true);
-        const row = rowFragment.querySelector("tr");
-
-        const rankInfo = getCustomerRankInfo(customer.rank);
-        const statusInfo = getCustomerStatusInfo(customer.status);
-
-        const customerAvatar = rowFragment.querySelector(".customerAvatarText");
-        const rankBadge = rowFragment.querySelector(".customerRankText");
-        const statusBadge = rowFragment.querySelector(".customerStatusText");
-
-        row.dataset.customerId = customer.id;
-
-        customerAvatar.textContent = getCustomerFirstLetter(customer.fullName);
-
-        rowFragment.querySelector(".customerNameText").textContent = customer.fullName;
-        rowFragment.querySelector(".customerCodeText").textContent = customer.id;
-        rowFragment.querySelector(".customerEmailText").textContent = customer.email;
-        rowFragment.querySelector(".customerPhoneText").textContent = customer.phone;
-        rowFragment.querySelector(".customerRegisterDateText").textContent = formatDate(customer.registerDate);
-        rowFragment.querySelector(".customerOrderCountText").textContent = customer.orderCount + " đơn";
-        rowFragment.querySelector(".customerTotalSpentText").textContent = formatPrice(customer.totalSpent);
-
-        rankBadge.textContent = rankInfo.text;
-        rankBadge.classList.add(rankInfo.className);
-
-        statusBadge.textContent = statusInfo.text;
-        statusBadge.classList.add(statusInfo.className);
-
-        customerTableBody.appendChild(rowFragment);
+    filteredCustomers.forEach(function (customer) {
+        const row = renderCustomerRow(customer);
+        customerTableBody.appendChild(row);
     });
 
-    renderCustomerStats(customers);
+    renderCustomerStats();
 }
 
-// 22. Xóa khách hàng
-function deleteCustomer(customerId) {
-    const customers = getCustomers();
 
-    const customer = customers.find(function(item) {
-        return item.id === customerId;
+// 23. Hiển thị loading
+function setCustomerLoading(isLoading) {
+    if (!customerTableBody) {
+        return;
+    }
+
+    if (isLoading) {
+        customerTableBody.innerHTML = `
+            <tr>
+                <td colspan="8">Đang tải danh sách khách hàng...</td>
+            </tr>
+        `;
+    }
+}
+
+
+// 24. Hiển thị lỗi
+function renderCustomerError(error) {
+    console.error(error);
+
+    if (customerTableBody) {
+        customerTableBody.innerHTML = "";
+    }
+
+    if (emptyCustomerText) {
+        emptyCustomerText.classList.add("show");
+        emptyCustomerText.textContent = "Không tải được danh sách khách hàng.";
+    }
+
+    adminCustomers = [];
+    customerSummary = null;
+    renderCustomerStats();
+}
+
+
+// 25. Load danh sách khách hàng từ API
+async function loadCustomersFromApi() {
+    setCustomerLoading(true);
+
+    const response = await window.AdminApi.get(
+        "admin/customers/get-customers.php?page=1&limit=100&status=all&membership_level=all&sort=latest"
+    );
+
+    const data = response.data || {};
+    const customers = Array.isArray(data.customers) ? data.customers : [];
+
+    customerSummary = data.summary || null;
+
+    adminCustomers = customers.map(function (customer) {
+        return normalizeCustomer(customer);
     });
 
-    if (!customer) return;
-
-    const isConfirm = confirm("Bạn có chắc muốn xóa khách hàng " + customer.fullName + "?");
-
-    if (!isConfirm) return;
-
-    const updatedCustomers = customers.filter(function(item) {
-        return item.id !== customerId;
-    });
-
-    saveCustomers(updatedCustomers);
     renderCustomerTable();
 }
 
-// 23. Chuyển sang trang dashboard khách hàng
+
+// 26. Tìm khách hàng theo id
+function getCustomerById(customerId) {
+    return adminCustomers.find(function (customer) {
+        return String(customer.id) === String(customerId);
+    });
+}
+
+
+// 27. Cập nhật trạng thái khách hàng
+async function toggleCustomerStatus(customerId) {
+    const customer = getCustomerById(customerId);
+
+    if (!customer) {
+        return;
+    }
+
+    const newStatus = customer.status === "active" ? "blocked" : "active";
+    const actionText = newStatus === "blocked" ? "khóa" : "mở lại";
+
+    const isConfirm = confirm(
+        "Bạn có chắc muốn " + actionText + " tài khoản khách hàng " + customer.fullName + " không?"
+    );
+
+    if (!isConfirm) {
+        return;
+    }
+
+    try {
+        await window.AdminApi.post("admin/customers/update-customer-status.php", {
+            customer_id: Number(customerId),
+            status: newStatus,
+            note: "Admin cập nhật trạng thái khách hàng từ giao diện quản trị."
+        });
+
+        await loadCustomersFromApi();
+    } catch (error) {
+        alert(
+            window.AdminApi.getApiErrorMessage(
+                error,
+                "Cập nhật trạng thái khách hàng thất bại."
+            )
+        );
+    }
+}
+
+
+// 28. Chuyển sang trang chi tiết khách hàng
 function goToCustomerDetail(customerId) {
-    if (!customerId) return;
+    if (!customerId) {
+        return;
+    }
 
     window.location.href = getAdminCustomerDetailUrl(customerId);
 }
 
-// 24. Xử lý thao tác bảng khách hàng
+
+// 29. Xử lý thao tác bảng khách hàng
 function handleCustomerTableAction(event) {
     const actionButton = event.target.closest("[data-action]");
     const row = event.target.closest("tr");
 
-    if (!row) return;
+    if (!row) {
+        return;
+    }
 
     const customerId = row.dataset.customerId;
 
@@ -459,8 +586,8 @@ function handleCustomerTableAction(event) {
 
         const action = actionButton.dataset.action;
 
-        if (action === "delete") {
-            deleteCustomer(customerId);
+        if (action === "toggle-status") {
+            toggleCustomerStatus(customerId);
         }
 
         return;
@@ -469,7 +596,21 @@ function handleCustomerTableAction(event) {
     goToCustomerDetail(customerId);
 }
 
-// 25. Gắn sự kiện trang khách hàng
+
+// 30. Xử lý đăng xuất
+function handleAdminLogout() {
+    if (window.AdminApi && window.AdminApi.logoutAdmin) {
+        window.AdminApi.logoutAdmin();
+        return;
+    }
+
+    localStorage.removeItem("admin_current_user");
+    localStorage.removeItem("admin_is_login");
+    window.location.href = "../html/admin-login.html";
+}
+
+
+// 31. Gắn sự kiện trang khách hàng
 function bindCustomerEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -492,16 +633,48 @@ function bindCustomerEvents() {
     }
 }
 
-// 26. Khởi tạo trang quản lý khách hàng
-function initAdminCustomersPage() {
-    const adminUser = checkAdminLogin();
 
-    if (!adminUser) return;
+// 32. Kiểm tra đăng nhập local
+function checkAdminLoginLocal() {
+    if (!window.AdminApi) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
 
-    renderAdminInfo(adminUser);
+    const adminUser = window.AdminApi.getCurrentAdminFromLocal();
+
+    if (!adminUser) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    return adminUser;
+}
+
+
+// 33. Khởi tạo trang quản lý khách hàng
+async function initAdminCustomersPage() {
+    currentAdminUser = checkAdminLoginLocal();
+
+    if (!currentAdminUser) {
+        return;
+    }
+
+    renderAdminInfo(currentAdminUser);
     renderCurrentDate();
-    renderCustomerTable();
     bindCustomerEvents();
+
+    try {
+        await loadCustomersFromApi();
+    } catch (error) {
+        if (error && error.status === 401) {
+            window.AdminApi.clearAdminLocalAuth();
+            window.location.href = "../html/admin-login.html";
+            return;
+        }
+
+        renderCustomerError(error);
+    }
 }
 
 initAdminCustomersPage();

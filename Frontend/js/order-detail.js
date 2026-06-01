@@ -1,39 +1,44 @@
-// 1. Khởi tạo order-detail page
+// =========================================================
+// File: Frontend/js/order-detail.js
+// Mục đích: Trang chi tiết đơn hàng lấy dữ liệu thật từ API,
+//           fallback localStorage nếu là đơn khách vãng lai/API lỗi
+// =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. Kiểm tra đúng trang chi tiết đơn hàng
     const orderDetailPage = document.querySelector('[data-page="order-detail"]');
 
     if (!orderDetailPage) {
         return;
     }
 
-    // 2. Key localStorage
 
+    // 2. Key localStorage
     const ORDERS_STORAGE_KEY = "orders";
     const CURRENT_ORDER_STORAGE_KEY = "current_order";
     const CURRENT_USER_STORAGE_KEY = "current_user";
     const IS_LOGIN_STORAGE_KEY = "is_login";
 
-    // 3. Biến trạng thái
 
+    // 3. Biến trạng thái
     let currentOrder = null;
 
-    // 4. Lấy DOM trạng thái trang
 
+    // 4. Lấy DOM trạng thái trang
     const orderDetailLoadingState = document.getElementById("orderDetailLoadingState");
     const orderDetailErrorState = document.getElementById("orderDetailErrorState");
     const orderDetailEmptyState = document.getElementById("orderDetailEmptyState");
     const orderDetailContent = document.getElementById("orderDetailContent");
 
-    // 5. Lấy DOM link quay lại
 
+    // 5. Lấy DOM link quay lại
     const orderListBreadcrumbLink = document.getElementById("orderListBreadcrumbLink");
     const orderListBreadcrumbText = document.getElementById("orderListBreadcrumbText");
     const backToOrdersLink = document.getElementById("backToOrdersLink");
     const backToOrdersText = document.getElementById("backToOrdersText");
 
-    // 6. Lấy DOM thông tin khách hàng
 
+    // 6. Lấy DOM thông tin khách hàng
     const customerFullName = document.getElementById("customerFullName");
     const customerEmail = document.getElementById("customerEmail");
     const customerPhone = document.getElementById("customerPhone");
@@ -44,8 +49,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const customerAddressDetail = document.getElementById("customerAddressDetail");
     const customerNote = document.getElementById("customerNote");
 
-    // 7. Lấy DOM thông tin đơn hàng
 
+    // 7. Lấy DOM thông tin đơn hàng
     const detailOrderCode = document.getElementById("detailOrderCode");
     const orderStatusText = document.getElementById("orderStatusText");
     const shippingMethod = document.getElementById("shippingMethod");
@@ -55,51 +60,72 @@ document.addEventListener("DOMContentLoaded", function () {
     const shippingPickupTime = document.getElementById("shippingPickupTime");
     const completedTime = document.getElementById("completedTime");
 
-    // 8. Lấy DOM minh chứng chuyển khoản
 
+    // 8. Lấy DOM minh chứng chuyển khoản
     const paymentProofBox = document.getElementById("paymentProofBox");
     const paymentProofFileName = document.getElementById("paymentProofFileName");
     const paymentProofFileType = document.getElementById("paymentProofFileType");
     const paymentProofFileSize = document.getElementById("paymentProofFileSize");
 
-    // 9. Lấy DOM sản phẩm
 
+    // 9. Lấy DOM sản phẩm
     const orderProductEmptyState = document.getElementById("orderProductEmptyState");
     const orderProductList = document.getElementById("orderProductList");
     const orderProductItemTemplate = document.getElementById("orderProductItemTemplate");
 
-    // 10. Lấy DOM tổng thanh toán
 
+    // 10. Lấy DOM tổng thanh toán
     const detailSubtotalAmount = document.getElementById("detailSubtotalAmount");
     const detailShippingFee = document.getElementById("detailShippingFee");
-
     const detailPointDiscountRow = document.getElementById("detailPointDiscountRow");
     const detailPointDiscount = document.getElementById("detailPointDiscount");
-
     const detailVoucherDiscountRow = document.getElementById("detailVoucherDiscountRow");
     const detailVoucherDiscount = document.getElementById("detailVoucherDiscount");
-
     const detailDiscountTotalRow = document.getElementById("detailDiscountTotalRow");
     const detailDiscountTotal = document.getElementById("detailDiscountTotal");
-
     const detailTotalAmount = document.getElementById("detailTotalAmount");
 
-    // 11. Lấy DOM ưu đãi đã sử dụng
 
+    // 11. Lấy DOM ưu đãi đã sử dụng
     const usedBenefitsBox = document.getElementById("usedBenefitsBox");
     const usedPointBenefit = document.getElementById("usedPointBenefit");
     const usedPointBenefitText = document.getElementById("usedPointBenefitText");
     const usedVoucherBenefit = document.getElementById("usedVoucherBenefit");
     const usedVoucherBenefitText = document.getElementById("usedVoucherBenefitText");
 
-    // 12. Lấy DOM tìm kiếm
 
+    // 12. Lấy DOM tìm kiếm
     const searchForm = document.getElementById("searchForm");
     const searchKeyword = document.getElementById("searchKeyword");
 
-    // 13. Hàm tiện ích
 
+    // 13. Gọi API GET
+    async function getApi(endpoint) {
+        if (window.CustomerApi && typeof window.CustomerApi.get === "function") {
+            return await window.CustomerApi.get(endpoint);
+        }
+
+        const response = await fetch("../../BackEnd/php/api/" + endpoint, {
+            method: "GET",
+            credentials: "same-origin"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            throw data;
+        }
+
+        return data;
+    }
+
+
+    // 14. Hàm tiện ích
     function formatPrice(price) {
+        if (window.CustomerApi && typeof window.CustomerApi.formatPrice === "function") {
+            return window.CustomerApi.formatPrice(price);
+        }
+
         return Number(price || 0).toLocaleString("vi-VN") + "đ";
     }
 
@@ -121,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const date = new Date(value);
 
         if (Number.isNaN(date.getTime())) {
-            return "---";
+            return value;
         }
 
         return date.toLocaleString("vi-VN", {
@@ -159,10 +185,21 @@ document.addEventListener("DOMContentLoaded", function () {
         element.textContent = value || "---";
     }
 
-    function getOrderIdFromUrl() {
+    function getOrderQueryFromUrl() {
         const params = new URLSearchParams(window.location.search);
 
-        return params.get("id") || params.get("orderId") || "";
+        return (
+            params.get("id") ||
+            params.get("order_id") ||
+            params.get("orderId") ||
+            params.get("code") ||
+            params.get("order_code") ||
+            ""
+        );
+    }
+
+    function isNumericId(value) {
+        return /^\d+$/.test(String(value || ""));
     }
 
     function getProductDetailUrl(productId) {
@@ -173,8 +210,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return "../html/product-detail.html?id=" + encodeURIComponent(productId);
     }
 
-    // 14. Đọc ghi localStorage
 
+    // 15. Đọc localStorage
     function getDataFromStorage(key, fallbackValue) {
         const rawData = localStorage.getItem(key);
 
@@ -210,21 +247,18 @@ document.addEventListener("DOMContentLoaded", function () {
         return order;
     }
 
-    // 15. Kiểm tra người dùng
 
+    // 16. Kiểm tra người dùng
     function getCurrentUser() {
+        if (window.CustomerApi && typeof window.CustomerApi.getCurrentCustomerFromLocal === "function") {
+            return window.CustomerApi.getCurrentCustomerFromLocal();
+        }
+
         const isLogin = localStorage.getItem(IS_LOGIN_STORAGE_KEY) === "true";
         const currentUserData = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
-        if (!isLogin) {
+        if (!isLogin || !currentUserData) {
             return null;
-        }
-
-        if (!currentUserData) {
-            return {
-                id: "member",
-                fullName: "Thành viên"
-            };
         }
 
         try {
@@ -243,6 +277,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 id: currentUserData,
                 fullName: currentUserData
             };
+        }
+    }
+
+    async function isLoggedInCustomer() {
+        if (!window.CustomerApi) {
+            return Boolean(getCurrentUser());
+        }
+
+        const localUser = window.CustomerApi.getCurrentCustomerFromLocal();
+
+        if (!localUser) {
+            return false;
+        }
+
+        try {
+            await window.CustomerApi.getCurrentCustomerFromSession();
+            return true;
+        } catch (error) {
+            return false;
         }
     }
 
@@ -265,14 +318,103 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     }
 
-    // 16. Chuẩn hóa dữ liệu đơn hàng
 
-    function getOrderId(order) {
+    // 17. Thông tin trạng thái
+    function getStatusInfo(status) {
+        if (status === "pending") {
+            return {
+                text: "Chờ xác nhận",
+                className: "statusPending"
+            };
+        }
+
+        if (status === "confirmed") {
+            return {
+                text: "Đã xác nhận",
+                className: "statusShipping"
+            };
+        }
+
+        if (status === "shipping") {
+            return {
+                text: "Đang giao",
+                className: "statusShipping"
+            };
+        }
+
+        if (status === "completed") {
+            return {
+                text: "Hoàn thành",
+                className: "statusCompleted"
+            };
+        }
+
+        if (status === "cancelled") {
+            return {
+                text: "Đã hủy",
+                className: "statusCancelled"
+            };
+        }
+
+        return {
+            text: "Chờ xác nhận",
+            className: "statusPending"
+        };
+    }
+
+    function getOrderStatusCode(order) {
+        if (!order) {
+            return "pending";
+        }
+
+        if (order.status && order.status.code) {
+            return order.status.code;
+        }
+
+        return order.status || order.order_status || "pending";
+    }
+
+    function getOrderStatusText(order) {
+        if (!order) {
+            return "Chờ xác nhận";
+        }
+
+        if (order.status && order.status.label) {
+            return order.status.label;
+        }
+
+        return order.statusText || order.statusName || getStatusInfo(getOrderStatusCode(order)).text;
+    }
+
+
+    // 18. Chuẩn hóa dữ liệu đơn hàng
+    function getOrderIdentity(order) {
         if (!order) {
             return "";
         }
 
-        return order.orderId || order.id || "";
+        return String(
+            order.orderCode ||
+            order.order_code ||
+            order.orderId ||
+            order.id ||
+            ""
+        );
+    }
+
+    function isSameOrder(order, queryValue) {
+        if (!order || !queryValue) {
+            return false;
+        }
+
+        const query = String(queryValue);
+
+        return (
+            String(order.id || "") === query ||
+            String(order.orderId || "") === query ||
+            String(order.orderCode || "") === query ||
+            String(order.order_code || "") === query
+        );
     }
 
     function getOrderItems(order) {
@@ -300,28 +442,15 @@ document.addEventListener("DOMContentLoaded", function () {
     function getOrderSummary(order) {
         const items = getOrderItems(order);
         const summary = order.summary || {};
+        const money = order.money || {};
         const benefits = order.benefits || {};
 
         const pointBenefit = benefits.point || null;
         const voucherBenefit = benefits.voucher || null;
 
-        const subtotal = Number(
-            summary.subtotal ??
-            order.subtotal ??
-            order.subtotalAmount ??
-            calculateSubtotal(items)
-        );
-
-        const shippingFee = Number(
-            summary.shippingFee ??
-            order.shippingFee ??
-            order.shipping?.fee ??
-            order.shippingInfo?.fee ??
-            0
-        );
-
         const pointDiscount = Number(
             summary.pointDiscount ??
+            money.points_discount ??
             order.pointDiscount ??
             order.pointDiscountAmount ??
             pointBenefit?.discountAmount ??
@@ -330,9 +459,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const voucherDiscount = Number(
             summary.voucherDiscount ??
+            money.discount_amount ??
             order.voucherDiscount ??
             voucherBenefit?.discountAmount ??
             getOldVoucherDiscount(order)
+        );
+
+        const subtotal = Number(
+            summary.subtotal ??
+            money.total_product_price ??
+            order.subtotal ??
+            order.subtotalAmount ??
+            calculateSubtotal(items)
+        );
+
+        const shippingFee = Number(
+            summary.shippingFee ??
+            money.shipping_fee ??
+            order.shippingFee ??
+            order.shipping?.fee ??
+            order.shippingInfo?.fee ??
+            0
         );
 
         const discountTotal = Number(
@@ -345,6 +492,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const total = Number(
             summary.total ??
+            money.final_total ??
             order.total ??
             order.totalAmount ??
             Math.max(subtotal + shippingFee - discountTotal, 0)
@@ -379,18 +527,18 @@ document.addEventListener("DOMContentLoaded", function () {
         return order.payment || order.paymentInfo || {};
     }
 
-    function getOrderStatusText(order) {
-        return order.statusText || order.statusName || order.status || "Chờ xác nhận";
-    }
-
     function getShippingName(order) {
         const shipping = getOrderShipping(order);
 
-        return shipping.name || shipping.shippingName || order.shippingMethodName || "---";
+        return shipping.name || shipping.shippingName || order.shippingMethodName || "Giao hàng tiêu chuẩn";
     }
 
     function getPaymentName(order) {
         const payment = getOrderPayment(order);
+
+        if (payment.method_label) {
+            return payment.method_label;
+        }
 
         if (payment.name) {
             return payment.name;
@@ -400,12 +548,18 @@ document.addEventListener("DOMContentLoaded", function () {
             return order.paymentMethodName;
         }
 
-        if (payment.method === "cod" || order.paymentMethod === "cod") {
+        if (payment.method === "cod" || order.paymentMethod === "cod" || order.payment_method === "cod") {
             return "Thanh toán khi nhận hàng";
         }
 
-        if (payment.method === "qr_transfer" || order.paymentMethod === "qr_transfer") {
-            return "Chuyển khoản qua mã QR";
+        if (
+            payment.method === "bank_transfer" ||
+            order.paymentMethod === "bank_transfer" ||
+            order.payment_method === "bank_transfer" ||
+            payment.method === "qr_transfer" ||
+            order.paymentMethod === "qr_transfer"
+        ) {
+            return "Chuyển khoản ngân hàng";
         }
 
         return "---";
@@ -414,14 +568,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function getPaymentMethodCode(order) {
         const payment = getOrderPayment(order);
 
-        return payment.method || order.paymentMethod || "";
+        return payment.method || order.paymentMethod || order.payment_method || "";
     }
 
     function getPaymentTimeText(order) {
         const paymentMethodCode = getPaymentMethodCode(order);
 
-        if (order.paidAt) {
-            return formatDateTime(order.paidAt);
+        if (order.paidAt || order.paid_at) {
+            return formatDateTime(order.paidAt || order.paid_at);
         }
 
         if (order.paymentTime) {
@@ -432,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return "Thanh toán khi nhận hàng";
         }
 
-        if (paymentMethodCode === "qr_transfer") {
+        if (paymentMethodCode === "bank_transfer" || paymentMethodCode === "qr_transfer") {
             return "Chờ cửa hàng xác nhận";
         }
 
@@ -440,29 +594,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function getShippingPickupTimeText(order) {
-        return formatDateTime(order.shippingPickupAt || order.pickupAt || order.deliveryStartAt);
+        return formatDateTime(order.shippingPickupAt || order.pickupAt || order.deliveryStartAt || order.shipping_started_at);
     }
 
     function getCompletedTimeText(order) {
-        return formatDateTime(order.completedAt || order.receivedAt || order.cancelledAt);
+        return formatDateTime(order.completedAt || order.receivedAt || order.cancelledAt || order.completed_at || order.cancelled_at);
     }
 
     function isActiveOrder(order) {
-        const status = String(order.status || "").toLowerCase();
-        const statusText = getOrderStatusText(order);
+        const status = getOrderStatusCode(order);
 
-        const completedTexts = ["Hoàn thành", "Đã hoàn thành"];
-        const cancelledTexts = ["Đã hủy", "Hủy đơn"];
-
-        if (status === "completed" || status === "cancelled") {
-            return false;
-        }
-
-        if (completedTexts.includes(statusText) || cancelledTexts.includes(statusText)) {
-            return false;
-        }
-
-        return true;
+        return status === "pending" || status === "confirmed" || status === "shipping";
     }
 
     function isCurrentUserOrder(order) {
@@ -473,11 +615,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return true;
         }
 
-        if (order.userKey && order.userKey === currentUserKey) {
+        if (order.userKey && String(order.userKey) === String(currentUserKey)) {
             return true;
         }
 
-        if (order.userId && order.userId === currentUserKey) {
+        if (order.userId && String(order.userId) === String(currentUserKey)) {
             return true;
         }
 
@@ -491,18 +633,162 @@ document.addEventListener("DOMContentLoaded", function () {
             return true;
         }
 
-        return false;
+        return true;
     }
 
-    // 17. Tìm đơn hàng
 
-    function findOrderById(orderId) {
+    // 19. Chuẩn hóa đơn API
+    function normalizeApiOrder(apiOrder, localOrder) {
+        if (!apiOrder) {
+            return null;
+        }
+
+        const localCustomer = localOrder
+            ? localOrder.customer || localOrder.receiver || {}
+            : {};
+
+        const apiReceiver = apiOrder.receiver || {};
+        const apiMoney = apiOrder.money || {};
+        const apiPayment = apiOrder.payment || {};
+        const apiStatus = apiOrder.status || {};
+
+        const pointDiscount = Number(apiMoney.points_discount || 0);
+        const voucherDiscount = Number(apiMoney.discount_amount || 0);
+
+        return {
+            id: apiOrder.id,
+            orderId: apiOrder.order_code || String(apiOrder.id),
+            orderCode: apiOrder.order_code || String(apiOrder.id),
+
+            createdAt: apiOrder.created_at || "",
+            orderDate: apiOrder.created_at || "",
+
+            status: apiStatus.code || apiOrder.order_status || "pending",
+            statusText: apiStatus.label || getStatusInfo(apiOrder.order_status).text,
+
+            paymentMethod: apiPayment.method || apiOrder.payment_method || "cod",
+            paymentMethodName: apiPayment.method_label || "",
+
+            customerType: "member",
+            userKey: getCurrentUserKey(),
+
+            customer: {
+                fullName: apiReceiver.name || localCustomer.fullName || localCustomer.name || "",
+                name: apiReceiver.name || localCustomer.name || localCustomer.fullName || "",
+                email: localCustomer.email || "",
+                phone: apiReceiver.phone || localCustomer.phone || "",
+                birthDate: localCustomer.birthDate || localCustomer.birthday || "",
+                province: localCustomer.province || "",
+                district: localCustomer.district || "",
+                ward: localCustomer.ward || "",
+                address: apiReceiver.shipping_address || localCustomer.address || "",
+                addressDetail: localCustomer.addressDetail || localCustomer.address || "",
+                note: apiOrder.note || localCustomer.note || ""
+            },
+
+            receiver: {
+                fullName: apiReceiver.name || localCustomer.fullName || localCustomer.name || "",
+                name: apiReceiver.name || localCustomer.name || localCustomer.fullName || "",
+                email: localCustomer.email || "",
+                phone: apiReceiver.phone || localCustomer.phone || "",
+                shipping_address: apiReceiver.shipping_address || "",
+                address: apiReceiver.shipping_address || localCustomer.address || "",
+                province: localCustomer.province || "",
+                district: localCustomer.district || "",
+                ward: localCustomer.ward || "",
+                note: apiOrder.note || localCustomer.note || ""
+            },
+
+            note: apiOrder.note || "",
+
+            items: normalizeApiOrderItems(apiOrder.items || []),
+
+            payment: {
+                method: apiPayment.method || apiOrder.payment_method || "cod",
+                method_label: apiPayment.method_label || ""
+            },
+
+            summary: {
+                subtotal: Number(apiMoney.total_product_price || 0),
+                shippingFee: Number(apiMoney.shipping_fee || 0),
+                pointDiscount: pointDiscount,
+                voucherDiscount: voucherDiscount,
+                discountTotal: pointDiscount + voucherDiscount,
+                total: Number(apiMoney.final_total || 0)
+            },
+
+            benefits: {
+                point: pointDiscount > 0
+                    ? {
+                        points: localOrder && localOrder.benefits && localOrder.benefits.point
+                            ? localOrder.benefits.point.points
+                            : 0,
+                        discountAmount: pointDiscount
+                    }
+                    : null,
+                voucher: voucherDiscount > 0
+                    ? {
+                        code: localOrder && localOrder.benefits && localOrder.benefits.voucher
+                            ? localOrder.benefits.voucher.code
+                            : "VOUCHER",
+                        name: localOrder && localOrder.benefits && localOrder.benefits.voucher
+                            ? localOrder.benefits.voucher.name
+                            : "Mã giảm giá",
+                        discountAmount: voucherDiscount
+                    }
+                    : null
+            },
+
+            raw: apiOrder
+        };
+    }
+
+    function normalizeApiOrderItems(items) {
+        if (!Array.isArray(items)) {
+            return [];
+        }
+
+        return items.map(function (item) {
+            const product = item.product || {};
+
+            return {
+                id: product.id || item.product_id || "",
+                productId: product.id || item.product_id || "",
+                product_id: product.id || item.product_id || "",
+
+                variantId: item.variant_id || null,
+                productVariantId: item.variant_id || null,
+                product_variant_id: item.variant_id || null,
+
+                name: product.name || item.product_name || "Sản phẩm",
+                productName: product.name || item.product_name || "Sản phẩm",
+
+                image: product.image_url || item.product_image || "../img/products/default.jpg",
+
+                color: item.color_name || "",
+                size: item.size_name || "",
+                sku: item.sku || "",
+
+                price: Number(item.price || 0),
+                oldPrice: 0,
+                quantity: Number(item.quantity || 1),
+                totalPrice: Number(item.total_price || 0),
+
+                meta: buildVariantText({
+                    color: item.color_name || "",
+                    size: item.size_name || ""
+                })
+            };
+        });
+    }
+
+
+    // 20. Tìm đơn hàng local/API
+    function getLocalOrderByQuery(queryValue) {
         const currentOrder = getCurrentOrderFromStorage();
 
         if (currentOrder) {
-            const currentOrderId = getOrderId(currentOrder);
-
-            if (!orderId || currentOrderId === orderId) {
+            if (!queryValue || isSameOrder(currentOrder, queryValue)) {
                 return currentOrder;
             }
         }
@@ -510,22 +796,54 @@ document.addEventListener("DOMContentLoaded", function () {
         const orders = getOrdersFromStorage();
 
         return orders.find(function (order) {
-            return getOrderId(order) === orderId;
+            return isSameOrder(order, queryValue);
         }) || null;
     }
 
-    function loadOrderDetailData() {
-        const orderId = getOrderIdFromUrl();
+    async function getApiOrderByQuery(queryValue, localOrder) {
+        if (!queryValue) {
+            return null;
+        }
 
-        currentOrder = findOrderById(orderId);
+        const endpoint = isNumericId(queryValue)
+            ? "orders/get-order-detail.php?id=" + encodeURIComponent(queryValue)
+            : "orders/get-order-detail.php?order_code=" + encodeURIComponent(queryValue);
+
+        const response = await getApi(endpoint);
+        const apiOrder = response.data && response.data.order
+            ? response.data.order
+            : null;
+
+        return normalizeApiOrder(apiOrder, localOrder);
+    }
+
+    async function loadOrderDetailData() {
+        const queryValue = getOrderQueryFromUrl();
+        const localOrder = getLocalOrderByQuery(queryValue);
+        const loggedIn = await isLoggedInCustomer();
+
+        if (loggedIn && queryValue) {
+            try {
+                const apiOrder = await getApiOrderByQuery(queryValue, localOrder);
+
+                if (apiOrder) {
+                    currentOrder = apiOrder;
+                    return;
+                }
+            } catch (error) {
+                console.warn("Không lấy được chi tiết đơn hàng từ API, fallback localStorage:", error);
+            }
+        }
+
+        currentOrder = localOrder;
 
         if (currentOrder && !isCurrentUserOrder(currentOrder)) {
             currentOrder = null;
         }
     }
 
-    // 18. Hiển thị trạng thái
 
+    // 21. Hiển thị trạng thái trang
     function showPageState(type) {
         if (orderDetailLoadingState) orderDetailLoadingState.hidden = true;
         if (orderDetailErrorState) orderDetailErrorState.hidden = true;
@@ -549,11 +867,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 19. Render link quay lại
 
+    // 22. Render link quay lại
     function renderBackLinks(order) {
         const active = isActiveOrder(order);
-
         const href = active ? "../html/my-order.html" : "../html/order-history.html";
         const text = active ? "Đơn hàng của tôi" : "Lịch sử mua hàng";
         const backText = active ? "Quay lại đơn hàng của tôi" : "Quay lại lịch sử mua hàng";
@@ -575,8 +892,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 20. Render thông tin khách hàng
 
+    // 23. Render thông tin khách hàng
     function renderCustomerInfo(order) {
         const customer = getOrderCustomer(order);
 
@@ -587,37 +904,46 @@ document.addEventListener("DOMContentLoaded", function () {
         setText(customerProvince, customer.province || customer.city);
         setText(customerDistrict, customer.district);
         setText(customerWard, customer.ward);
-        setText(customerAddressDetail, customer.address || customer.addressDetail);
+
+        setText(
+            customerAddressDetail,
+            customer.addressDetail ||
+            customer.address ||
+            customer.shipping_address
+        );
+
         setText(customerNote, customer.note || order.note || "Không có");
     }
 
-    // 21. Render thông tin đơn hàng
 
+    // 24. Render thông tin đơn hàng
     function renderOrderStatus(order) {
         if (!orderStatusText) {
             return;
         }
 
-        const statusText = getOrderStatusText(order);
+        const statusCode = getOrderStatusCode(order);
+        const statusInfo = getStatusInfo(statusCode);
 
-        orderStatusText.textContent = statusText;
-        orderStatusText.dataset.status = statusText;
+        orderStatusText.textContent = getOrderStatusText(order);
+        orderStatusText.className = "statusBadge " + statusInfo.className;
+        orderStatusText.dataset.status = statusCode;
     }
 
     function renderOrderInfo(order) {
-        setText(detailOrderCode, getOrderId(order));
+        setText(detailOrderCode, getOrderIdentity(order));
         renderOrderStatus(order);
 
         setText(shippingMethod, getShippingName(order));
         setText(paymentMethod, getPaymentName(order));
-        setText(orderCreatedAt, formatDateTime(order.createdAt || order.orderDate));
+        setText(orderCreatedAt, formatDateTime(order.createdAt || order.orderDate || order.created_at));
         setText(paymentTime, getPaymentTimeText(order));
         setText(shippingPickupTime, getShippingPickupTimeText(order));
         setText(completedTime, getCompletedTimeText(order));
     }
 
-    // 22. Render minh chứng chuyển khoản
 
+    // 25. Render minh chứng chuyển khoản
     function renderPaymentProof(order) {
         if (!paymentProofBox) {
             return;
@@ -659,23 +985,52 @@ document.addEventListener("DOMContentLoaded", function () {
         setText(paymentProofFileSize, formatFileSize(fileSize));
     }
 
-    // 23. Render sản phẩm
+
+    // 26. Render sản phẩm
+    function buildVariantText(item) {
+        if (item.meta) {
+            return item.meta;
+        }
+
+        const parts = [];
+
+        if (item.color || item.color_name) {
+            parts.push("Màu: " + (item.color || item.color_name));
+        }
+
+        if (item.size || item.size_name) {
+            parts.push("Size: " + (item.size || item.size_name));
+        }
+
+        if (parts.length === 0) {
+            return "Chưa chọn phân loại";
+        }
+
+        return parts.join(" / ");
+    }
 
     function normalizeProductItem(item) {
+        const product = item.product || {};
+
         return {
-            id: item.id || item.productId || "",
-            name: item.name || item.productName || "Sản phẩm",
-            image: item.image || item.img || item.thumbnail || "",
+            id: product.id || item.id || item.productId || item.product_id || "",
+            name: product.name || item.name || item.productName || item.product_name || "Sản phẩm",
+            image: product.image_url || item.image || item.img || item.thumbnail || "../img/products/default.jpg",
             price: Number(item.price || item.currentPrice || 0),
             oldPrice: Number(item.oldPrice || 0),
-            color: item.color || item.selectedColor || "",
-            size: item.size || item.selectedSize || "",
+            color: item.color || item.color_name || item.selectedColor || "",
+            size: item.size || item.size_name || item.selectedSize || "",
             meta: item.meta || "",
-            quantity: Number(item.quantity || item.qty || 1)
+            quantity: Number(item.quantity || item.qty || 1),
+            totalPrice: Number(item.totalPrice || item.total_price || 0)
         };
     }
 
     function calculateLineTotal(item) {
+        if (item.totalPrice && Number(item.totalPrice) > 0) {
+            return Number(item.totalPrice);
+        }
+
         return Number(item.price || 0) * Number(item.quantity || 0);
     }
 
@@ -716,13 +1071,9 @@ document.addEventListener("DOMContentLoaded", function () {
         setText(productName, product.name);
 
         if (productColor) {
-            if (product.color) {
-                productColor.textContent = "Màu: " + product.color;
-            } else if (product.meta) {
-                productColor.textContent = product.meta;
-            } else {
-                productColor.textContent = "Màu: Chưa chọn";
-            }
+            productColor.textContent = product.color
+                ? "Màu: " + product.color
+                : buildVariantText(product);
         }
 
         if (productSize) {
@@ -781,8 +1132,8 @@ document.addEventListener("DOMContentLoaded", function () {
         orderProductList.appendChild(fragment);
     }
 
-    // 24. Render tổng thanh toán
 
+    // 27. Render tổng thanh toán
     function renderOrderSummary(order) {
         const summary = getOrderSummary(order);
 
@@ -810,24 +1161,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (detailDiscountTotalRow && detailDiscountTotal) {
-            detailDiscountTotalRow.hidden = summary.discountTotal <= 0;
-            detailDiscountTotal.textContent = formatDiscount(summary.discountTotal);
+            if (summary.discountTotal > 0) {
+                detailDiscountTotalRow.hidden = false;
+                detailDiscountTotal.textContent = formatDiscount(summary.discountTotal);
+            } else {
+                detailDiscountTotalRow.hidden = true;
+                detailDiscountTotal.textContent = "-0đ";
+            }
         }
 
         setText(detailTotalAmount, formatPrice(summary.total));
     }
 
-    // 25. Render ưu đãi đã sử dụng
 
+    // 28. Render ưu đãi đã sử dụng
     function renderUsedBenefits(order) {
         const summary = getOrderSummary(order);
         const benefits = order.benefits || {};
 
         const pointBenefit = benefits.point || null;
-        const voucherBenefit = benefits.voucher || order.voucher || null;
+        const voucherBenefit = benefits.voucher || null;
 
-        const hasPoint = pointBenefit && summary.pointDiscount > 0;
-        const hasVoucher = voucherBenefit && summary.voucherDiscount > 0;
+        const hasPoint = summary.pointDiscount > 0;
+        const hasVoucher = summary.voucherDiscount > 0;
 
         if (usedBenefitsBox) {
             usedBenefitsBox.hidden = !(hasPoint || hasVoucher);
@@ -836,8 +1192,20 @@ document.addEventListener("DOMContentLoaded", function () {
         if (usedPointBenefit && usedPointBenefitText) {
             if (hasPoint) {
                 usedPointBenefit.hidden = false;
-                usedPointBenefitText.textContent =
-                    "Đã đổi " + Number(pointBenefit.points || 0) + " điểm, giảm " + formatPrice(summary.pointDiscount) + ".";
+
+                if (pointBenefit && pointBenefit.points) {
+                    usedPointBenefitText.textContent =
+                        "Đã đổi " +
+                        Number(pointBenefit.points || 0) +
+                        " điểm, giảm " +
+                        formatPrice(summary.pointDiscount) +
+                        ".";
+                } else {
+                    usedPointBenefitText.textContent =
+                        "Đã sử dụng điểm, giảm " +
+                        formatPrice(summary.pointDiscount) +
+                        ".";
+                }
             } else {
                 usedPointBenefit.hidden = true;
                 usedPointBenefitText.textContent = "Không sử dụng điểm";
@@ -848,7 +1216,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (hasVoucher) {
                 usedVoucherBenefit.hidden = false;
                 usedVoucherBenefitText.textContent =
-                    "Đã dùng mã " + (voucherBenefit.code || "VOUCHER") + ", giảm " + formatPrice(summary.voucherDiscount) + ".";
+                    "Đã dùng mã " +
+                    (voucherBenefit?.code || "VOUCHER") +
+                    ", giảm " +
+                    formatPrice(summary.voucherDiscount) +
+                    ".";
             } else {
                 usedVoucherBenefit.hidden = true;
                 usedVoucherBenefitText.textContent = "Không sử dụng voucher";
@@ -856,31 +1228,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 26. Render toàn bộ trang
 
-    function renderOrderDetailPage() {
-        if (!currentOrder) {
-            showPageState("empty");
-            return;
-        }
-
-        renderBackLinks(currentOrder);
-        renderCustomerInfo(currentOrder);
-        renderOrderInfo(currentOrder);
-        renderPaymentProof(currentOrder);
-        renderOrderProducts(currentOrder);
-        renderOrderSummary(currentOrder);
-        renderUsedBenefits(currentOrder);
+    // 29. Render toàn bộ trang
+    function renderOrderDetail(order) {
+        renderBackLinks(order);
+        renderCustomerInfo(order);
+        renderOrderInfo(order);
+        renderPaymentProof(order);
+        renderOrderProducts(order);
+        renderOrderSummary(order);
+        renderUsedBenefits(order);
 
         showPageState("content");
     }
 
-    // 27. Xử lý tìm kiếm
 
+    // 30. Xử lý tìm kiếm
     function handleSearchSubmit(event) {
         event.preventDefault();
 
-        const keyword = searchKeyword?.value.trim() || "";
+        const keyword = searchKeyword ? searchKeyword.value.trim() : "";
 
         if (!keyword) {
             alert("Vui lòng nhập từ khóa tìm kiếm.");
@@ -890,24 +1257,29 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
     }
 
-    // 28. Gắn sự kiện
 
+    // 31. Gắn sự kiện
     function bindEvents() {
-        searchForm?.addEventListener("submit", handleSearchSubmit);
+        if (searchForm) {
+            searchForm.addEventListener("submit", handleSearchSubmit);
+        }
     }
 
-    // 29. Khởi tạo trang
 
-    function initOrderDetailPage() {
-        showPageState("loading");
-
+    // 32. Khởi tạo trang chi tiết đơn hàng
+    async function initOrderDetailPage() {
         try {
-            loadOrderDetailData();
             bindEvents();
+            showPageState("loading");
 
-            setTimeout(function () {
-                renderOrderDetailPage();
-            }, 250);
+            await loadOrderDetailData();
+
+            if (!currentOrder) {
+                showPageState("empty");
+                return;
+            }
+
+            renderOrderDetail(currentOrder);
         } catch (error) {
             console.error("Lỗi order-detail:", error);
             showPageState("error");

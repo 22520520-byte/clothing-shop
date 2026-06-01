@@ -1,97 +1,41 @@
-// 1. Chờ HTML tải xong
+// =========================================================
+// File: Frontend/js/wishlist.js
+// Mục đích: Trang sản phẩm yêu thích dùng dữ liệu sản phẩm thật từ API
+// =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. Kiểm tra đúng trang wishlist
     const wishlistPage = document.querySelector('[data-page="wishlist"]');
 
     if (!wishlistPage) {
         return;
     }
 
-    // 2. Key localStorage
 
-    const USERS_STORAGE_KEY = "users";
+    // 2. Key localStorage
     const CURRENT_USER_STORAGE_KEY = "current_user";
     const IS_LOGIN_STORAGE_KEY = "is_login";
-    const REMEMBER_LOGIN_STORAGE_KEY = "remember_login";
     const USER_POINTS_STORAGE_KEY = "user_points";
     const CART_STORAGE_KEY = "cart_items";
     const WISHLIST_STORAGE_PREFIX = "wishlist_";
 
-    // 3. Dữ liệu sản phẩm mẫu
 
-    const products = [
-        {
-            id: "hd001",
-            category: "hoodie",
-            name: "Áo Hoodie Basic Cotton",
-            price: 329000,
-            oldPrice: 399000,
-            image: "../img/hoodie-1.jpg",
-            inStock: true
-        },
-        {
-            id: "hd002",
-            category: "hoodie",
-            name: "Áo Hoodie Urban Style",
-            price: 289000,
-            oldPrice: 0,
-            image: "../img/hoodie-2.jpg",
-            inStock: true
-        },
-        {
-            id: "at001",
-            category: "ao-thun",
-            name: "Áo Thun Basic Oversize",
-            price: 159000,
-            oldPrice: 199000,
-            image: "../img/ao-thun-1.jpg",
-            inStock: true
-        },
-        {
-            id: "ap001",
-            category: "ao-polo",
-            name: "Áo Polo Daily Wear",
-            price: 219000,
-            oldPrice: 269000,
-            image: "../img/ao-polo-1.jpg",
-            inStock: true
-        },
-        {
-            id: "qd001",
-            category: "quan-dai",
-            name: "Quần Dài Kaki Basic",
-            price: 299000,
-            oldPrice: 359000,
-            image: "../img/quan-dai-1.jpg",
-            inStock: true
-        },
-        {
-            id: "pk001",
-            category: "mu",
-            name: "Mũ Lưỡi Trai Basic",
-            price: 99000,
-            oldPrice: 0,
-            image: "../img/mu-1.jpg",
-            inStock: false
-        }
-    ];
-
-    // 4. Biến dữ liệu
-
+    // 3. Biến trạng thái
     let currentUser = null;
-    let fullCurrentUser = null;
     let currentUserPoints = 0;
     let wishlistItems = [];
     let wishlistProducts = [];
 
-    // 5. Lấy DOM sidebar
 
+    // 4. Lấy DOM sidebar
     const profileUserName = document.getElementById("profileUserName");
+    const profileUserEmail = document.getElementById("profileUserEmail");
     const profileUserRank = document.getElementById("profileUserRank");
+    const profileUserAvatar = document.getElementById("profileUserAvatar");
     const logoutBtn = document.getElementById("logoutBtn");
 
-    // 6. Lấy DOM wishlist
 
+    // 5. Lấy DOM wishlist
     const wishlistLoadingState = document.getElementById("wishlistLoadingState");
     const wishlistEmptyState = document.getElementById("wishlistEmptyState");
     const wishlistErrorState = document.getElementById("wishlistErrorState");
@@ -100,15 +44,73 @@ document.addEventListener("DOMContentLoaded", function () {
     const wishlistList = document.getElementById("wishlistList");
     const wishlistItemTemplate = document.getElementById("wishlistItemTemplate");
 
-    // 7. Lấy DOM tìm kiếm
 
+    // 6. Lấy DOM tìm kiếm
     const searchForm = document.getElementById("searchForm");
     const searchKeyword = document.getElementById("searchKeyword");
 
-    // 8. Hàm tiện ích
 
+    // 7. Gọi API GET
+    async function getApi(endpoint) {
+        if (window.CustomerApi && typeof window.CustomerApi.get === "function") {
+            return await window.CustomerApi.get(endpoint);
+        }
+
+        const response = await fetch("../../BackEnd/php/api/" + endpoint, {
+            method: "GET",
+            credentials: "same-origin"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            throw data;
+        }
+
+        return data;
+    }
+
+
+    // 8. Gọi API POST
+    async function postApi(endpoint, body) {
+        if (window.CustomerApi && typeof window.CustomerApi.post === "function") {
+            return await window.CustomerApi.post(endpoint, body);
+        }
+
+        const response = await fetch("../../BackEnd/php/api/" + endpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body || {})
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            throw data;
+        }
+
+        return data;
+    }
+
+
+    // 9. Hàm tiện ích
     function formatPrice(price) {
+        if (window.CustomerApi && typeof window.CustomerApi.formatPrice === "function") {
+            return window.CustomerApi.formatPrice(price);
+        }
+
         return Number(price || 0).toLocaleString("vi-VN") + "đ";
+    }
+
+    function getApiErrorMessage(error, fallbackMessage) {
+        if (window.CustomerApi && typeof window.CustomerApi.getApiErrorMessage === "function") {
+            return window.CustomerApi.getApiErrorMessage(error, fallbackMessage);
+        }
+
+        return error && error.message ? error.message : fallbackMessage;
     }
 
     function getProductDetailUrl(productId) {
@@ -123,6 +125,24 @@ document.addEventListener("DOMContentLoaded", function () {
         return productId + "_" + size + "_" + color;
     }
 
+    function normalizeQuantity(quantity) {
+        const value = Number(quantity || 1);
+
+        if (Number.isNaN(value) || value < 1) {
+            return 1;
+        }
+
+        return Math.floor(value);
+    }
+
+    function getFirstLetter(text) {
+        if (!text) {
+            return "K";
+        }
+
+        return String(text).trim().charAt(0).toUpperCase();
+    }
+
     function getDisplayName(user) {
         if (!user) {
             return "Khách hàng";
@@ -130,6 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return (
             user.fullName ||
+            user.full_name ||
             user.name ||
             user.username ||
             user.email ||
@@ -172,32 +193,8 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     }
 
-    function isSameUser(userA, userB) {
-        if (!userA || !userB) {
-            return false;
-        }
 
-        return (
-            Boolean(userA.id && userB.id && userA.id === userB.id) ||
-            Boolean(userA.userId && userB.userId && userA.userId === userB.userId) ||
-            Boolean(userA.email && userB.email && userA.email === userB.email) ||
-            Boolean(userA.phone && userB.phone && userA.phone === userB.phone) ||
-            Boolean(userA.username && userB.username && userA.username === userB.username)
-        );
-    }
-
-    function normalizeQuantity(quantity) {
-        const value = Number(quantity || 1);
-
-        if (Number.isNaN(value) || value < 1) {
-            return 1;
-        }
-
-        return Math.floor(value);
-    }
-
-    // 9. Đọc ghi localStorage
-
+    // 10. Đọc ghi localStorage
     function getDataFromStorage(key, fallbackValue) {
         const rawData = localStorage.getItem(key);
 
@@ -237,9 +234,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return data;
     }
 
-    // 10. Kiểm tra tài khoản
 
-    function getCurrentUserFromStorage() {
+    // 11. Kiểm tra đăng nhập
+    function getCurrentUserFromLocal() {
+        if (window.CustomerApi && typeof window.CustomerApi.getCurrentCustomerFromLocal === "function") {
+            return window.CustomerApi.getCurrentCustomerFromLocal();
+        }
+
         const isLogin = localStorage.getItem(IS_LOGIN_STORAGE_KEY) === "true";
         const currentUserData = getDataFromStorage(CURRENT_USER_STORAGE_KEY, null);
 
@@ -257,40 +258,48 @@ document.addEventListener("DOMContentLoaded", function () {
         return currentUserData;
     }
 
-    function isLoggedIn() {
-        return Boolean(getCurrentUserFromStorage());
-    }
+    async function requireLogin() {
+        if (!window.CustomerApi) {
+            currentUser = getCurrentUserFromLocal();
 
-    function getUsersFromStorage() {
-        return getArrayFromStorage(USERS_STORAGE_KEY);
-    }
+            if (!currentUser) {
+                alert("Vui lòng đăng nhập để xem sản phẩm yêu thích.");
+                window.location.href = "../html/login.html?redirect=" + encodeURIComponent("../html/wishlist.html");
+                return false;
+            }
 
-    function getFullCurrentUser() {
-        const users = getUsersFromStorage();
-
-        if (!currentUser) {
-            return null;
+            return true;
         }
 
-        const foundUser = users.find(function (user) {
-            return isSameUser(user, currentUser);
-        });
+        const localUser = window.CustomerApi.getCurrentCustomerFromLocal();
 
-        return foundUser || currentUser;
+        if (!localUser) {
+            alert("Vui lòng đăng nhập để xem sản phẩm yêu thích.");
+            window.location.href = "../html/login.html?redirect=" + encodeURIComponent("../html/wishlist.html");
+            return false;
+        }
+
+        try {
+            currentUser = await window.CustomerApi.getCurrentCustomerFromSession();
+            return true;
+        } catch (error) {
+            window.CustomerApi.clearCustomerLocalAuth();
+
+            alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+            window.location.href = "../html/login.html?redirect=" + encodeURIComponent("../html/wishlist.html");
+
+            return false;
+        }
     }
 
-    // 11. Đồng bộ điểm
 
+    // 12. Đồng bộ điểm
     function getUserPointMap() {
         return getObjectFromStorage(USER_POINTS_STORAGE_KEY);
     }
 
-    function saveUserPointMap(pointMap) {
-        saveDataToStorage(USER_POINTS_STORAGE_KEY, pointMap);
-    }
-
     function getCurrentUserPoints() {
-        const userKey = getUserKey(fullCurrentUser || currentUser);
+        const userKey = getUserKey(currentUser);
 
         if (!userKey) {
             return 0;
@@ -302,17 +311,13 @@ document.addEventListener("DOMContentLoaded", function () {
             return pointMap[userKey];
         }
 
-        const fallbackPoints = Number(fullCurrentUser?.points || currentUser?.points || 0);
-        pointMap[userKey] = fallbackPoints;
-        saveUserPointMap(pointMap);
-
-        return fallbackPoints;
+        return Number(currentUser.points || 0);
     }
 
-    // 12. Wishlist storage
 
-    function getWishlistStorageKeyByUser(user) {
-        const userKey = getUserKey(user);
+    // 13. Wishlist localStorage
+    function getWishlistStorageKey() {
+        const userKey = getUserKey(currentUser);
 
         if (!userKey) {
             return "";
@@ -321,33 +326,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return WISHLIST_STORAGE_PREFIX + userKey;
     }
 
-    function getLegacyWishlistStorageKeys() {
-        const keys = [];
-        const primaryKey = getWishlistStorageKeyByUser(fullCurrentUser || currentUser);
-
-        if (primaryKey) {
-            keys.push(primaryKey);
-        }
-
-        if (currentUser?.id) {
-            keys.push(WISHLIST_STORAGE_PREFIX + currentUser.id);
-        }
-
-        if (fullCurrentUser?.id) {
-            keys.push(WISHLIST_STORAGE_PREFIX + fullCurrentUser.id);
-        }
-
-        if (currentUser?.email) {
-            keys.push(WISHLIST_STORAGE_PREFIX + currentUser.email);
-        }
-
-        return [...new Set(keys.filter(Boolean))];
-    }
-
     function normalizeWishlistItem(item) {
-        if (typeof item === "string") {
+        if (typeof item === "string" || typeof item === "number") {
             return {
-                productId: item,
+                productId: String(item),
                 name: "",
                 price: 0,
                 oldPrice: 0,
@@ -358,7 +340,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         return {
-            productId: item.productId || item.id || "",
+            productId: String(item.productId || item.id || ""),
             name: item.name || item.productName || "",
             price: Number(item.price || item.currentPrice || 0),
             oldPrice: Number(item.oldPrice || 0),
@@ -368,97 +350,51 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
-    function getWishlistFromStorage() {
-        const keys = getLegacyWishlistStorageKeys();
+    function getWishlistItemsFromStorage() {
+        const wishlistKey = getWishlistStorageKey();
+
+        if (!wishlistKey) {
+            return [];
+        }
+
+        const items = getArrayFromStorage(wishlistKey);
         const wishlistMap = {};
 
-        keys.forEach(function (key) {
-            const items = getArrayFromStorage(key);
+        items.forEach(function (item) {
+            const normalizedItem = normalizeWishlistItem(item);
 
-            items.forEach(function (item) {
-                const normalizedItem = normalizeWishlistItem(item);
+            if (!normalizedItem.productId) {
+                return;
+            }
 
-                if (!normalizedItem.productId) {
-                    return;
-                }
-
-                wishlistMap[normalizedItem.productId] = normalizedItem;
-            });
+            wishlistMap[normalizedItem.productId] = normalizedItem;
         });
 
         return Object.values(wishlistMap);
     }
 
-    function saveWishlistToStorage(items) {
-        const primaryKey = getWishlistStorageKeyByUser(fullCurrentUser || currentUser);
+    function saveWishlistItemsToStorage(items) {
+        const wishlistKey = getWishlistStorageKey();
 
-        if (!primaryKey) {
+        if (!wishlistKey) {
             return;
         }
 
-        saveDataToStorage(primaryKey, items);
+        saveDataToStorage(wishlistKey, items);
     }
 
-    // 13. Sản phẩm
 
-    function getProductById(productId) {
-        return products.find(function (product) {
-            return product.id === productId;
-        });
+    // 14. Giỏ hàng localStorage
+    function getCartItemsFromStorage() {
+        return getArrayFromStorage(CART_STORAGE_KEY);
     }
 
-    function normalizeProduct(product) {
-        return {
-            id: product.id || product.productId || "",
-            name: product.name || product.productName || "Sản phẩm",
-            price: Number(product.price || product.currentPrice || 0),
-            oldPrice: Number(product.oldPrice || 0),
-            image: product.image || product.img || product.thumbnail || "",
-            inStock: product.inStock === false ? false : true
-        };
+    function saveCartItemsToStorage(items) {
+        saveDataToStorage(CART_STORAGE_KEY, items);
     }
 
-    function buildWishlistProducts() {
-        wishlistProducts = wishlistItems
-            .map(function (wishlistItem) {
-                const product = getProductById(wishlistItem.productId);
 
-                if (product) {
-                    return normalizeProduct(product);
-                }
-
-                if (wishlistItem.name || wishlistItem.image || wishlistItem.price) {
-                    return normalizeProduct({
-                        id: wishlistItem.productId,
-                        name: wishlistItem.name,
-                        price: wishlistItem.price,
-                        oldPrice: wishlistItem.oldPrice,
-                        image: wishlistItem.image,
-                        inStock: wishlistItem.inStock
-                    });
-                }
-
-                return null;
-            })
-            .filter(function (product) {
-                return product !== null && product.id !== "";
-            });
-    }
-
-    function removeMissingProductsFromWishlist() {
-        const validProductIds = wishlistProducts.map(function (product) {
-            return product.id;
-        });
-
-        wishlistItems = wishlistItems.filter(function (item) {
-            return validProductIds.includes(item.productId);
-        });
-
-        saveWishlistToStorage(wishlistItems);
-    }
-
-    // 14. Trạng thái hiển thị
-
+    // 15. Trạng thái hiển thị
     function hideWishlistStates() {
         if (wishlistLoadingState) wishlistLoadingState.hidden = true;
         if (wishlistEmptyState) wishlistEmptyState.hidden = true;
@@ -498,20 +434,149 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 15. Render sidebar
 
+    // 16. Render sidebar user
     function renderUserBox() {
+        const displayName = getDisplayName(currentUser);
+        currentUserPoints = getCurrentUserPoints();
+
         if (profileUserName) {
-            profileUserName.textContent = getDisplayName(fullCurrentUser || currentUser);
+            profileUserName.textContent = displayName;
+        }
+
+        if (profileUserEmail) {
+            profileUserEmail.textContent = currentUser.email || currentUser.phone || "";
         }
 
         if (profileUserRank) {
             profileUserRank.textContent = getRankNameByPoints(currentUserPoints);
         }
+
+        if (profileUserAvatar) {
+            profileUserAvatar.textContent = getFirstLetter(displayName);
+        }
     }
 
-    // 16. Render wishlist item
 
+    // 17. Chuẩn hóa sản phẩm từ API
+    function normalizeProductDetailFromApi(product, fallbackItem) {
+        const imageList = Array.isArray(product.images)
+            ? product.images.map(function (image) {
+                return image.image_url;
+            }).filter(Boolean)
+            : [];
+
+        const mainImage =
+            product.main_image ||
+            imageList[0] ||
+            fallbackItem.image ||
+            "../img/products/default.jpg";
+
+        const price = Number(product.base_price || product.price || fallbackItem.price || 0);
+
+        const oldPrice = product.old_price !== null && product.old_price !== undefined
+            ? Number(product.old_price || 0)
+            : Number(fallbackItem.oldPrice || 0);
+
+        const variants = Array.isArray(product.variants)
+            ? product.variants.map(function (variant) {
+                return {
+                    id: variant.id,
+                    colorId: variant.color ? variant.color.id : variant.color_id,
+                    colorName: variant.color ? variant.color.name : "",
+                    sizeId: variant.size ? variant.size.id : variant.size_id,
+                    sizeName: variant.size ? variant.size.name : "",
+                    price: variant.price !== null && variant.price !== undefined
+                        ? Number(variant.price)
+                        : price,
+                    stockQuantity: Number(variant.stock_quantity || 0),
+                    status: variant.status || "active"
+                };
+            })
+            : [];
+
+        return {
+            id: String(product.id || fallbackItem.productId),
+            name: product.name || fallbackItem.name || "Sản phẩm",
+            price: price,
+            oldPrice: oldPrice,
+            image: mainImage,
+            inStock: Number(product.total_stock || 0) > 0,
+            totalStock: Number(product.total_stock || 0),
+            variants: variants,
+            raw: product
+        };
+    }
+
+    function normalizeProductFromWishlistItem(item) {
+        return {
+            id: String(item.productId),
+            name: item.name || "Sản phẩm",
+            price: Number(item.price || 0),
+            oldPrice: Number(item.oldPrice || 0),
+            image: item.image || "../img/products/default.jpg",
+            inStock: item.inStock === false ? false : true,
+            totalStock: item.inStock === false ? 0 : 1,
+            variants: []
+        };
+    }
+
+
+    // 18. Load chi tiết một sản phẩm yêu thích
+    async function getProductDetail(productId, fallbackItem) {
+        try {
+            const response = await getApi(
+                "products/get-product-detail.php?id=" + encodeURIComponent(productId)
+            );
+
+            const product = response.data && response.data.product
+                ? response.data.product
+                : null;
+
+            if (!product) {
+                return normalizeProductFromWishlistItem(fallbackItem);
+            }
+
+            return normalizeProductDetailFromApi(product, fallbackItem);
+        } catch (error) {
+            console.warn("Không lấy được chi tiết sản phẩm yêu thích:", productId, error);
+            return normalizeProductFromWishlistItem(fallbackItem);
+        }
+    }
+
+
+    // 19. Load wishlist data
+    async function loadWishlistData() {
+        wishlistItems = getWishlistItemsFromStorage();
+
+        if (wishlistItems.length === 0) {
+            wishlistProducts = [];
+            return;
+        }
+
+        const productPromises = wishlistItems.map(function (item) {
+            return getProductDetail(item.productId, item);
+        });
+
+        wishlistProducts = await Promise.all(productPromises);
+
+        wishlistProducts = wishlistProducts.filter(function (product) {
+            return product && product.id;
+        });
+
+        const validIds = wishlistProducts.map(function (product) {
+            return String(product.id);
+        });
+
+        wishlistItems = wishlistItems.filter(function (item) {
+            return validIds.includes(String(item.productId));
+        });
+
+        saveWishlistItemsToStorage(wishlistItems);
+    }
+
+
+    // 20. Render một sản phẩm yêu thích
     function createWishlistItemElement(product) {
         if (!wishlistItemTemplate) {
             return null;
@@ -645,25 +710,8 @@ document.addEventListener("DOMContentLoaded", function () {
         showWishlistContent();
     }
 
-    // 17. Load dữ liệu wishlist
 
-    function loadWishlistData() {
-        currentUser = getCurrentUserFromStorage();
-        fullCurrentUser = getFullCurrentUser();
-        currentUserPoints = getCurrentUserPoints();
-
-        if (fullCurrentUser) {
-            fullCurrentUser.points = currentUserPoints;
-        }
-
-        wishlistItems = getWishlistFromStorage();
-
-        buildWishlistProducts();
-        removeMissingProductsFromWishlist();
-    }
-
-    // 18. Xóa sản phẩm yêu thích
-
+    // 21. Xóa sản phẩm yêu thích
     function removeWishlistItem(productId) {
         const confirmRemove = confirm("Bạn muốn xóa sản phẩm này khỏi danh sách yêu thích?");
 
@@ -672,47 +720,138 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         wishlistItems = wishlistItems.filter(function (item) {
-            return item.productId !== productId;
+            return String(item.productId) !== String(productId);
         });
 
-        saveWishlistToStorage(wishlistItems);
+        wishlistProducts = wishlistProducts.filter(function (product) {
+            return String(product.id) !== String(productId);
+        });
 
-        buildWishlistProducts();
+        saveWishlistItemsToStorage(wishlistItems);
         renderWishlistPage();
     }
 
-    // 19. Thêm vào giỏ hàng
 
-    function getCartItemsFromStorage() {
-        return getArrayFromStorage(CART_STORAGE_KEY);
+    // 22. Chọn biến thể mặc định để thêm vào giỏ
+    function getDefaultVariant(product) {
+        if (!product || !Array.isArray(product.variants)) {
+            return null;
+        }
+
+        const availableVariant = product.variants.find(function (variant) {
+            return variant.stockQuantity > 0 && variant.status === "active";
+        });
+
+        return availableVariant || product.variants[0] || null;
     }
 
-    function saveCartItemsToStorage(items) {
-        saveDataToStorage(CART_STORAGE_KEY, items);
-    }
 
+    // 23. Tạo item giỏ hàng local
     function createCartItem(product) {
-        const defaultSize = "M";
-        const defaultColor = "Mặc định";
+        const defaultVariant = getDefaultVariant(product);
+
+        const color = defaultVariant && defaultVariant.colorName
+            ? defaultVariant.colorName
+            : "Mặc định";
+
+        const size = defaultVariant && defaultVariant.sizeName
+            ? defaultVariant.sizeName
+            : "M";
+
+        const price = defaultVariant && defaultVariant.price
+            ? Number(defaultVariant.price)
+            : Number(product.price || 0);
 
         return {
-            cartItemId: createCartItemId(product.id, defaultSize, defaultColor),
+            cartItemId: createCartItemId(product.id, size, color),
+
             id: product.id,
+            productId: product.id,
+            product_id: product.id,
+
+            variantId: defaultVariant ? defaultVariant.id : null,
+            productVariantId: defaultVariant ? defaultVariant.id : null,
+            product_variant_id: defaultVariant ? defaultVariant.id : null,
+
             name: product.name,
-            price: Number(product.price || 0),
+            price: price,
             oldPrice: Number(product.oldPrice || 0),
             image: product.image,
-            meta: "Màu: " + defaultColor + " / Size: " + defaultSize,
-            color: defaultColor,
-            size: defaultSize,
+
+            meta: "Màu: " + color + " / Size: " + size,
+            color: color,
+            colorId: defaultVariant ? defaultVariant.colorId : "",
+            size: size,
+            sizeId: defaultVariant ? defaultVariant.sizeId : "",
+
             quantity: 1,
             selected: true
         };
     }
 
-    function addProductToCart(productId) {
+
+    // 24. Kiểm tra đang đăng nhập thật không
+    async function isLoggedInByApi() {
+        if (!window.CustomerApi) {
+            return false;
+        }
+
+        const localUser = window.CustomerApi.getCurrentCustomerFromLocal();
+
+        if (!localUser) {
+            return false;
+        }
+
+        try {
+            await window.CustomerApi.getCurrentCustomerFromSession();
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+
+    // 25. Thêm vào giỏ bằng API
+    async function addProductToApiCart(product) {
+        const defaultVariant = getDefaultVariant(product);
+
+        if (!defaultVariant || !defaultVariant.id) {
+            throw {
+                message: "Sản phẩm này chưa có phân loại mặc định để thêm vào giỏ. Vui lòng vào chi tiết sản phẩm để chọn màu/size."
+            };
+        }
+
+        await postApi("cart/add-to-cart.php", {
+            variant_id: Number(defaultVariant.id),
+            quantity: 1
+        });
+    }
+
+
+    // 26. Thêm vào giỏ localStorage
+    function addProductToLocalCart(product) {
+        const cartItems = getCartItemsFromStorage();
+        const newItem = createCartItem(product);
+
+        const existingItem = cartItems.find(function (item) {
+            return item.cartItemId === newItem.cartItemId;
+        });
+
+        if (existingItem) {
+            existingItem.quantity = normalizeQuantity(existingItem.quantity) + 1;
+            existingItem.selected = true;
+        } else {
+            cartItems.push(newItem);
+        }
+
+        saveCartItemsToStorage(cartItems);
+    }
+
+
+    // 27. Xử lý thêm vào giỏ
+    async function addProductToCart(productId) {
         const product = wishlistProducts.find(function (item) {
-            return item.id === productId;
+            return String(item.id) === String(productId);
         });
 
         if (!product) {
@@ -725,58 +864,62 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const cartItems = getCartItemsFromStorage();
-        const newItem = createCartItem(product);
+        try {
+            const loggedInByApi = await isLoggedInByApi();
 
-        const existingItem = cartItems.find(function (item) {
-            return item.cartItemId === newItem.cartItemId ||
-                (
-                    item.id === newItem.id &&
-                    item.size === newItem.size &&
-                    item.color === newItem.color
-                );
-        });
+            if (loggedInByApi) {
+                await addProductToApiCart(product);
+                alert("Đã thêm sản phẩm vào giỏ hàng.");
+                return;
+            }
 
-        if (existingItem) {
-            existingItem.quantity = normalizeQuantity(existingItem.quantity) + 1;
-            existingItem.selected = true;
-        } else {
-            cartItems.push(newItem);
+            addProductToLocalCart(product);
+            alert("Đã thêm sản phẩm vào giỏ hàng.");
+        } catch (error) {
+            alert(
+                getApiErrorMessage(
+                    error,
+                    "Không thêm được sản phẩm vào giỏ. Vui lòng vào chi tiết sản phẩm để chọn màu/size."
+                )
+            );
         }
-
-        saveCartItemsToStorage(cartItems);
-
-        alert("Đã thêm sản phẩm vào giỏ hàng.");
     }
 
-    // 20. Xem chi tiết sản phẩm
 
+    // 28. Xem chi tiết sản phẩm
     function viewProductDetail(productId) {
         window.location.href = getProductDetailUrl(productId);
     }
 
-    // 21. Đăng xuất
 
-    function handleLogout() {
+    // 29. Đăng xuất
+    async function handleLogout(event) {
+        if (event) {
+            event.preventDefault();
+        }
+
         const confirmLogout = confirm("Bạn có chắc muốn đăng xuất không?");
 
         if (!confirmLogout) {
             return;
         }
 
-        localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
-        localStorage.removeItem(REMEMBER_LOGIN_STORAGE_KEY);
-        localStorage.setItem(IS_LOGIN_STORAGE_KEY, "false");
+        if (window.CustomerApi && typeof window.CustomerApi.logoutCustomer === "function") {
+            await window.CustomerApi.logoutCustomer();
+            return;
+        }
 
+        localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+        localStorage.setItem(IS_LOGIN_STORAGE_KEY, "false");
         window.location.href = "../html/login.html";
     }
 
-    // 22. Tìm kiếm
 
+    // 30. Tìm kiếm
     function handleSearchSubmit(event) {
         event.preventDefault();
 
-        const keyword = searchKeyword?.value.trim() || "";
+        const keyword = searchKeyword ? searchKeyword.value.trim() : "";
 
         if (!keyword) {
             alert("Vui lòng nhập từ khóa tìm kiếm.");
@@ -786,23 +929,8 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
     }
 
-    // 23. Bảo vệ trang wishlist
 
-    function redirectToLoginIfNeeded() {
-        if (isLoggedIn()) {
-            return false;
-        }
-
-        alert("Vui lòng đăng nhập để xem sản phẩm yêu thích.");
-
-        const redirectUrl = encodeURIComponent("../html/wishlist.html");
-        window.location.href = "../html/login.html?redirect=" + redirectUrl;
-
-        return true;
-    }
-
-    // 24. Bắt sự kiện
-
+    // 31. Xử lý click wishlist
     function handleWishlistListClick(event) {
         const removeButton = event.target.closest(
             '[data-role="remove-wishlist-btn"], [data-role="remove-wishlist"]'
@@ -834,25 +962,39 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+
+    // 32. Gắn sự kiện
     function bindEvents() {
-        wishlistList?.addEventListener("click", handleWishlistListClick);
-        logoutBtn?.addEventListener("click", handleLogout);
-        searchForm?.addEventListener("submit", handleSearchSubmit);
+        if (wishlistList) {
+            wishlistList.addEventListener("click", handleWishlistListClick);
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", handleLogout);
+        }
+
+        if (searchForm) {
+            searchForm.addEventListener("submit", handleSearchSubmit);
+        }
     }
 
-    // 25. Khởi tạo trang wishlist
 
-    function initWishlistPage() {
-        if (redirectToLoginIfNeeded()) {
+    // 33. Khởi tạo trang wishlist
+    async function initWishlistPage() {
+        const isLogin = await requireLogin();
+
+        if (!isLogin) {
             return;
         }
 
         showWishlistLoading();
 
         try {
-            loadWishlistData();
             renderUserBox();
             bindEvents();
+
+            await loadWishlistData();
+
             renderWishlistPage();
         } catch (error) {
             console.error("Lỗi wishlist:", error);

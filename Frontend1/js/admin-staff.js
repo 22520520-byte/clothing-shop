@@ -1,74 +1,25 @@
-// 1. Khai báo key localStorage
-const ADMIN_CURRENT_USER_KEY = "admin_current_user";
-const ADMIN_IS_LOGIN_KEY = "admin_is_login";
-const ADMIN_STAFF_KEY = "admin_staff";
+// =========================================================
+// File: Frontend1/js/admin-staff.js
+// Mục đích: Gắn trang quản lý nhân viên admin với API backend thật
+// =========================================================
 
-// 2. Dữ liệu nhân viên mẫu
-const demoAdminStaff = [
-    {
-        id: "NV001",
-        fullName: "Chủ cửa hàng",
-        username: "owner",
-        password: "123456",
-        role: "owner",
-        email: "owner@gmail.com",
-        phone: "0900000001",
-        status: "active",
-        createdAt: "2026-05-01",
-        note: "Tài khoản chủ cửa hàng mặc định."
-    },
-    {
-        id: "NV002",
-        fullName: "Nhân viên bán hàng",
-        username: "staff",
-        password: "123456",
-        role: "staff",
-        email: "staff@gmail.com",
-        phone: "0900000002",
-        status: "active",
-        createdAt: "2026-05-02",
-        note: "Nhân viên xử lý đơn hàng và sản phẩm."
-    },
-    {
-        id: "NV003",
-        fullName: "Nhân viên kho",
-        username: "khohang",
-        password: "123456",
-        role: "staff",
-        email: "khohang@gmail.com",
-        phone: "0900000003",
-        status: "active",
-        createdAt: "2026-05-05",
-        note: "Theo dõi tồn kho sản phẩm."
-    },
-    {
-        id: "NV004",
-        fullName: "Nhân viên cũ",
-        username: "nhanviencu",
-        password: "123456",
-        role: "staff",
-        email: "nhanviencu@gmail.com",
-        phone: "0900000004",
-        status: "locked",
-        createdAt: "2026-04-20",
-        note: "Tài khoản đã tạm khóa."
-    }
-];
 
-// 3. Lấy element thông tin admin
+// 1. Lấy element thông tin admin
 const adminAvatar = document.getElementById("adminAvatar");
 const adminName = document.getElementById("adminName");
 const adminRole = document.getElementById("adminRole");
 const adminCurrentDate = document.getElementById("adminCurrentDate");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
 
-// 4. Lấy element thống kê
+
+// 2. Lấy element thống kê
 const totalStaffCount = document.getElementById("totalStaffCount");
 const activeStaffCount = document.getElementById("activeStaffCount");
 const ownerStaffCount = document.getElementById("ownerStaffCount");
 const lockedStaffCount = document.getElementById("lockedStaffCount");
 
-// 5. Lấy element bộ lọc và bảng
+
+// 3. Lấy element bộ lọc và bảng
 const staffSearchInput = document.getElementById("staffSearchInput");
 const staffRoleFilter = document.getElementById("staffRoleFilter");
 const staffStatusFilter = document.getElementById("staffStatusFilter");
@@ -76,24 +27,38 @@ const staffTableBody = document.getElementById("staffTableBody");
 const emptyStaffText = document.getElementById("emptyStaffText");
 const staffRowTemplate = document.getElementById("staffRowTemplate");
 
-// 6. Lấy element nút thêm nhân viên
+
+// 4. Lấy element nút thêm nhân viên
 const openAddStaffBtn = document.getElementById("openAddStaffBtn");
 
-// 7. Biến lưu admin hiện tại
-let currentAdminUser = null;
 
-// 8. Format ngày Việt Nam
+// 5. Biến lưu dữ liệu nhân viên
+let currentAdminUser = null;
+let adminStaffList = [];
+let staffSummary = null;
+
+
+// 6. Format ngày Việt Nam
 function formatDate(dateString) {
-    if (!dateString) return "";
+    if (!dateString) {
+        return "";
+    }
 
     const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+        return dateString;
+    }
 
     return date.toLocaleDateString("vi-VN");
 }
 
-// 9. Render ngày hiện tại
+
+// 7. Render ngày hiện tại
 function renderCurrentDate() {
-    if (!adminCurrentDate) return;
+    if (!adminCurrentDate) {
+        return;
+    }
 
     const today = new Date();
 
@@ -105,53 +70,61 @@ function renderCurrentDate() {
     });
 }
 
-// 10. Kiểm tra đăng nhập admin
-function checkAdminLogin() {
-    const isLogin = localStorage.getItem(ADMIN_IS_LOGIN_KEY) === "true";
-    const currentAdmin = localStorage.getItem(ADMIN_CURRENT_USER_KEY);
 
-    if (!isLogin || !currentAdmin) {
-        window.location.href = "../html/admin-login.html";
-        return null;
+// 8. Lấy chữ đại diện
+function getFirstLetter(text) {
+    if (!text) {
+        return "A";
     }
 
-    try {
-        return JSON.parse(currentAdmin);
-    } catch (error) {
-        localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-        localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
-
-        window.location.href = "../html/admin-login.html";
-        return null;
-    }
+    return String(text).trim().charAt(0).toUpperCase();
 }
 
-// 11. Kiểm tra quyền quản lý nhân viên
-function checkStaffPermission(adminUser) {
-    if (!adminUser) return false;
 
-    if (adminUser.role !== "owner") {
-        alert("Bạn không có quyền truy cập trang quản lý nhân viên.");
-        window.location.href = "../html/admin-dashboard.html";
+// 9. Lấy nhãn vai trò admin
+function getAdminRoleLabel(roleCode, roleName) {
+    if (roleCode === "owner") {
+        return "Chủ cửa hàng";
+    }
+
+    if (roleCode === "admin") {
+        return "Quản trị viên";
+    }
+
+    if (roleCode === "staff") {
+        return "Nhân viên";
+    }
+
+    return roleName || "Quản trị viên";
+}
+
+
+// 10. Kiểm tra role có quyền thao tác nhân viên không
+function canManageStaff(adminUser) {
+    if (!adminUser) {
         return false;
     }
 
-    return true;
+    return adminUser.role === "owner" || adminUser.role === "admin";
 }
 
-// 12. Hiển thị thông tin admin
-function renderAdminInfo(adminUser) {
-    if (!adminUser) return;
 
-    const fullName = adminUser.fullName || "Quản trị viên";
-    const roleText = adminUser.role === "owner" ? "Chủ cửa hàng" : "Nhân viên";
+// 11. Hiển thị thông tin admin
+function renderAdminInfo(adminUser) {
+    if (!adminUser) {
+        return;
+    }
+
+    const fullName = adminUser.fullName || adminUser.full_name || "Quản trị viên";
+    const roleCode = adminUser.role || "";
+    const roleName = adminUser.roleName || "";
 
     if (adminName) {
         adminName.textContent = fullName;
     }
 
     if (adminRole) {
-        adminRole.textContent = roleText;
+        adminRole.textContent = getAdminRoleLabel(roleCode, roleName);
     }
 
     if (adminAvatar) {
@@ -160,109 +133,51 @@ function renderAdminInfo(adminUser) {
 
     const ownerOnlyLinks = document.querySelectorAll("[data-owner-only='true']");
 
-    ownerOnlyLinks.forEach(function(link) {
-        if (adminUser.role !== "owner") {
-            link.style.display = "none";
-        }
+    ownerOnlyLinks.forEach(function (link) {
+        link.style.display = roleCode === "owner" ? "" : "none";
     });
 
-    if (adminUser.role !== "owner" && openAddStaffBtn) {
+    if (openAddStaffBtn && !canManageStaff(adminUser)) {
         openAddStaffBtn.style.display = "none";
     }
 }
 
-// 13. Đăng xuất admin
-function handleAdminLogout() {
-    localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-    localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
 
+// 12. Xử lý đăng xuất
+function handleAdminLogout() {
+    if (window.AdminApi && window.AdminApi.logoutAdmin) {
+        window.AdminApi.logoutAdmin();
+        return;
+    }
+
+    localStorage.removeItem("admin_current_user");
+    localStorage.removeItem("admin_is_login");
     window.location.href = "../html/admin-login.html";
 }
 
-// 14. Lấy chữ đại diện
-function getFirstLetter(text) {
-    if (!text) return "A";
 
-    return text.trim().charAt(0).toUpperCase();
-}
-
-// 15. Lấy ngày hôm nay dạng YYYY-MM-DD
-function getTodayString() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-// 16. Chuẩn hóa nhân viên
-function normalizeStaff(staff, index) {
-    const defaultStaff = demoAdminStaff[index] || demoAdminStaff[0];
-
-    return {
-        id: staff.id || "NV" + String(index + 1).padStart(3, "0"),
-        fullName: staff.fullName || defaultStaff.fullName || "Nhân viên",
-        username: staff.username || defaultStaff.username || "",
-        password: staff.password || defaultStaff.password || "123456",
-        role: staff.role || defaultStaff.role || "staff",
-        email: staff.email || defaultStaff.email || "Chưa cập nhật",
-        phone: staff.phone || defaultStaff.phone || "Chưa cập nhật",
-        status: staff.status || defaultStaff.status || "active",
-        createdAt: staff.createdAt || defaultStaff.createdAt || getTodayString(),
-        note: staff.note || ""
-    };
-}
-
-// 17. Lấy danh sách nhân viên
-function getStaffList() {
-    const savedStaff = localStorage.getItem(ADMIN_STAFF_KEY);
-
-    if (!savedStaff) {
-        const normalizedDemoStaff = demoAdminStaff.map(function(staff, index) {
-            return normalizeStaff(staff, index);
-        });
-
-        localStorage.setItem(ADMIN_STAFF_KEY, JSON.stringify(normalizedDemoStaff));
-
-        return normalizedDemoStaff;
+// 13. Lấy role code từ API
+function getStaffRoleCode(staff) {
+    if (staff.role && staff.role.code) {
+        return staff.role.code;
     }
 
-    try {
-        const staffList = JSON.parse(savedStaff);
-
-        const normalizedStaffList = staffList.map(function(staff, index) {
-            return normalizeStaff(staff, index);
-        });
-
-        localStorage.setItem(ADMIN_STAFF_KEY, JSON.stringify(normalizedStaffList));
-
-        return normalizedStaffList;
-    } catch (error) {
-        const normalizedDemoStaff = demoAdminStaff.map(function(staff, index) {
-            return normalizeStaff(staff, index);
-        });
-
-        localStorage.setItem(ADMIN_STAFF_KEY, JSON.stringify(normalizedDemoStaff));
-
-        return normalizedDemoStaff;
-    }
+    return staff.role_code || "staff";
 }
 
-// 18. Lưu danh sách nhân viên
-function saveStaffList(staffList) {
-    localStorage.setItem(ADMIN_STAFF_KEY, JSON.stringify(staffList));
-}
 
-// 19. Tìm nhân viên theo id
-function getStaffById(id) {
-    const staffList = getStaffList();
-
-    return staffList.find(function(staff) {
-        return staff.id === id;
-    });
-}
-
-// 20. Lấy thông tin vai trò
-function getStaffRoleInfo(role) {
-    if (role === "owner") {
+// 14. Lấy thông tin vai trò
+function getStaffRoleInfo(roleCode) {
+    if (roleCode === "owner") {
         return {
             text: "Chủ cửa hàng",
+            className: "roleOwner"
+        };
+    }
+
+    if (roleCode === "admin") {
+        return {
+            text: "Quản trị viên",
             className: "roleOwner"
         };
     }
@@ -273,9 +188,33 @@ function getStaffRoleInfo(role) {
     };
 }
 
-// 21. Lấy thông tin trạng thái
+
+// 15. Lấy status tài khoản
+function getStaffStatusCode(staff) {
+    return staff.status || "active";
+}
+
+
+// 16. Lấy work status
+function getStaffWorkStatus(staff) {
+    if (staff.staff_profile && staff.staff_profile.work_status) {
+        return staff.staff_profile.work_status;
+    }
+
+    return staff.work_status || "working";
+}
+
+
+// 17. Lấy thông tin trạng thái tài khoản
 function getStaffStatusInfo(status) {
-    if (status === "locked") {
+    if (status === "blocked") {
+        return {
+            text: "Bị chặn",
+            className: "statusCancelled"
+        };
+    }
+
+    if (status === "inactive" || status === "locked") {
         return {
             text: "Đã khóa",
             className: "statusCancelled"
@@ -288,90 +227,286 @@ function getStaffStatusInfo(status) {
     };
 }
 
-// 22. Kiểm tra có phải tài khoản chủ cửa hàng không
+
+// 18. Lấy thông tin trạng thái làm việc
+function getWorkStatusLabel(workStatus) {
+    if (workStatus === "on_leave") {
+        return "Đang nghỉ phép";
+    }
+
+    if (workStatus === "resigned") {
+        return "Đã nghỉ việc";
+    }
+
+    return "Đang làm việc";
+}
+
+
+// 19. Chuẩn hóa nhân viên từ API
+function normalizeStaff(staff) {
+    const roleCode = getStaffRoleCode(staff);
+    const status = getStaffStatusCode(staff);
+    const workStatus = getStaffWorkStatus(staff);
+
+    const staffProfile = staff.staff_profile || {};
+
+    return {
+        id: Number(staff.id || 0),
+        code: staffProfile.staff_code || "NV" + String(staff.id || 0).padStart(3, "0"),
+
+        fullName: staff.full_name || staff.fullName || "Nhân viên",
+        email: staff.email || "Chưa cập nhật",
+        phone: staff.phone || "Chưa cập nhật",
+
+        role: roleCode,
+        roleName: staff.role && staff.role.name ? staff.role.name : "",
+        status: status,
+        workStatus: workStatus,
+
+        positionName: staffProfile.position_name || "Đang cập nhật",
+        department: staffProfile.department || "Đang cập nhật",
+
+        createdAt: staff.created_at || "",
+        updatedAt: staff.updated_at || "",
+
+        totalActivities: staff.activity_summary
+            ? Number(staff.activity_summary.total_activities || 0)
+            : 0,
+
+        lastActivityAt: staff.activity_summary
+            ? staff.activity_summary.last_activity_at
+            : null,
+
+        raw: staff
+    };
+}
+
+
+// 20. Kiểm tra có phải owner không
 function isOwnerStaff(staff) {
     return staff && staff.role === "owner";
 }
 
-// 23. Kiểm tra có phải tài khoản đang đăng nhập không
+
+// 21. Kiểm tra có phải tài khoản đang đăng nhập không
 function isCurrentLoginStaff(staff) {
-    if (!staff || !currentAdminUser) return false;
+    if (!staff || !currentAdminUser) {
+        return false;
+    }
 
-    const sameUsername = staff.username && currentAdminUser.username && staff.username === currentAdminUser.username;
-    const sameId = staff.id && currentAdminUser.id && staff.id === currentAdminUser.id;
-
-    return sameUsername || sameId;
+    return String(staff.id) === String(currentAdminUser.id);
 }
 
-// 24. Render thống kê nhân viên
-function renderStaffStats(staffList) {
-    const activeStaff = staffList.filter(function(staff) {
-        return staff.status === "active";
-    });
 
-    const ownerStaff = staffList.filter(function(staff) {
-        return staff.role === "owner";
-    });
+// 22. Render thống kê nhân viên
+function renderStaffStats() {
+    const totalStaff = staffSummary && staffSummary.total_staff !== undefined
+        ? Number(staffSummary.total_staff || 0)
+        : adminStaffList.length;
 
-    const lockedStaff = staffList.filter(function(staff) {
-        return staff.status === "locked";
-    });
+    const activeStaff = staffSummary && staffSummary.active_accounts !== undefined
+        ? Number(staffSummary.active_accounts || 0)
+        : adminStaffList.filter(function (staff) {
+            return staff.status === "active";
+        }).length;
+
+    const ownerStaff = staffSummary && staffSummary.total_owner !== undefined
+        ? Number(staffSummary.total_owner || 0)
+        : adminStaffList.filter(function (staff) {
+            return staff.role === "owner";
+        }).length;
+
+    const lockedStaff = staffSummary && staffSummary.inactive_accounts !== undefined
+        ? Number(staffSummary.inactive_accounts || 0)
+        : adminStaffList.filter(function (staff) {
+            return staff.status !== "active";
+        }).length;
 
     if (totalStaffCount) {
-        totalStaffCount.textContent = staffList.length;
+        totalStaffCount.textContent = totalStaff;
     }
 
     if (activeStaffCount) {
-        activeStaffCount.textContent = activeStaff.length;
+        activeStaffCount.textContent = activeStaff;
     }
 
     if (ownerStaffCount) {
-        ownerStaffCount.textContent = ownerStaff.length;
+        ownerStaffCount.textContent = ownerStaff;
     }
 
     if (lockedStaffCount) {
-        lockedStaffCount.textContent = lockedStaff.length;
+        lockedStaffCount.textContent = lockedStaff;
     }
 }
 
-// 25. Lọc nhân viên
-function getFilteredStaffList(staffList) {
-    const searchValue = staffSearchInput ? staffSearchInput.value.trim().toLowerCase() : "";
-    const roleValue = staffRoleFilter ? staffRoleFilter.value : "all";
-    const statusValue = staffStatusFilter ? staffStatusFilter.value : "all";
 
-    return staffList.filter(function(staff) {
+// 23. Chuẩn hóa giá trị filter trạng thái cũ trong HTML
+function normalizeStatusFilterValue(value) {
+    if (value === "locked") {
+        return "inactive";
+    }
+
+    return value;
+}
+
+
+// 24. Lọc nhân viên trên frontend
+function getFilteredStaffList() {
+    const searchValue = staffSearchInput
+        ? staffSearchInput.value.trim().toLowerCase()
+        : "";
+
+    const roleValue = staffRoleFilter
+        ? staffRoleFilter.value
+        : "all";
+
+    const statusValue = staffStatusFilter
+        ? normalizeStatusFilterValue(staffStatusFilter.value)
+        : "all";
+
+    return adminStaffList.filter(function (staff) {
         const fullName = staff.fullName.toLowerCase();
-        const username = staff.username.toLowerCase();
         const email = staff.email.toLowerCase();
         const phone = staff.phone.toLowerCase();
-        const note = staff.note.toLowerCase();
+        const code = staff.code.toLowerCase();
+        const positionName = staff.positionName.toLowerCase();
+        const department = staff.department.toLowerCase();
 
         const matchSearch =
             fullName.includes(searchValue) ||
-            username.includes(searchValue) ||
             email.includes(searchValue) ||
             phone.includes(searchValue) ||
-            note.includes(searchValue);
+            code.includes(searchValue) ||
+            positionName.includes(searchValue) ||
+            department.includes(searchValue);
 
-        const matchRole =
-            roleValue === "all" ||
-            staff.role === roleValue;
+        let matchRole = true;
 
-        const matchStatus =
-            statusValue === "all" ||
-            staff.status === statusValue;
+        if (roleValue !== "all") {
+            matchRole = staff.role === roleValue;
+        }
+
+        let matchStatus = true;
+
+        if (statusValue !== "all") {
+            if (statusValue === "inactive") {
+                matchStatus = staff.status !== "active";
+            } else {
+                matchStatus = staff.status === statusValue;
+            }
+        }
 
         return matchSearch && matchRole && matchStatus;
     });
 }
 
-// 26. Render bảng nhân viên
-function renderStaffTable() {
-    if (!staffTableBody || !staffRowTemplate) return;
 
-    const staffList = getStaffList();
-    const filteredStaffList = getFilteredStaffList(staffList);
+// 25. Tạo link trang chi tiết nhân viên
+function getAdminStaffDetailUrl(staffId) {
+    return "../html/admin-staff-detail.html?id=" + encodeURIComponent(staffId);
+}
+
+
+// 26. Render một dòng nhân viên
+function renderStaffRow(staff) {
+    const rowFragment = staffRowTemplate.content.cloneNode(true);
+    const row = rowFragment.querySelector("tr");
+
+    const roleInfo = getStaffRoleInfo(staff.role);
+    const statusInfo = getStaffStatusInfo(staff.status);
+
+    const staffAvatarText = rowFragment.querySelector(".staffAvatarText");
+    const staffFullNameText = rowFragment.querySelector(".staffFullNameText");
+    const staffCodeText = rowFragment.querySelector(".staffCodeText");
+    const staffUsernameText = rowFragment.querySelector(".staffUsernameText");
+    const staffEmailText = rowFragment.querySelector(".staffEmailText");
+    const staffPhoneText = rowFragment.querySelector(".staffPhoneText");
+    const staffRoleText = rowFragment.querySelector(".staffRoleText");
+    const staffCreatedAtText = rowFragment.querySelector(".staffCreatedAtText");
+    const staffStatusText = rowFragment.querySelector(".staffStatusText");
+    const staffNoteText = rowFragment.querySelector(".staffNoteText");
+    const actionButton = rowFragment.querySelector("[data-action]");
+
+    if (row) {
+        row.dataset.staffId = staff.id;
+        row.classList.add("clickableStaffRow");
+        row.title = "Nhấn để xem và chỉnh sửa nhân viên";
+    }
+
+    if (staffAvatarText) {
+        staffAvatarText.textContent = getFirstLetter(staff.fullName);
+    }
+
+    if (staffFullNameText) {
+        staffFullNameText.textContent = staff.fullName;
+    }
+
+    if (staffCodeText) {
+        staffCodeText.textContent = staff.code;
+    }
+
+    if (staffUsernameText) {
+        staffUsernameText.textContent = staff.positionName;
+    }
+
+    if (staffEmailText) {
+        staffEmailText.textContent = staff.email;
+    }
+
+    if (staffPhoneText) {
+        staffPhoneText.textContent = staff.phone;
+    }
+
+    if (staffRoleText) {
+        staffRoleText.textContent = roleInfo.text;
+        staffRoleText.className = "staffRoleText roleBadge";
+        staffRoleText.classList.add(roleInfo.className);
+    }
+
+    if (staffCreatedAtText) {
+        staffCreatedAtText.textContent = formatDate(staff.createdAt);
+    }
+
+    if (staffStatusText) {
+        staffStatusText.textContent = statusInfo.text;
+        staffStatusText.className = "staffStatusText statusBadge";
+        staffStatusText.classList.add(statusInfo.className);
+    }
+
+    if (staffNoteText) {
+        staffNoteText.textContent =
+            staff.department + " · " + getWorkStatusLabel(staff.workStatus);
+    }
+
+    if (actionButton) {
+        actionButton.dataset.action = "toggle-status";
+        actionButton.textContent = staff.status === "active" ? "Khóa" : "Mở";
+        actionButton.title = staff.status === "active"
+            ? "Khóa tài khoản nhân viên"
+            : "Mở lại tài khoản nhân viên";
+
+        if (
+            !canManageStaff(currentAdminUser) ||
+            isOwnerStaff(staff) ||
+            isCurrentLoginStaff(staff)
+        ) {
+            actionButton.disabled = true;
+            actionButton.classList.add("disabledBtn");
+            actionButton.title = "Không thể cập nhật tài khoản này";
+        }
+    }
+
+    return rowFragment;
+}
+
+
+// 27. Render bảng nhân viên
+function renderStaffTable() {
+    if (!staffTableBody || !staffRowTemplate) {
+        return;
+    }
+
+    const filteredStaffList = getFilteredStaffList();
 
     staffTableBody.innerHTML = "";
 
@@ -379,114 +514,176 @@ function renderStaffTable() {
         emptyStaffText.classList.toggle("show", filteredStaffList.length === 0);
     }
 
-    filteredStaffList.forEach(function(staff) {
-        const rowFragment = staffRowTemplate.content.cloneNode(true);
-        const row = rowFragment.querySelector("tr");
-        const roleInfo = getStaffRoleInfo(staff.role);
-        const statusInfo = getStaffStatusInfo(staff.status);
-        const roleBadge = rowFragment.querySelector(".staffRoleText");
-        const statusBadge = rowFragment.querySelector(".staffStatusText");
-        const deleteButton = rowFragment.querySelector("[data-action='delete']");
-
-        row.dataset.staffId = staff.id;
-        row.classList.add("clickableStaffRow");
-        row.title = "Nhấn để xem và chỉnh sửa nhân viên";
-
-        rowFragment.querySelector(".staffAvatarText").textContent = getFirstLetter(staff.fullName);
-        rowFragment.querySelector(".staffFullNameText").textContent = staff.fullName;
-        rowFragment.querySelector(".staffCodeText").textContent = staff.id;
-        rowFragment.querySelector(".staffUsernameText").textContent = staff.username;
-
-        rowFragment.querySelector(".staffEmailText").textContent = staff.email;
-        rowFragment.querySelector(".staffPhoneText").textContent = staff.phone;
-
-        roleBadge.textContent = roleInfo.text;
-        roleBadge.classList.add(roleInfo.className);
-
-        rowFragment.querySelector(".staffCreatedAtText").textContent = formatDate(staff.createdAt);
-
-        statusBadge.textContent = statusInfo.text;
-        statusBadge.classList.add(statusInfo.className);
-
-        rowFragment.querySelector(".staffNoteText").textContent = staff.note || "-";
-
-        if (isOwnerStaff(staff) || isCurrentLoginStaff(staff)) {
-            if (deleteButton) {
-                deleteButton.disabled = true;
-                deleteButton.classList.add("disabledBtn");
-                deleteButton.title = "Không thể xóa tài khoản này";
-            }
-        }
-
-        staffTableBody.appendChild(rowFragment);
+    filteredStaffList.forEach(function (staff) {
+        const row = renderStaffRow(staff);
+        staffTableBody.appendChild(row);
     });
 
-    renderStaffStats(staffList);
+    renderStaffStats();
 }
 
-// 27. Chuyển sang trang chi tiết nhân viên
+
+// 28. Hiển thị loading
+function setStaffLoading(isLoading) {
+    if (!staffTableBody) {
+        return;
+    }
+
+    if (isLoading) {
+        staffTableBody.innerHTML = `
+            <tr>
+                <td colspan="8">Đang tải danh sách nhân viên...</td>
+            </tr>
+        `;
+    }
+}
+
+
+// 29. Hiển thị lỗi
+function renderStaffError(error) {
+    console.error(error);
+
+    if (staffTableBody) {
+        staffTableBody.innerHTML = "";
+    }
+
+    if (emptyStaffText) {
+        emptyStaffText.classList.add("show");
+        emptyStaffText.textContent = "Không tải được danh sách nhân viên.";
+    }
+
+    adminStaffList = [];
+    staffSummary = null;
+    renderStaffStats();
+}
+
+
+// 30. Load danh sách nhân viên từ API
+async function loadStaffFromApi() {
+    setStaffLoading(true);
+
+    const response = await window.AdminApi.get(
+        "admin/staff/get-staff.php?page=1&limit=100&role_code=all&status=all&work_status=all&sort=latest"
+    );
+
+    const data = response.data || {};
+    const staffList = Array.isArray(data.staff) ? data.staff : [];
+
+    staffSummary = data.summary || null;
+
+    adminStaffList = staffList.map(function (staff) {
+        return normalizeStaff(staff);
+    });
+
+    renderStaffTable();
+}
+
+
+// 31. Tìm nhân viên theo id
+function getStaffById(staffId) {
+    return adminStaffList.find(function (staff) {
+        return String(staff.id) === String(staffId);
+    });
+}
+
+
+// 32. Chuyển sang trang chi tiết nhân viên
 function goToStaffDetail(staffId) {
-    if (!staffId) return;
+    if (!staffId) {
+        return;
+    }
 
-    window.location.href = "../html/admin-staff-detail.html?id=" + encodeURIComponent(staffId);
+    window.location.href = getAdminStaffDetailUrl(staffId);
 }
 
-// 28. Xóa nhân viên
-function deleteStaff(id) {
-    const staffList = getStaffList();
-    const staff = getStaffById(id);
 
-    if (!staff) return;
+// 33. Cập nhật trạng thái nhân viên
+async function toggleStaffStatus(staffId) {
+    const staff = getStaffById(staffId);
+
+    if (!staff) {
+        return;
+    }
+
+    if (!canManageStaff(currentAdminUser)) {
+        alert("Bạn không có quyền cập nhật trạng thái nhân viên.");
+        return;
+    }
 
     if (isOwnerStaff(staff)) {
-        alert("Không thể xóa tài khoản chủ cửa hàng.");
+        alert("Không thể khóa tài khoản chủ cửa hàng.");
         return;
     }
 
     if (isCurrentLoginStaff(staff)) {
-        alert("Không thể xóa tài khoản đang đăng nhập.");
+        alert("Không thể khóa tài khoản đang đăng nhập.");
         return;
     }
 
-    const isConfirm = confirm("Bạn có chắc muốn xóa nhân viên " + staff.fullName + "?");
+    const newStatus = staff.status === "active" ? "inactive" : "active";
+    const newWorkStatus = newStatus === "active" ? "working" : staff.workStatus;
+    const actionText = newStatus === "inactive" ? "khóa" : "mở lại";
 
-    if (!isConfirm) return;
+    const isConfirm = confirm(
+        "Bạn có chắc muốn " + actionText + " tài khoản nhân viên " + staff.fullName + " không?"
+    );
 
-    const updatedStaffList = staffList.filter(function(item) {
-        return item.id !== id;
-    });
+    if (!isConfirm) {
+        return;
+    }
 
-    saveStaffList(updatedStaffList);
-    renderStaffTable();
+    try {
+        await window.AdminApi.post("admin/staff/update-staff-status.php", {
+            staff_id: Number(staffId),
+            status: newStatus,
+            work_status: newWorkStatus,
+            note: "Admin cập nhật trạng thái nhân viên từ giao diện quản trị."
+        });
+
+        await loadStaffFromApi();
+    } catch (error) {
+        alert(
+            window.AdminApi.getApiErrorMessage(
+                error,
+                "Cập nhật trạng thái nhân viên thất bại."
+            )
+        );
+    }
 }
 
-// 29. Xử lý thao tác bảng nhân viên
+
+// 34. Xử lý thao tác bảng nhân viên
 function handleStaffTableAction(event) {
     const actionButton = event.target.closest("[data-action]");
     const row = event.target.closest("tr");
 
-    if (!row) return;
+    if (!row) {
+        return;
+    }
 
-    const id = row.dataset.staffId;
+    const staffId = row.dataset.staffId;
 
     if (actionButton) {
         event.stopPropagation();
 
-        if (actionButton.disabled) return;
+        if (actionButton.disabled) {
+            return;
+        }
 
         const action = actionButton.dataset.action;
 
-        if (action === "delete") {
-            deleteStaff(id);
+        if (action === "toggle-status") {
+            toggleStaffStatus(staffId);
         }
 
         return;
     }
 
-    goToStaffDetail(id);
+    goToStaffDetail(staffId);
 }
 
-// 30. Gắn sự kiện trang nhân viên
+
+// 35. Gắn sự kiện trang nhân viên
 function bindStaffEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -509,20 +706,48 @@ function bindStaffEvents() {
     }
 }
 
-// 31. Khởi tạo trang quản lý nhân viên
-function initAdminStaffPage() {
-    currentAdminUser = checkAdminLogin();
 
-    if (!currentAdminUser) return;
+// 36. Kiểm tra đăng nhập local
+function checkAdminLoginLocal() {
+    if (!window.AdminApi) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
 
-    const hasPermission = checkStaffPermission(currentAdminUser);
+    const adminUser = window.AdminApi.getCurrentAdminFromLocal();
 
-    if (!hasPermission) return;
+    if (!adminUser) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    return adminUser;
+}
+
+
+// 37. Khởi tạo trang quản lý nhân viên
+async function initAdminStaffPage() {
+    currentAdminUser = checkAdminLoginLocal();
+
+    if (!currentAdminUser) {
+        return;
+    }
 
     renderAdminInfo(currentAdminUser);
     renderCurrentDate();
-    renderStaffTable();
     bindStaffEvents();
+
+    try {
+        await loadStaffFromApi();
+    } catch (error) {
+        if (error && error.status === 401) {
+            window.AdminApi.clearAdminLocalAuth();
+            window.location.href = "../html/admin-login.html";
+            return;
+        }
+
+        renderStaffError(error);
+    }
 }
 
 initAdminStaffPage();

@@ -1,178 +1,50 @@
-// 1. Khai báo key localStorage
-const ADMIN_CURRENT_USER_KEY = "admin_current_user";
-const ADMIN_IS_LOGIN_KEY = "admin_is_login";
-const ADMIN_ORDERS_KEY = "admin_orders";
+// =========================================================
+// File: Frontend1/js/admin-order-detail.js
+// Mục đích: Gắn trang chi tiết đơn hàng admin với API backend thật
+// =========================================================
 
-// 2. Dữ liệu đơn hàng mẫu dự phòng
-const demoAdminOrders = [
-    {
-        id: "DH001",
-        customerName: "Nguyễn Minh Anh",
-        phone: "0901234567",
-        address: "12 Nguyễn Huệ, Quận 1, TP.HCM",
-        orderDate: "2026-05-18",
-        status: "pending",
-        note: "Giao hàng giờ hành chính.",
-        shippingFee: 30000,
-        discount: 50000,
-        voucherDiscount: 50000,
-        pointDiscount: 0,
-        appliedVoucher: {
-            code: "FASHION50",
-            name: "Giảm 50K cho đơn từ 500K",
-            type: "fixed",
-            value: 50000
-        },
-        usedPoints: 0,
-        pointRate: 100,
-        items: [
-            {
-                name: "Áo thun basic nam",
-                color: "Trắng",
-                size: "L",
-                quantity: 2,
-                price: 199000
-            },
-            {
-                name: "Quần jean xanh đậm",
-                color: "Xanh",
-                size: "32",
-                quantity: 1,
-                price: 459000
-            }
-        ]
-    },
-    {
-        id: "DH002",
-        customerName: "Trần Hoàng Nam",
-        phone: "0912345678",
-        address: "45 Võ Văn Ngân, TP Thủ Đức, TP.HCM",
-        orderDate: "2026-05-18",
-        status: "shipping",
-        note: "Gọi trước khi giao.",
-        shippingFee: 30000,
-        discount: 20000,
-        voucherDiscount: 0,
-        pointDiscount: 20000,
-        appliedVoucher: null,
-        usedPoints: 200,
-        pointRate: 100,
-        items: [
-            {
-                name: "Áo hoodie form rộng",
-                color: "Đen",
-                size: "XL",
-                quantity: 1,
-                price: 399000
-            },
-            {
-                name: "Mũ lưỡi trai basic",
-                color: "Đen",
-                size: "Freesize",
-                quantity: 1,
-                price: 129000
-            }
-        ]
-    },
-    {
-        id: "DH003",
-        customerName: "Lê Phương Thảo",
-        phone: "0987654321",
-        address: "88 Lê Văn Sỹ, Quận 3, TP.HCM",
-        orderDate: "2026-05-17",
-        status: "completed",
-        note: "",
-        shippingFee: 0,
-        discount: 100000,
-        voucherDiscount: 70000,
-        pointDiscount: 30000,
-        appliedVoucher: {
-            code: "BIGSALE70",
-            name: "Giảm 70K đơn hàng thời trang",
-            type: "fixed",
-            value: 70000
-        },
-        usedPoints: 300,
-        pointRate: 100,
-        items: [
-            {
-                name: "Áo khoác kaki nữ",
-                color: "Be",
-                size: "M",
-                quantity: 1,
-                price: 520000
-            },
-            {
-                name: "Chân váy ngắn basic",
-                color: "Đen",
-                size: "M",
-                quantity: 2,
-                price: 299000
-            }
-        ]
-    },
-    {
-        id: "DH004",
-        customerName: "Phạm Quốc Huy",
-        phone: "0934567890",
-        address: "25 Cách Mạng Tháng 8, Quận 10, TP.HCM",
-        orderDate: "2026-05-17",
-        status: "cancelled",
-        note: "Khách hủy vì đặt nhầm size.",
-        shippingFee: 30000,
-        discount: 0,
-        voucherDiscount: 0,
-        pointDiscount: 0,
-        appliedVoucher: null,
-        usedPoints: 0,
-        pointRate: 100,
-        items: [
-            {
-                name: "Áo sơ mi trắng basic",
-                color: "Trắng",
-                size: "L",
-                quantity: 1,
-                price: 350000
-            }
-        ]
-    }
-];
 
-// 3. Lấy element thông tin admin
+// 1. Lấy element thông tin admin
 const adminAvatar = document.getElementById("adminAvatar");
 const adminName = document.getElementById("adminName");
 const adminRole = document.getElementById("adminRole");
 const adminCurrentDate = document.getElementById("adminCurrentDate");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
 
-// 4. Lấy element thông tin đơn hàng
+
+// 2. Lấy element thông tin đơn hàng
 const detailOrderCode = document.getElementById("detailOrderCode");
 const detailOrderDate = document.getElementById("detailOrderDate");
 const detailOrderStatusBadge = document.getElementById("detailOrderStatusBadge");
 
-// 5. Lấy element thông tin khách hàng
+
+// 3. Lấy element thông tin khách hàng
 const detailCustomerName = document.getElementById("detailCustomerName");
 const detailCustomerPhone = document.getElementById("detailCustomerPhone");
 const detailCustomerAddress = document.getElementById("detailCustomerAddress");
 const detailOrderNote = document.getElementById("detailOrderNote");
 
-// 6. Lấy element cập nhật trạng thái
+
+// 4. Lấy element cập nhật trạng thái
 const orderStatusForm = document.getElementById("orderStatusForm");
 const detailOrderStatusSelect = document.getElementById("detailOrderStatusSelect");
 const orderStatusMessage = document.getElementById("orderStatusMessage");
 const saveOrderStatusHeaderBtn = document.getElementById("saveOrderStatusHeaderBtn");
 
-// 7. Lấy element bảng sản phẩm trong đơn
+
+// 5. Lấy element bảng sản phẩm trong đơn
 const orderItemTableBody = document.getElementById("orderItemTableBody");
 const orderItemRowTemplate = document.getElementById("orderItemRowTemplate");
 
-// 8. Lấy element tổng thanh toán
+
+// 6. Lấy element tổng thanh toán
 const detailSubtotal = document.getElementById("detailSubtotal");
 const detailShippingFee = document.getElementById("detailShippingFee");
 const detailDiscount = document.getElementById("detailDiscount");
 const detailTotal = document.getElementById("detailTotal");
 
-// 9. Lấy element popup chi tiết giảm giá
+
+// 7. Lấy element popup chi tiết giảm giá
 const discountDetailTrigger = document.getElementById("discountDetailTrigger");
 const discountDetailModalOverlay = document.getElementById("discountDetailModalOverlay");
 const closeDiscountDetailModalBtn = document.getElementById("closeDiscountDetailModalBtn");
@@ -189,33 +61,64 @@ const discountPointRate = document.getElementById("discountPointRate");
 const discountPointAmount = document.getElementById("discountPointAmount");
 const discountTotalAmount = document.getElementById("discountTotalAmount");
 
-// 10. Lấy element trạng thái trang
+
+// 8. Lấy element trạng thái trang
 const orderDetailMainCard = document.getElementById("orderDetailMainCard");
 const orderDetailItemsCard = document.getElementById("orderDetailItemsCard");
 const orderDetailSummaryCard = document.getElementById("orderDetailSummaryCard");
 const orderNotFoundBox = document.getElementById("orderNotFoundBox");
 
-// 11. Biến lưu đơn hàng hiện tại
+
+// 9. Biến lưu trạng thái trang
+let currentAdminUser = null;
 let currentOrderId = null;
+let currentOrderCode = "";
 let currentOrderData = null;
 
-// 12. Format tiền Việt Nam
+
+// 10. Format tiền Việt Nam
 function formatPrice(price) {
+    if (window.AdminApi && window.AdminApi.formatPrice) {
+        return window.AdminApi.formatPrice(price);
+    }
+
     return Number(price || 0).toLocaleString("vi-VN") + "đ";
 }
 
-// 13. Format ngày Việt Nam
+
+// 11. Format số tiền giảm
+function formatDiscountPrice(price) {
+    const discount = Number(price || 0);
+
+    if (discount <= 0) {
+        return "0đ";
+    }
+
+    return "-" + formatPrice(discount);
+}
+
+
+// 12. Format ngày Việt Nam
 function formatDate(dateString) {
-    if (!dateString) return "";
+    if (!dateString) {
+        return "";
+    }
 
     const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+        return dateString;
+    }
 
     return date.toLocaleDateString("vi-VN");
 }
 
-// 14. Render ngày hiện tại
+
+// 13. Render ngày hiện tại
 function renderCurrentDate() {
-    if (!adminCurrentDate) return;
+    if (!adminCurrentDate) {
+        return;
+    }
 
     const today = new Date();
 
@@ -227,266 +130,138 @@ function renderCurrentDate() {
     });
 }
 
-// 15. Lấy id đơn hàng từ URL
-function getOrderIdFromUrl() {
+
+// 14. Lấy chữ đại diện
+function getFirstLetter(text) {
+    if (!text) {
+        return "A";
+    }
+
+    return text.trim().charAt(0).toUpperCase();
+}
+
+
+// 15. Lấy id hoặc mã đơn từ URL
+function getOrderQueryFromUrl() {
     const params = new URLSearchParams(window.location.search);
 
-    return params.get("id");
+    return {
+        id: params.get("id") || params.get("order_id") || "",
+        code: params.get("code") || params.get("order_code") || ""
+    };
 }
 
-// 16. Kiểm tra đăng nhập admin
-function checkAdminLogin() {
-    const isLogin = localStorage.getItem(ADMIN_IS_LOGIN_KEY) === "true";
-    const currentAdmin = localStorage.getItem(ADMIN_CURRENT_USER_KEY);
 
-    if (!isLogin || !currentAdmin) {
-        window.location.href = "../html/admin-login.html";
-        return null;
+// 16. Lấy nhãn vai trò admin
+function getAdminRoleLabel(roleCode, roleName) {
+    if (roleCode === "owner") {
+        return "Chủ cửa hàng";
     }
 
-    try {
-        return JSON.parse(currentAdmin);
-    } catch (error) {
-        localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-        localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
-
-        window.location.href = "../html/admin-login.html";
-        return null;
+    if (roleCode === "admin") {
+        return "Quản trị viên";
     }
+
+    if (roleCode === "staff") {
+        return "Nhân viên";
+    }
+
+    return roleName || "Quản trị viên";
 }
+
 
 // 17. Hiển thị thông tin admin
 function renderAdminInfo(adminUser) {
-    if (!adminUser) return;
+    if (!adminUser) {
+        return;
+    }
 
-    const fullName = adminUser.fullName || "Quản trị viên";
-    const roleText = adminUser.role === "owner" ? "Chủ cửa hàng" : "Nhân viên";
+    const fullName = adminUser.fullName || adminUser.full_name || "Quản trị viên";
+    const roleCode = adminUser.role || "";
+    const roleName = adminUser.roleName || "";
 
     if (adminName) {
         adminName.textContent = fullName;
     }
 
     if (adminRole) {
-        adminRole.textContent = roleText;
+        adminRole.textContent = getAdminRoleLabel(roleCode, roleName);
     }
 
     if (adminAvatar) {
-        adminAvatar.textContent = fullName.charAt(0).toUpperCase();
+        adminAvatar.textContent = getFirstLetter(fullName);
     }
 
     const ownerOnlyLinks = document.querySelectorAll("[data-owner-only='true']");
 
-    ownerOnlyLinks.forEach(function(link) {
-        if (adminUser.role !== "owner") {
-            link.style.display = "none";
-        }
+    ownerOnlyLinks.forEach(function (link) {
+        link.style.display = roleCode === "owner" ? "" : "none";
     });
 }
+
 
 // 18. Đăng xuất admin
 function handleAdminLogout() {
-    localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-    localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
+    if (window.AdminApi && window.AdminApi.logoutAdmin) {
+        window.AdminApi.logoutAdmin();
+        return;
+    }
 
+    localStorage.removeItem("admin_current_user");
+    localStorage.removeItem("admin_is_login");
     window.location.href = "../html/admin-login.html";
 }
 
-// 19. Tính tổng tiền hàng
-function calculateSubtotal(items) {
-    return (items || []).reduce(function(total, item) {
-        return total + Number(item.price || 0) * Number(item.quantity || 0);
-    }, 0);
-}
 
-// 20. Tính tổng giảm giá
-function calculateTotalDiscount(order) {
-    const voucherDiscount = Number(order.voucherDiscount || 0);
-    const pointDiscount = Number(order.pointDiscount || 0);
-    const totalDetailDiscount = voucherDiscount + pointDiscount;
-
-    if (totalDetailDiscount > 0) {
-        return totalDetailDiscount;
+// 19. Lấy thông tin trạng thái đơn hàng
+function getOrderStatusInfo(status) {
+    if (status === "pending") {
+        return {
+            text: "Chờ xác nhận",
+            className: "statusPending"
+        };
     }
 
-    return Number(order.discount || 0);
-}
-
-// 21. Tính tổng thanh toán
-function calculateOrderTotal(order) {
-    const subtotal = calculateSubtotal(order.items || []);
-    const shippingFee = Number(order.shippingFee || 0);
-    const discount = calculateTotalDiscount(order);
-
-    return subtotal + shippingFee - discount;
-}
-
-// 22. Lấy text loại voucher
-function getVoucherTypeText(type) {
-    if (type === "fixed") {
-        return "Giảm tiền trực tiếp";
+    if (status === "confirmed") {
+        return {
+            text: "Đã xác nhận",
+            className: "statusShipping"
+        };
     }
 
-    if (type === "percent") {
-        return "Giảm theo phần trăm";
+    if (status === "shipping") {
+        return {
+            text: "Đang giao",
+            className: "statusShipping"
+        };
     }
 
-    if (type === "free-shipping") {
-        return "Miễn phí vận chuyển";
+    if (status === "completed") {
+        return {
+            text: "Hoàn thành",
+            className: "statusCompleted"
+        };
     }
 
-    return "Không áp dụng";
-}
-
-// 23. Format giá trị voucher
-function formatVoucherValue(voucher) {
-    if (!voucher) return "0đ";
-
-    if (voucher.type === "percent") {
-        return Number(voucher.value || 0) + "%";
+    if (status === "cancelled") {
+        return {
+            text: "Đã hủy",
+            className: "statusCancelled"
+        };
     }
-
-    return formatPrice(voucher.value || 0);
-}
-
-// 24. Format số tiền giảm
-function formatDiscountPrice(price) {
-    const discount = Number(price || 0);
-
-    if (discount <= 0) {
-        return "0đ";
-    }
-
-    return "-" + formatPrice(discount);
-}
-
-// 25. Chuẩn hóa dữ liệu đơn hàng
-function normalizeOrder(order, index) {
-    const defaultOrder = demoAdminOrders[index] || demoAdminOrders[0];
-
-    const items = Array.isArray(order.items) && order.items.length > 0
-        ? order.items
-        : defaultOrder.items;
-
-    const voucherDiscount = Number(
-        order.voucherDiscount !== undefined
-            ? order.voucherDiscount
-            : defaultOrder.voucherDiscount || 0
-    );
-
-    const pointDiscount = Number(
-        order.pointDiscount !== undefined
-            ? order.pointDiscount
-            : defaultOrder.pointDiscount || 0
-    );
-
-    const fallbackDiscount = Number(
-        order.discount !== undefined
-            ? order.discount
-            : defaultOrder.discount || 0
-    );
-
-    const totalDiscount = voucherDiscount + pointDiscount > 0
-        ? voucherDiscount + pointDiscount
-        : fallbackDiscount;
 
     return {
-        id: order.id || "DH" + String(index + 1).padStart(3, "0"),
-        customerName: order.customerName || defaultOrder.customerName || "Khách hàng",
-        phone: order.phone || defaultOrder.phone || "Chưa cập nhật",
-        address: order.address || defaultOrder.address || "Chưa cập nhật",
-        orderDate: order.orderDate || defaultOrder.orderDate || new Date().toISOString().slice(0, 10),
-        status: order.status || "pending",
-        note: order.note || "",
-        shippingFee: Number(order.shippingFee || defaultOrder.shippingFee || 0),
-        discount: totalDiscount,
-        voucherDiscount: voucherDiscount > 0 ? voucherDiscount : totalDiscount,
-        pointDiscount: pointDiscount,
-        appliedVoucher: order.appliedVoucher !== undefined
-            ? order.appliedVoucher
-            : defaultOrder.appliedVoucher || null,
-        usedPoints: Number(order.usedPoints || defaultOrder.usedPoints || 0),
-        pointRate: Number(order.pointRate || defaultOrder.pointRate || 100),
-        items: items
+        text: "Không xác định",
+        className: "statusPending"
     };
 }
 
-// 26. Lấy danh sách đơn hàng
-function getOrders() {
-    const savedOrders = localStorage.getItem(ADMIN_ORDERS_KEY);
 
-    if (!savedOrders) {
-        localStorage.setItem(ADMIN_ORDERS_KEY, JSON.stringify(demoAdminOrders));
-        return demoAdminOrders;
-    }
-
-    try {
-        const orders = JSON.parse(savedOrders);
-
-        const normalizedOrders = orders.map(function(order, index) {
-            return normalizeOrder(order, index);
-        });
-
-        localStorage.setItem(ADMIN_ORDERS_KEY, JSON.stringify(normalizedOrders));
-
-        return normalizedOrders;
-    } catch (error) {
-        localStorage.setItem(ADMIN_ORDERS_KEY, JSON.stringify(demoAdminOrders));
-        return demoAdminOrders;
-    }
-}
-
-// 27. Lưu danh sách đơn hàng
-function saveOrders(orders) {
-    localStorage.setItem(ADMIN_ORDERS_KEY, JSON.stringify(orders));
-}
-
-// 28. Tìm đơn hàng theo id
-function getOrderById(orderId) {
-    const orders = getOrders();
-
-    return orders.find(function(order) {
-        return order.id === orderId;
-    });
-}
-
-// 29. Lấy thông tin trạng thái đơn hàng
-function getOrderStatusInfo(status) {
-    switch (status) {
-        case "pending":
-            return {
-                text: "Chờ xác nhận",
-                className: "statusPending"
-            };
-
-        case "shipping":
-            return {
-                text: "Đang giao",
-                className: "statusShipping"
-            };
-
-        case "completed":
-            return {
-                text: "Hoàn thành",
-                className: "statusCompleted"
-            };
-
-        case "cancelled":
-            return {
-                text: "Đã hủy",
-                className: "statusCancelled"
-            };
-
-        default:
-            return {
-                text: "Chờ xác nhận",
-                className: "statusPending"
-            };
-    }
-}
-
-// 30. Xóa class trạng thái cũ
+// 20. Xóa class trạng thái cũ
 function clearStatusClass(element) {
-    if (!element) return;
+    if (!element) {
+        return;
+    }
 
     element.classList.remove(
         "statusPending",
@@ -498,9 +273,27 @@ function clearStatusClass(element) {
     );
 }
 
-// 31. Hiển thị thông báo trạng thái
+
+// 21. Render badge trạng thái
+function renderOrderStatusBadge(status) {
+    if (!detailOrderStatusBadge) {
+        return;
+    }
+
+    const statusInfo = getOrderStatusInfo(status);
+
+    clearStatusClass(detailOrderStatusBadge);
+
+    detailOrderStatusBadge.textContent = statusInfo.text;
+    detailOrderStatusBadge.classList.add(statusInfo.className);
+}
+
+
+// 22. Hiển thị thông báo trạng thái
 function showOrderStatusMessage(message, type = "error") {
-    if (!orderStatusMessage) return;
+    if (!orderStatusMessage) {
+        return;
+    }
 
     orderStatusMessage.textContent = message;
 
@@ -511,27 +304,19 @@ function showOrderStatusMessage(message, type = "error") {
     }
 }
 
-// 32. Xóa thông báo trạng thái
+
+// 23. Xóa thông báo trạng thái
 function clearOrderStatusMessage() {
-    if (!orderStatusMessage) return;
+    if (!orderStatusMessage) {
+        return;
+    }
 
     orderStatusMessage.textContent = "";
     orderStatusMessage.classList.remove("success");
 }
 
-// 33. Render badge trạng thái
-function renderOrderStatusBadge(status) {
-    if (!detailOrderStatusBadge) return;
 
-    const statusInfo = getOrderStatusInfo(status);
-
-    clearStatusClass(detailOrderStatusBadge);
-
-    detailOrderStatusBadge.textContent = statusInfo.text;
-    detailOrderStatusBadge.classList.add(statusInfo.className);
-}
-
-// 34. Hiển thị khu vực không tìm thấy
+// 24. Hiển thị khu vực không tìm thấy
 function showOrderNotFound() {
     if (orderDetailMainCard) {
         orderDetailMainCard.style.display = "none";
@@ -554,18 +339,185 @@ function showOrderNotFound() {
     }
 }
 
-// 35. Render thông tin khách hàng
+
+// 25. Hiển thị khu vực chi tiết đơn hàng
+function showOrderDetail() {
+    if (orderDetailMainCard) {
+        orderDetailMainCard.style.display = "block";
+    }
+
+    if (orderDetailItemsCard) {
+        orderDetailItemsCard.style.display = "block";
+    }
+
+    if (orderDetailSummaryCard) {
+        orderDetailSummaryCard.style.display = "block";
+    }
+
+    if (orderNotFoundBox) {
+        orderNotFoundBox.style.display = "none";
+    }
+
+    if (saveOrderStatusHeaderBtn) {
+        saveOrderStatusHeaderBtn.style.display = "";
+    }
+}
+
+
+// 26. Lấy tên khách hàng
+function getOrderCustomerName(order) {
+    if (order.customer && order.customer.full_name) {
+        return order.customer.full_name;
+    }
+
+    if (order.customer && order.customer.name) {
+        return order.customer.name;
+    }
+
+    if (order.receiver && order.receiver.name) {
+        return order.receiver.name;
+    }
+
+    return "Khách hàng";
+}
+
+
+// 27. Lấy số điện thoại khách hàng
+function getOrderCustomerPhone(order) {
+    if (order.receiver && order.receiver.phone) {
+        return order.receiver.phone;
+    }
+
+    if (order.customer && order.customer.phone) {
+        return order.customer.phone;
+    }
+
+    return "Chưa cập nhật";
+}
+
+
+// 28. Lấy địa chỉ giao hàng
+function getOrderShippingAddress(order) {
+    if (order.receiver && order.receiver.shipping_address) {
+        return order.receiver.shipping_address;
+    }
+
+    if (order.shipping_address) {
+        return order.shipping_address;
+    }
+
+    return "Chưa cập nhật";
+}
+
+
+// 29. Lấy mã trạng thái đơn hàng
+function getOrderStatusCode(order) {
+    if (order.status && order.status.code) {
+        return order.status.code;
+    }
+
+    if (order.order_status) {
+        return order.order_status;
+    }
+
+    return "pending";
+}
+
+
+// 30. Lấy danh sách trạng thái tiếp theo
+function getNextStatuses(order) {
+    if (order.status && Array.isArray(order.status.next_statuses)) {
+        return order.status.next_statuses;
+    }
+
+    return [];
+}
+
+
+// 31. Lấy dữ liệu tiền của đơn hàng
+function getOrderMoney(order) {
+    const money = order.money || {};
+
+    return {
+        totalProductPrice: Number(money.total_product_price || 0),
+        shippingFee: Number(money.shipping_fee || 0),
+        discountAmount: Number(money.discount_amount || 0),
+        pointsDiscount: Number(money.points_discount || 0),
+        finalTotal: Number(money.final_total || 0)
+    };
+}
+
+
+// 32. Lấy tổng giảm giá
+function calculateTotalDiscount(order) {
+    const money = getOrderMoney(order);
+
+    return Number(money.discountAmount || 0) + Number(money.pointsDiscount || 0);
+}
+
+
+// 33. Lấy tên sản phẩm trong order item
+function getItemProductName(item) {
+    if (item.product && item.product.name) {
+        return item.product.name;
+    }
+
+    return item.product_name || "Sản phẩm";
+}
+
+
+// 34. Lấy phân loại sản phẩm trong order item
+function getItemVariantText(item) {
+    const colorName = item.variant && item.variant.color
+        ? item.variant.color.name
+        : "";
+
+    const sizeName = item.variant && item.variant.size
+        ? item.variant.size.name
+        : "";
+
+    const variantText = [colorName, sizeName].filter(Boolean).join(" / ");
+
+    return variantText || "Không có phân loại";
+}
+
+
+// 35. Lấy đơn giá item
+function getItemPrice(item) {
+    if (item.price_at_time !== undefined) {
+        return Number(item.price_at_time || 0);
+    }
+
+    if (item.product && item.product.base_price !== undefined) {
+        return Number(item.product.base_price || 0);
+    }
+
+    return Number(item.price || 0);
+}
+
+
+// 36. Lấy thành tiền item
+function getItemTotal(item) {
+    if (item.total_price !== undefined) {
+        return Number(item.total_price || 0);
+    }
+
+    return getItemPrice(item) * Number(item.quantity || 0);
+}
+
+
+// 37. Render thông tin khách hàng
 function renderCustomerInfo(order) {
     if (detailCustomerName) {
-        detailCustomerName.textContent = order.customerName;
+        detailCustomerName.textContent = getOrderCustomerName(order);
     }
 
     if (detailCustomerPhone) {
-        detailCustomerPhone.textContent = order.phone;
+        detailCustomerPhone.textContent = getOrderCustomerPhone(order);
     }
 
     if (detailCustomerAddress) {
-        detailCustomerAddress.textContent = order.address;
+        detailCustomerAddress.textContent = getOrderShippingAddress(order);
     }
 
     if (detailOrderNote) {
@@ -573,81 +525,154 @@ function renderCustomerInfo(order) {
     }
 }
 
-// 36. Render danh sách sản phẩm trong đơn
+
+// 38. Render danh sách trạng thái có thể cập nhật
+function renderOrderStatusSelect(order) {
+    if (!detailOrderStatusSelect) {
+        return;
+    }
+
+    const currentStatus = getOrderStatusCode(order);
+    const nextStatuses = getNextStatuses(order);
+
+    const statusList = [currentStatus, ...nextStatuses];
+
+    detailOrderStatusSelect.innerHTML = "";
+
+    statusList.forEach(function (status) {
+        const statusInfo = getOrderStatusInfo(status);
+        const option = document.createElement("option");
+
+        option.value = status;
+        option.textContent = statusInfo.text;
+
+        detailOrderStatusSelect.appendChild(option);
+    });
+
+    detailOrderStatusSelect.value = currentStatus;
+
+    const canUpdate = nextStatuses.length > 0;
+
+    detailOrderStatusSelect.disabled = !canUpdate;
+
+    if (saveOrderStatusHeaderBtn) {
+        saveOrderStatusHeaderBtn.disabled = !canUpdate;
+    }
+
+    const submitButton = orderStatusForm
+        ? orderStatusForm.querySelector("button[type='submit']")
+        : null;
+
+    if (submitButton) {
+        submitButton.disabled = !canUpdate;
+    }
+
+    if (!canUpdate) {
+        showOrderStatusMessage("Đơn hàng hiện không còn trạng thái tiếp theo để cập nhật.", "success");
+    } else {
+        clearOrderStatusMessage();
+    }
+}
+
+
+// 39. Render danh sách sản phẩm trong đơn
 function renderOrderItems(items) {
-    if (!orderItemTableBody || !orderItemRowTemplate) return;
+    if (!orderItemTableBody || !orderItemRowTemplate) {
+        return;
+    }
 
     orderItemTableBody.innerHTML = "";
 
-    (items || []).forEach(function(item) {
+    const itemList = Array.isArray(items) ? items : [];
+
+    itemList.forEach(function (item) {
         const rowFragment = orderItemRowTemplate.content.cloneNode(true);
 
-        const itemName = item.name || "Sản phẩm";
-        const itemColor = item.color || "Không có màu";
-        const itemSize = item.size || "Không có size";
-        const itemQuantity = Number(item.quantity || 0);
-        const itemPrice = Number(item.price || 0);
-        const itemTotal = itemQuantity * itemPrice;
+        const itemNameText = rowFragment.querySelector(".itemNameText");
+        const itemVariantText = rowFragment.querySelector(".itemVariantText");
+        const itemQuantityText = rowFragment.querySelector(".itemQuantityText");
+        const itemPriceText = rowFragment.querySelector(".itemPriceText");
+        const itemTotalText = rowFragment.querySelector(".itemTotalText");
 
-        rowFragment.querySelector(".itemNameText").textContent = itemName;
-        rowFragment.querySelector(".itemVariantText").textContent = itemColor + " / " + itemSize;
-        rowFragment.querySelector(".itemQuantityText").textContent = itemQuantity;
-        rowFragment.querySelector(".itemPriceText").textContent = formatPrice(itemPrice);
-        rowFragment.querySelector(".itemTotalText").textContent = formatPrice(itemTotal);
+        const itemName = getItemProductName(item);
+        const variantText = getItemVariantText(item);
+        const quantity = Number(item.quantity || 0);
+        const price = getItemPrice(item);
+        const total = getItemTotal(item);
+
+        if (itemNameText) {
+            itemNameText.textContent = itemName;
+        }
+
+        if (itemVariantText) {
+            itemVariantText.textContent = variantText;
+        }
+
+        if (itemQuantityText) {
+            itemQuantityText.textContent = quantity;
+        }
+
+        if (itemPriceText) {
+            itemPriceText.textContent = formatPrice(price);
+        }
+
+        if (itemTotalText) {
+            itemTotalText.textContent = formatPrice(total);
+        }
 
         orderItemTableBody.appendChild(rowFragment);
     });
 }
 
-// 37. Render tổng thanh toán
+
+// 40. Render tổng thanh toán
 function renderOrderSummary(order) {
-    const subtotal = calculateSubtotal(order.items || []);
-    const shippingFee = Number(order.shippingFee || 0);
-    const discount = calculateTotalDiscount(order);
-    const total = calculateOrderTotal(order);
+    const money = getOrderMoney(order);
+    const totalDiscount = calculateTotalDiscount(order);
 
     if (detailSubtotal) {
-        detailSubtotal.textContent = formatPrice(subtotal);
+        detailSubtotal.textContent = formatPrice(money.totalProductPrice);
     }
 
     if (detailShippingFee) {
-        detailShippingFee.textContent = formatPrice(shippingFee);
+        detailShippingFee.textContent = formatPrice(money.shippingFee);
     }
 
     if (detailDiscount) {
-        detailDiscount.textContent = formatDiscountPrice(discount);
+        detailDiscount.textContent = formatDiscountPrice(totalDiscount);
     }
 
     if (detailTotal) {
-        detailTotal.textContent = formatPrice(total);
+        detailTotal.textContent = formatPrice(money.finalTotal);
     }
 }
 
-// 38. Render popup chi tiết giảm giá
-function renderDiscountDetail(order) {
-    if (!order) return;
 
-    const voucher = order.appliedVoucher;
-    const voucherDiscount = Number(order.voucherDiscount || 0);
-    const pointDiscount = Number(order.pointDiscount || 0);
-    const usedPoints = Number(order.usedPoints || 0);
-    const pointRate = Number(order.pointRate || 0);
-    const totalDiscount = calculateTotalDiscount(order);
+// 41. Render popup chi tiết giảm giá
+function renderDiscountDetail(order) {
+    if (!order) {
+        return;
+    }
+
+    const money = getOrderMoney(order);
+    const voucherDiscount = Number(money.discountAmount || 0);
+    const pointDiscount = Number(money.pointsDiscount || 0);
+    const totalDiscount = voucherDiscount + pointDiscount;
 
     if (discountVoucherCode) {
-        discountVoucherCode.textContent = voucher ? voucher.code : "Không áp dụng";
+        discountVoucherCode.textContent = voucherDiscount > 0 ? "Đã áp dụng" : "Không áp dụng";
     }
 
     if (discountVoucherName) {
-        discountVoucherName.textContent = voucher ? voucher.name : "Không áp dụng";
+        discountVoucherName.textContent = voucherDiscount > 0 ? "Ưu đãi giảm giá đơn hàng" : "Không áp dụng";
     }
 
     if (discountVoucherType) {
-        discountVoucherType.textContent = voucher ? getVoucherTypeText(voucher.type) : "Không áp dụng";
+        discountVoucherType.textContent = voucherDiscount > 0 ? "Giảm trực tiếp" : "Không áp dụng";
     }
 
     if (discountVoucherValue) {
-        discountVoucherValue.textContent = voucher ? formatVoucherValue(voucher) : "0đ";
+        discountVoucherValue.textContent = formatPrice(voucherDiscount);
     }
 
     if (discountVoucherAmount) {
@@ -655,11 +680,11 @@ function renderDiscountDetail(order) {
     }
 
     if (discountUsedPoints) {
-        discountUsedPoints.textContent = usedPoints > 0 ? usedPoints + " điểm" : "Không sử dụng";
+        discountUsedPoints.textContent = pointDiscount > 0 ? "Có sử dụng điểm" : "Không sử dụng";
     }
 
     if (discountPointRate) {
-        discountPointRate.textContent = usedPoints > 0 ? formatPrice(pointRate) + " / điểm" : "Không áp dụng";
+        discountPointRate.textContent = pointDiscount > 0 ? "Theo cấu hình hệ thống" : "Không áp dụng";
     }
 
     if (discountPointAmount) {
@@ -671,89 +696,155 @@ function renderDiscountDetail(order) {
     }
 }
 
-// 39. Mở popup chi tiết giảm giá
+
+// 42. Mở popup chi tiết giảm giá
 function openDiscountDetailModal() {
-    if (!currentOrderData || !discountDetailModalOverlay) return;
+    if (!currentOrderData || !discountDetailModalOverlay) {
+        return;
+    }
 
     renderDiscountDetail(currentOrderData);
     discountDetailModalOverlay.classList.add("show");
 }
 
-// 40. Đóng popup chi tiết giảm giá
+
+// 43. Đóng popup chi tiết giảm giá
 function closeDiscountDetailModal() {
-    if (!discountDetailModalOverlay) return;
+    if (!discountDetailModalOverlay) {
+        return;
+    }
 
     discountDetailModalOverlay.classList.remove("show");
 }
 
-// 41. Render chi tiết đơn hàng
+
+// 44. Render chi tiết đơn hàng
 function renderOrderDetail(order) {
     if (!order) {
         showOrderNotFound();
         return;
     }
 
-    const normalizedOrder = normalizeOrder(order, 0);
+    currentOrderData = order;
+    currentOrderId = order.id;
+    currentOrderCode = order.order_code || "";
 
-    currentOrderId = normalizedOrder.id;
-    currentOrderData = normalizedOrder;
+    showOrderDetail();
 
-    document.title = "Chi tiết " + normalizedOrder.id;
+    document.title = "Chi tiết " + currentOrderCode;
 
     if (detailOrderCode) {
-        detailOrderCode.textContent = normalizedOrder.id;
+        detailOrderCode.textContent = currentOrderCode;
     }
 
     if (detailOrderDate) {
-        detailOrderDate.textContent = formatDate(normalizedOrder.orderDate);
+        detailOrderDate.textContent = formatDate(order.created_at);
     }
 
-    if (detailOrderStatusSelect) {
-        detailOrderStatusSelect.value = normalizedOrder.status;
-    }
-
-    renderOrderStatusBadge(normalizedOrder.status);
-    renderCustomerInfo(normalizedOrder);
-    renderOrderItems(normalizedOrder.items || []);
-    renderOrderSummary(normalizedOrder);
-    renderDiscountDetail(normalizedOrder);
+    renderOrderStatusBadge(getOrderStatusCode(order));
+    renderOrderStatusSelect(order);
+    renderCustomerInfo(order);
+    renderOrderItems(order.items || []);
+    renderOrderSummary(order);
+    renderDiscountDetail(order);
 }
 
-// 42. Lưu trạng thái đơn hàng
-function saveOrderStatus(event) {
+
+// 45. Load chi tiết đơn hàng từ API
+async function loadOrderDetail() {
+    const query = getOrderQueryFromUrl();
+
+    if (!query.id && !query.code) {
+        showOrderNotFound();
+        return;
+    }
+
+    let endpoint = "admin/orders/get-order-detail.php?";
+
+    if (query.id) {
+        endpoint += "id=" + encodeURIComponent(query.id);
+    } else {
+        endpoint += "order_code=" + encodeURIComponent(query.code);
+    }
+
+    const response = await window.AdminApi.get(endpoint);
+    const order = response.data && response.data.order ? response.data.order : null;
+
+    if (!order) {
+        showOrderNotFound();
+        return;
+    }
+
+    renderOrderDetail(order);
+}
+
+
+// 46. Set trạng thái loading nút lưu
+function setSaveStatusLoading(isLoading) {
+    const submitButton = orderStatusForm
+        ? orderStatusForm.querySelector("button[type='submit']")
+        : null;
+
+    if (saveOrderStatusHeaderBtn) {
+        saveOrderStatusHeaderBtn.disabled = isLoading;
+        saveOrderStatusHeaderBtn.textContent = isLoading ? "Đang lưu..." : "Lưu trạng thái";
+    }
+
+    if (submitButton) {
+        submitButton.disabled = isLoading;
+        submitButton.textContent = isLoading ? "Đang lưu..." : "Lưu trạng thái";
+    }
+}
+
+
+// 47. Lưu trạng thái đơn hàng bằng API
+async function saveOrderStatus(event) {
     if (event) {
         event.preventDefault();
     }
 
-    if (!currentOrderId) return;
+    if (!currentOrderData || !currentOrderId || !detailOrderStatusSelect) {
+        return;
+    }
+
+    const newStatus = detailOrderStatusSelect.value;
+    const oldStatus = getOrderStatusCode(currentOrderData);
 
     clearOrderStatusMessage();
 
-    const newStatus = detailOrderStatusSelect.value;
-    const orders = getOrders();
+    if (newStatus === oldStatus) {
+        showOrderStatusMessage("Bạn chưa chọn trạng thái mới.", "error");
+        return;
+    }
 
-    const updatedOrders = orders.map(function(order) {
-        if (order.id === currentOrderId) {
-            return {
-                ...order,
-                status: newStatus
-            };
-        }
+    try {
+        setSaveStatusLoading(true);
 
-        return order;
-    });
+        await window.AdminApi.post("admin/orders/update-order-status.php", {
+            order_id: Number(currentOrderId),
+            order_code: currentOrderCode,
+            status: newStatus,
+            new_status: newStatus,
+            note: currentOrderData.note || ""
+        });
 
-    saveOrders(updatedOrders);
+        showOrderStatusMessage("Cập nhật trạng thái đơn hàng thành công.", "success");
 
-    const updatedOrder = updatedOrders.find(function(order) {
-        return order.id === currentOrderId;
-    });
-
-    renderOrderDetail(updatedOrder);
-    showOrderStatusMessage("Cập nhật trạng thái đơn hàng thành công.", "success");
+        await loadOrderDetail();
+    } catch (error) {
+        showOrderStatusMessage(
+            window.AdminApi.getApiErrorMessage(
+                error,
+                "Cập nhật trạng thái đơn hàng thất bại."
+            )
+        );
+    } finally {
+        setSaveStatusLoading(false);
+    }
 }
 
-// 43. Gắn sự kiện popup giảm giá
+
+// 48. Gắn sự kiện popup giảm giá
 function bindDiscountDetailEvents() {
     if (discountDetailTrigger) {
         discountDetailTrigger.addEventListener("click", openDiscountDetailModal);
@@ -768,7 +859,7 @@ function bindDiscountDetailEvents() {
     }
 
     if (discountDetailModalOverlay) {
-        discountDetailModalOverlay.addEventListener("click", function(event) {
+        discountDetailModalOverlay.addEventListener("click", function (event) {
             if (event.target === discountDetailModalOverlay) {
                 closeDiscountDetailModal();
             }
@@ -776,7 +867,8 @@ function bindDiscountDetailEvents() {
     }
 }
 
-// 44. Gắn sự kiện trang chi tiết đơn hàng
+
+// 49. Gắn sự kiện trang chi tiết đơn hàng
 function bindOrderDetailEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -787,7 +879,7 @@ function bindOrderDetailEvents() {
     }
 
     if (saveOrderStatusHeaderBtn) {
-        saveOrderStatusHeaderBtn.addEventListener("click", function() {
+        saveOrderStatusHeaderBtn.addEventListener("click", function () {
             if (orderStatusForm) {
                 orderStatusForm.requestSubmit();
             }
@@ -795,7 +887,7 @@ function bindOrderDetailEvents() {
     }
 
     if (detailOrderStatusSelect) {
-        detailOrderStatusSelect.addEventListener("change", function() {
+        detailOrderStatusSelect.addEventListener("change", function () {
             renderOrderStatusBadge(detailOrderStatusSelect.value);
             clearOrderStatusMessage();
         });
@@ -804,19 +896,48 @@ function bindOrderDetailEvents() {
     bindDiscountDetailEvents();
 }
 
-// 45. Khởi tạo trang chi tiết đơn hàng
-function initAdminOrderDetailPage() {
-    const adminUser = checkAdminLogin();
 
-    if (!adminUser) return;
+// 50. Kiểm tra đăng nhập local
+function checkAdminLoginLocal() {
+    if (!window.AdminApi) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
 
-    const orderId = getOrderIdFromUrl();
-    const order = getOrderById(orderId);
+    const adminUser = window.AdminApi.getCurrentAdminFromLocal();
 
-    renderAdminInfo(adminUser);
+    if (!adminUser) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    return adminUser;
+}
+
+
+// 51. Khởi tạo trang chi tiết đơn hàng
+async function initAdminOrderDetailPage() {
+    currentAdminUser = checkAdminLoginLocal();
+
+    if (!currentAdminUser) {
+        return;
+    }
+
+    renderAdminInfo(currentAdminUser);
     renderCurrentDate();
-    renderOrderDetail(order);
     bindOrderDetailEvents();
+
+    try {
+        await loadOrderDetail();
+    } catch (error) {
+        if (error && error.status === 401) {
+            window.AdminApi.clearAdminLocalAuth();
+            window.location.href = "../html/admin-login.html";
+            return;
+        }
+
+        showOrderNotFound();
+    }
 }
 
 initAdminOrderDetailPage();

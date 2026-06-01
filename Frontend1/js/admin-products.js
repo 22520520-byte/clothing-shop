@@ -1,142 +1,85 @@
-// 1. Khai báo key localStorage
-const ADMIN_CURRENT_USER_KEY = "admin_current_user";
-const ADMIN_IS_LOGIN_KEY = "admin_is_login";
-const ADMIN_PRODUCTS_KEY = "admin_products";
+// =========================================================
+// File: Frontend1/js/admin-products.js
+// Mục đích: Gắn trang quản lý sản phẩm admin với API backend thật
+// =========================================================
 
-// 2. Dữ liệu sản phẩm mẫu
-const demoAdminProducts = [
-    {
-        id: "SP001",
-        name: "Áo thun basic nam",
-        productGroup: "Áo ngắn tay",
-        category: "Áo thun",
-        price: 199000,
-        oldPrice: 250000,
-        stock: 18,
-        material: "Cotton",
-        colors: ["Trắng", "Đen", "Be"],
-        sizes: [
-            { size: "S", quantity: 4 },
-            { size: "M", quantity: 6 },
-            { size: "L", quantity: 5 },
-            { size: "XL", quantity: 3 }
-        ],
-        image: "../img/ao-thun-basic.jpg",
-        status: "active",
-        description: "Áo thun basic dễ phối đồ, phù hợp mặc hằng ngày."
-    },
-    {
-        id: "SP002",
-        name: "Áo hoodie form rộng",
-        productGroup: "Áo dài tay",
-        category: "Áo hoodie",
-        price: 399000,
-        oldPrice: 450000,
-        stock: 3,
-        material: "Nỉ cotton",
-        colors: ["Đen", "Xám"],
-        sizes: [
-            { size: "M", quantity: 1 },
-            { size: "L", quantity: 1 },
-            { size: "XL", quantity: 1 }
-        ],
-        image: "../img/ao-hoodie.jpg",
-        status: "active",
-        description: "Áo hoodie form rộng, chất vải mềm và ấm."
-    },
-    {
-        id: "SP003",
-        name: "Quần jean xanh đậm",
-        productGroup: "Quần",
-        category: "Quần dài",
-        price: 459000,
-        oldPrice: 520000,
-        stock: 12,
-        material: "Denim",
-        colors: ["Xanh đậm"],
-        sizes: [
-            { size: "29", quantity: 3 },
-            { size: "30", quantity: 3 },
-            { size: "31", quantity: 2 },
-            { size: "32", quantity: 4 }
-        ],
-        image: "../img/quan-jean.jpg",
-        status: "active",
-        description: "Quần jean dáng basic, dễ phối với áo thun và sơ mi."
-    },
-    {
-        id: "SP004",
-        name: "Chân váy ngắn basic",
-        productGroup: "Váy",
-        category: "Váy ngắn",
-        price: 299000,
-        oldPrice: 350000,
-        stock: 4,
-        material: "Kaki",
-        colors: ["Đen", "Be"],
-        sizes: [
-            { size: "S", quantity: 1 },
-            { size: "M", quantity: 2 },
-            { size: "L", quantity: 1 }
-        ],
-        image: "../img/vay-ngan.jpg",
-        status: "active",
-        description: "Chân váy ngắn basic, phù hợp đi học, đi chơi."
-    },
-    {
-        id: "SP005",
-        name: "Áo khoác kaki nữ",
-        productGroup: "Áo dài tay",
-        category: "Áo khoác",
-        price: 520000,
-        oldPrice: 590000,
-        stock: 0,
-        material: "Kaki",
-        colors: ["Be"],
-        sizes: [
-            { size: "S", quantity: 0 },
-            { size: "M", quantity: 0 },
-            { size: "L", quantity: 0 }
-        ],
-        image: "../img/ao-khoac-kaki.jpg",
-        status: "hidden",
-        description: "Áo khoác kaki nữ phong cách đơn giản, thanh lịch."
-    }
-];
 
-// 3. Lấy element thông tin admin
+// 1. Lấy element thông tin admin
 const adminAvatar = document.getElementById("adminAvatar");
 const adminName = document.getElementById("adminName");
 const adminRole = document.getElementById("adminRole");
 const adminCurrentDate = document.getElementById("adminCurrentDate");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
 
-// 4. Lấy element thống kê sản phẩm
+
+// 2. Lấy element thống kê sản phẩm
 const totalProductCount = document.getElementById("totalProductCount");
 const activeProductCount = document.getElementById("activeProductCount");
 const lowStockProductCount = document.getElementById("lowStockProductCount");
 const hiddenProductCount = document.getElementById("hiddenProductCount");
 
-// 5. Lấy element bộ lọc và bảng sản phẩm
+
+// 3. Lấy element bộ lọc và bảng sản phẩm
 const productSearchInput = document.getElementById("productSearchInput");
 const productGroupFilter = document.getElementById("productGroupFilter");
 const categoryFilter = document.getElementById("categoryFilter");
 const stockFilter = document.getElementById("stockFilter");
+
 const productTableBody = document.getElementById("productTableBody");
 const emptyProductText = document.getElementById("emptyProductText");
 const productRowTemplate = document.getElementById("productRowTemplate");
 
-// 6. Biến lưu admin hiện tại
-let currentAdminUser = null;
 
-// 7. Format tiền Việt Nam
+// 4. Biến lưu dữ liệu sản phẩm
+let currentAdminUser = null;
+let adminProducts = [];
+
+
+// 4.1. Nhóm sản phẩm hiển thị theo đúng menu khách hàng
+const ADMIN_CATEGORY_GROUPS = [
+    {
+        id: "ao-ngan-tay",
+        name: "Áo ngắn tay",
+        categorySlugs: ["ao-thun", "ao-polo", "ao-so-mi"]
+    },
+    {
+        id: "ao-dai-tay",
+        name: "Áo dài tay",
+        categorySlugs: ["ao-sweater", "ao-hoodie", "ao-khoac"]
+    },
+    {
+        id: "quan",
+        name: "Quần",
+        categorySlugs: ["quan-dai", "quan-ngan", "quan-lot"]
+    },
+    {
+        id: "vay",
+        name: "Váy",
+        categorySlugs: ["vay-dai", "vay-ngan"]
+    },
+    {
+        id: "phu-kien",
+        name: "Phụ kiện",
+        categorySlugs: ["mu", "tat", "phu-kien"]
+    }
+];
+
+
+// 5. Format tiền Việt Nam
 function formatPrice(price) {
+    if (window.AdminApi && window.AdminApi.formatPrice) {
+        return window.AdminApi.formatPrice(price);
+    }
+
     return Number(price || 0).toLocaleString("vi-VN") + "đ";
 }
 
-// 8. Render ngày hiện tại
+
+// 6. Render ngày hiện tại
 function renderCurrentDate() {
-    if (!adminCurrentDate) return;
+    if (!adminCurrentDate) {
+        return;
+    }
 
     const today = new Date();
 
@@ -148,47 +91,51 @@ function renderCurrentDate() {
     });
 }
 
-// 9. Lấy chữ đại diện
+
+// 7. Lấy chữ đại diện
 function getFirstLetter(text) {
-    if (!text) return "S";
+    if (!text) {
+        return "A";
+    }
 
     return text.trim().charAt(0).toUpperCase();
 }
 
-// 10. Kiểm tra đăng nhập admin
-function checkAdminLogin() {
-    const isLogin = localStorage.getItem(ADMIN_IS_LOGIN_KEY) === "true";
-    const currentAdmin = localStorage.getItem(ADMIN_CURRENT_USER_KEY);
 
-    if (!isLogin || !currentAdmin) {
-        window.location.href = "../html/admin-login.html";
-        return null;
+// 8. Lấy nhãn vai trò admin
+function getAdminRoleLabel(roleCode, roleName) {
+    if (roleCode === "owner") {
+        return "Chủ cửa hàng";
     }
 
-    try {
-        return JSON.parse(currentAdmin);
-    } catch (error) {
-        localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-        localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
-
-        window.location.href = "../html/admin-login.html";
-        return null;
+    if (roleCode === "admin") {
+        return "Quản trị viên";
     }
+
+    if (roleCode === "staff") {
+        return "Nhân viên";
+    }
+
+    return roleName || "Quản trị viên";
 }
 
-// 11. Hiển thị thông tin admin
-function renderAdminInfo(adminUser) {
-    if (!adminUser) return;
 
-    const fullName = adminUser.fullName || "Quản trị viên";
-    const roleText = adminUser.role === "owner" ? "Chủ cửa hàng" : "Nhân viên";
+// 9. Hiển thị thông tin admin
+function renderAdminInfo(adminUser) {
+    if (!adminUser) {
+        return;
+    }
+
+    const fullName = adminUser.fullName || adminUser.full_name || "Quản trị viên";
+    const roleCode = adminUser.role || "";
+    const roleName = adminUser.roleName || "";
 
     if (adminName) {
         adminName.textContent = fullName;
     }
 
     if (adminRole) {
-        adminRole.textContent = roleText;
+        adminRole.textContent = getAdminRoleLabel(roleCode, roleName);
     }
 
     if (adminAvatar) {
@@ -197,102 +144,214 @@ function renderAdminInfo(adminUser) {
 
     const ownerOnlyLinks = document.querySelectorAll("[data-owner-only='true']");
 
-    ownerOnlyLinks.forEach(function(link) {
-        if (adminUser.role !== "owner") {
+    ownerOnlyLinks.forEach(function (link) {
+        if (roleCode !== "owner") {
             link.style.display = "none";
+        } else {
+            link.style.display = "";
         }
     });
 }
 
-// 12. Đăng xuất admin
-function handleAdminLogout() {
-    localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-    localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
 
-    window.location.href = "../html/admin-login.html";
+// 10. Tạo slug từ tên danh mục
+function createSlug(text) {
+    return String(text || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/[\s-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 }
 
-// 13. Tính tổng tồn kho từ size
-function calculateProductStockBySizes(sizes) {
-    return (sizes || []).reduce(function(total, item) {
-        return total + Number(item.quantity || 0);
-    }, 0);
+
+// 11. Lấy tên danh mục cha gốc từ database
+function getParentCategoryName(product) {
+    if (product.parent_category && product.parent_category.name) {
+        return product.parent_category.name;
+    }
+
+    if (product.parentCategory && product.parentCategory.name) {
+        return product.parentCategory.name;
+    }
+
+    return "Đang cập nhật";
 }
 
-// 14. Chuẩn hóa sản phẩm
-function normalizeProduct(product, index) {
-    const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-    const stockBySizes = calculateProductStockBySizes(sizes);
+
+// 12. Lấy tên danh mục con
+function getCategoryName(product) {
+    if (product.category && product.category.name) {
+        return product.category.name;
+    }
+
+    if (product.category_name) {
+        return product.category_name;
+    }
+
+    return "Đang cập nhật";
+}
+
+
+// 13. Lấy slug danh mục
+function getCategorySlug(product) {
+    if (product.category && product.category.slug) {
+        return product.category.slug;
+    }
+
+    if (product.category_slug) {
+        return product.category_slug;
+    }
+
+    const categoryName = getCategoryName(product);
+
+    if (categoryName && categoryName !== "Đang cập nhật") {
+        return createSlug(categoryName);
+    }
+
+    return "";
+}
+
+
+// 14. Lấy nhóm sản phẩm theo menu khách hàng
+function getAdminProductGroupByCategorySlug(categorySlug, fallbackGroupName) {
+    const group = ADMIN_CATEGORY_GROUPS.find(function (item) {
+        return item.categorySlugs.includes(categorySlug);
+    });
+
+    if (group) {
+        return group.name;
+    }
+
+    return fallbackGroupName || "Đang cập nhật";
+}
+
+
+// 15. Lấy tổng tồn kho của sản phẩm
+function getProductStock(product) {
+    if (Array.isArray(product.variants)) {
+        return product.variants.reduce(function (total, variant) {
+            return total + Number(variant.stock_quantity || variant.stock || 0);
+        }, 0);
+    }
+
+    if (product.summary && product.summary.total_stock !== undefined) {
+        return Number(product.summary.total_stock || 0);
+    }
+
+    if (product.total_stock !== undefined) {
+        return Number(product.total_stock || 0);
+    }
+
+    if (product.stock_quantity !== undefined) {
+        return Number(product.stock_quantity || 0);
+    }
+
+    if (product.stock !== undefined) {
+        return Number(product.stock || 0);
+    }
+
+    return 0;
+}
+
+
+// 16. Lấy ảnh sản phẩm
+function getProductImage(product) {
+    if (product.image_url) {
+        return product.image_url;
+    }
+
+    if (product.image) {
+        return product.image;
+    }
+
+    if (Array.isArray(product.images) && product.images.length > 0) {
+        return product.images[0].image_url || product.images[0].url || "";
+    }
+
+    return "";
+}
+
+
+// 17. Lấy giá bán
+function getProductPrice(product) {
+    if (product.base_price !== undefined) {
+        return Number(product.base_price || 0);
+    }
+
+    if (product.price !== undefined) {
+        return Number(product.price || 0);
+    }
+
+    return 0;
+}
+
+
+// 18. Lấy giá gốc
+function getProductOldPrice(product) {
+    if (product.old_price !== undefined && product.old_price !== null) {
+        return Number(product.old_price || 0);
+    }
+
+    if (product.oldPrice !== undefined && product.oldPrice !== null) {
+        return Number(product.oldPrice || 0);
+    }
+
+    return 0;
+}
+
+
+// 19. Chuẩn hóa trạng thái sản phẩm
+function normalizeProductStatus(status) {
+    if (status === "hidden") {
+        return "inactive";
+    }
+
+    return status || "active";
+}
+
+
+// 20. Chuẩn hóa sản phẩm từ API
+function normalizeProduct(product) {
+    const status = normalizeProductStatus(product.status);
+    const stock = getProductStock(product);
+    const categoryName = getCategoryName(product);
+    const categorySlug = getCategorySlug(product);
+    const parentCategoryName = getParentCategoryName(product);
+    const adminProductGroup = getAdminProductGroupByCategorySlug(categorySlug, parentCategoryName);
 
     return {
-        id: product.id || "SP" + String(index + 1).padStart(3, "0"),
+        id: product.id,
+        code: product.code || product.sku || "SP" + String(product.id).padStart(3, "0"),
         name: product.name || "Sản phẩm",
-        productGroup: product.productGroup || "Đang cập nhật",
-        category: product.category || "Đang cập nhật",
-        price: Number(product.price || 0),
-        oldPrice: Number(product.oldPrice || 0),
-        stock: stockBySizes > 0 ? stockBySizes : Number(product.stock || 0),
+        slug: product.slug || "",
+
+        productGroup: adminProductGroup,
+        parentCategory: parentCategoryName,
+
+        category: categoryName,
+        categorySlug: categorySlug,
+
+        price: getProductPrice(product),
+        oldPrice: getProductOldPrice(product),
+        stock: stock,
+
         material: product.material || "Đang cập nhật",
-        colors: Array.isArray(product.colors) ? product.colors : [],
-        sizes: sizes,
-        image: product.image || "",
-        status: product.status || "active",
-        description: product.description || "Chưa có mô tả."
+        brand: product.brand || "Đang cập nhật",
+        image: getProductImage(product),
+        status: status,
+        raw: product
     };
 }
 
-// 15. Lấy danh sách sản phẩm
-function getProducts() {
-    const savedProducts = localStorage.getItem(ADMIN_PRODUCTS_KEY);
 
-    if (!savedProducts) {
-        const normalizedDemoProducts = demoAdminProducts.map(function(product, index) {
-            return normalizeProduct(product, index);
-        });
-
-        localStorage.setItem(ADMIN_PRODUCTS_KEY, JSON.stringify(normalizedDemoProducts));
-
-        return normalizedDemoProducts;
-    }
-
-    try {
-        const products = JSON.parse(savedProducts);
-
-        const normalizedProducts = products.map(function(product, index) {
-            return normalizeProduct(product, index);
-        });
-
-        localStorage.setItem(ADMIN_PRODUCTS_KEY, JSON.stringify(normalizedProducts));
-
-        return normalizedProducts;
-    } catch (error) {
-        const normalizedDemoProducts = demoAdminProducts.map(function(product, index) {
-            return normalizeProduct(product, index);
-        });
-
-        localStorage.setItem(ADMIN_PRODUCTS_KEY, JSON.stringify(normalizedDemoProducts));
-
-        return normalizedDemoProducts;
-    }
-}
-
-// 16. Lưu danh sách sản phẩm
-function saveProducts(products) {
-    localStorage.setItem(ADMIN_PRODUCTS_KEY, JSON.stringify(products));
-}
-
-// 17. Tìm sản phẩm theo id
-function getProductById(productId) {
-    const products = getProducts();
-
-    return products.find(function(product) {
-        return product.id === productId;
-    });
-}
-
-// 18. Lấy thông tin trạng thái sản phẩm
+// 21. Lấy thông tin trạng thái sản phẩm
 function getProductStatusInfo(status) {
-    if (status === "hidden") {
+    const normalizedStatus = normalizeProductStatus(status);
+
+    if (normalizedStatus === "inactive") {
         return {
             text: "Đang ẩn",
             className: "statusCancelled"
@@ -305,7 +364,8 @@ function getProductStatusInfo(status) {
     };
 }
 
-// 19. Lấy thông tin tồn kho
+
+// 22. Lấy thông tin tồn kho
 function getProductStockInfo(stock) {
     const quantity = Number(stock || 0);
 
@@ -329,18 +389,19 @@ function getProductStockInfo(stock) {
     };
 }
 
-// 20. Render thống kê sản phẩm
+
+// 23. Render thống kê sản phẩm
 function renderProductStats(products) {
-    const activeProducts = products.filter(function(product) {
+    const activeProducts = products.filter(function (product) {
         return product.status === "active";
     });
 
-    const lowStockProducts = products.filter(function(product) {
+    const lowStockProducts = products.filter(function (product) {
         return product.stock > 0 && product.stock <= 5;
     });
 
-    const hiddenProducts = products.filter(function(product) {
-        return product.status === "hidden";
+    const hiddenProducts = products.filter(function (product) {
+        return product.status !== "active";
     });
 
     if (totalProductCount) {
@@ -360,23 +421,148 @@ function renderProductStats(products) {
     }
 }
 
-// 21. Lọc sản phẩm
-function getFilteredProducts(products) {
-    const searchValue = productSearchInput ? productSearchInput.value.trim().toLowerCase() : "";
-    const productGroupValue = productGroupFilter ? productGroupFilter.value : "all";
-    const categoryValue = categoryFilter ? categoryFilter.value : "all";
-    const stockValue = stockFilter ? stockFilter.value : "all";
 
-    return products.filter(function(product) {
+// 24. Tạo option cho select
+function createSelectOption(value, text) {
+    const option = document.createElement("option");
+
+    option.value = value;
+    option.textContent = text;
+
+    return option;
+}
+
+
+// 25. Lấy danh sách nhóm có sản phẩm
+function getAvailableProductGroups() {
+    const productGroupMap = {};
+
+    adminProducts.forEach(function (product) {
+        if (!product.productGroup || product.productGroup === "Đang cập nhật") {
+            return;
+        }
+
+        productGroupMap[product.productGroup] = true;
+    });
+
+    return ADMIN_CATEGORY_GROUPS
+        .map(function (group) {
+            return group.name;
+        })
+        .filter(function (groupName) {
+            return productGroupMap[groupName];
+        });
+}
+
+
+// 26. Lấy danh sách danh mục theo nhóm đang chọn
+function getAvailableCategoriesByGroup(groupName) {
+    const categoryMap = {};
+
+    adminProducts.forEach(function (product) {
+        if (!product.category || product.category === "Đang cập nhật") {
+            return;
+        }
+
+        if (groupName && groupName !== "all" && product.productGroup !== groupName) {
+            return;
+        }
+
+        categoryMap[product.category] = true;
+    });
+
+    return Object.keys(categoryMap).sort(function (a, b) {
+        return a.localeCompare(b, "vi");
+    });
+}
+
+
+// 27. Render filter nhóm sản phẩm
+function renderProductGroupFilterOptions() {
+    if (!productGroupFilter) {
+        return;
+    }
+
+    const currentValue = productGroupFilter.value;
+    const groupNames = getAvailableProductGroups();
+
+    productGroupFilter.innerHTML = "";
+    productGroupFilter.appendChild(createSelectOption("all", "Tất cả nhóm sản phẩm"));
+
+    groupNames.forEach(function (groupName) {
+        productGroupFilter.appendChild(createSelectOption(groupName, groupName));
+    });
+
+    const hasCurrentValue = groupNames.some(function (groupName) {
+        return groupName === currentValue;
+    });
+
+    productGroupFilter.value = hasCurrentValue ? currentValue : "all";
+}
+
+
+// 28. Render filter danh mục
+function renderCategoryFilterOptions() {
+    if (!categoryFilter) {
+        return;
+    }
+
+    const currentValue = categoryFilter.value;
+    const selectedGroup = productGroupFilter ? productGroupFilter.value : "all";
+    const categoryNames = getAvailableCategoriesByGroup(selectedGroup);
+
+    categoryFilter.innerHTML = "";
+    categoryFilter.appendChild(createSelectOption("all", "Tất cả loại sản phẩm"));
+
+    categoryNames.forEach(function (categoryName) {
+        categoryFilter.appendChild(createSelectOption(categoryName, categoryName));
+    });
+
+    const hasCurrentValue = categoryNames.some(function (categoryName) {
+        return categoryName === currentValue;
+    });
+
+    categoryFilter.value = hasCurrentValue ? currentValue : "all";
+}
+
+
+// 29. Render toàn bộ filter sản phẩm
+function renderProductFilterOptions() {
+    renderProductGroupFilterOptions();
+    renderCategoryFilterOptions();
+}
+
+
+// 30. Lọc sản phẩm trên frontend
+function getFilteredProducts(products) {
+    const searchValue = productSearchInput
+        ? productSearchInput.value.trim().toLowerCase()
+        : "";
+
+    const productGroupValue = productGroupFilter
+        ? productGroupFilter.value
+        : "all";
+
+    const categoryValue = categoryFilter
+        ? categoryFilter.value
+        : "all";
+
+    const stockValue = stockFilter
+        ? stockFilter.value
+        : "all";
+
+    return products.filter(function (product) {
         const name = product.name.toLowerCase();
-        const id = product.id.toLowerCase();
+        const code = String(product.code || product.id).toLowerCase();
         const productGroup = product.productGroup.toLowerCase();
+        const parentCategory = product.parentCategory.toLowerCase();
         const category = product.category.toLowerCase();
 
         const matchSearch =
             name.includes(searchValue) ||
-            id.includes(searchValue) ||
+            code.includes(searchValue) ||
             productGroup.includes(searchValue) ||
+            parentCategory.includes(searchValue) ||
             category.includes(searchValue);
 
         const matchProductGroup =
@@ -405,9 +591,12 @@ function getFilteredProducts(products) {
     });
 }
 
-// 22. Render ảnh sản phẩm trong bảng
+
+// 31. Render ảnh sản phẩm trong bảng
 function renderProductImage(imageElement, imageTextElement, product) {
-    if (!imageElement || !imageTextElement) return;
+    if (!imageElement || !imageTextElement) {
+        return;
+    }
 
     imageTextElement.textContent = getFirstLetter(product.name);
 
@@ -421,18 +610,95 @@ function renderProductImage(imageElement, imageTextElement, product) {
     imageElement.alt = product.name;
     imageElement.classList.add("show");
 
-    imageElement.addEventListener("error", function() {
+    imageElement.addEventListener("error", function () {
         imageElement.src = "";
         imageElement.classList.remove("show");
     });
 }
 
-// 23. Render bảng sản phẩm
-function renderProductTable() {
-    if (!productTableBody || !productRowTemplate) return;
 
-    const products = getProducts();
-    const filteredProducts = getFilteredProducts(products);
+// 32. Render một dòng sản phẩm
+function renderProductRow(product) {
+    const rowFragment = productRowTemplate.content.cloneNode(true);
+    const row = rowFragment.querySelector("tr");
+
+    const statusInfo = getProductStatusInfo(product.status);
+    const stockInfo = getProductStockInfo(product.stock);
+
+    const productNameText = rowFragment.querySelector(".productNameText");
+    const productCodeText = rowFragment.querySelector(".productCodeText");
+    const productGroupText = rowFragment.querySelector(".productGroupText");
+    const productCategoryText = rowFragment.querySelector(".productCategoryText");
+    const productPriceText = rowFragment.querySelector(".productPriceText");
+    const productOldPriceText = rowFragment.querySelector(".productOldPriceText");
+    const productStatusText = rowFragment.querySelector(".productStatusText");
+    const productStockText = rowFragment.querySelector(".productStockText");
+    const productThumbImg = rowFragment.querySelector(".productThumbImg");
+    const productThumbText = rowFragment.querySelector(".productThumbText");
+    const actionButton = rowFragment.querySelector("[data-action='delete']");
+
+    if (row) {
+        row.dataset.productId = product.id;
+        row.classList.add("clickableProductRow");
+        row.title = "Nhấn để xem và chỉnh sửa sản phẩm";
+    }
+
+    if (productNameText) {
+        productNameText.textContent = product.name;
+    }
+
+    if (productCodeText) {
+        productCodeText.textContent = product.code;
+    }
+
+    if (productGroupText) {
+        productGroupText.textContent = product.productGroup;
+    }
+
+    if (productCategoryText) {
+        productCategoryText.textContent = product.category;
+    }
+
+    if (productPriceText) {
+        productPriceText.textContent = formatPrice(product.price);
+    }
+
+    if (productOldPriceText) {
+        productOldPriceText.textContent = product.oldPrice > 0
+            ? formatPrice(product.oldPrice)
+            : "-";
+    }
+
+    if (productStockText) {
+        productStockText.textContent = stockInfo.text;
+        productStockText.classList.add(stockInfo.className);
+    }
+
+    if (productStatusText) {
+        productStatusText.textContent = statusInfo.text;
+        productStatusText.classList.add(statusInfo.className);
+    }
+
+    if (actionButton) {
+        actionButton.textContent = product.status === "active" ? "Ẩn" : "Hiện";
+        actionButton.title = product.status === "active"
+            ? "Ẩn sản phẩm"
+            : "Hiển thị sản phẩm";
+    }
+
+    renderProductImage(productThumbImg, productThumbText, product);
+
+    return rowFragment;
+}
+
+
+// 33. Render bảng sản phẩm
+function renderProductTable() {
+    if (!productTableBody || !productRowTemplate) {
+        return;
+    }
+
+    const filteredProducts = getFilteredProducts(adminProducts);
 
     productTableBody.innerHTML = "";
 
@@ -440,73 +706,131 @@ function renderProductTable() {
         emptyProductText.classList.toggle("show", filteredProducts.length === 0);
     }
 
-    filteredProducts.forEach(function(product) {
-        const rowFragment = productRowTemplate.content.cloneNode(true);
-        const row = rowFragment.querySelector("tr");
-        const statusInfo = getProductStatusInfo(product.status);
-        const stockInfo = getProductStockInfo(product.stock);
-        const statusBadge = rowFragment.querySelector(".productStatusText");
-        const stockBadge = rowFragment.querySelector(".productStockText");
-        const productThumbImg = rowFragment.querySelector(".productThumbImg");
-        const productThumbText = rowFragment.querySelector(".productThumbText");
-
-        row.dataset.productId = product.id;
-        row.classList.add("clickableProductRow");
-        row.title = "Nhấn để xem và chỉnh sửa sản phẩm";
-
-        rowFragment.querySelector(".productNameText").textContent = product.name;
-        rowFragment.querySelector(".productCodeText").textContent = product.id;
-        rowFragment.querySelector(".productGroupText").textContent = product.productGroup;
-        rowFragment.querySelector(".productCategoryText").textContent = product.category;
-        rowFragment.querySelector(".productPriceText").textContent = formatPrice(product.price);
-        rowFragment.querySelector(".productOldPriceText").textContent = product.oldPrice > 0 ? formatPrice(product.oldPrice) : "-";
-
-        stockBadge.textContent = stockInfo.text;
-        stockBadge.classList.add(stockInfo.className);
-
-        statusBadge.textContent = statusInfo.text;
-        statusBadge.classList.add(statusInfo.className);
-
-        renderProductImage(productThumbImg, productThumbText, product);
-
-        productTableBody.appendChild(rowFragment);
+    filteredProducts.forEach(function (product) {
+        const row = renderProductRow(product);
+        productTableBody.appendChild(row);
     });
 
-    renderProductStats(products);
+    renderProductStats(adminProducts);
 }
 
-// 24. Chuyển sang trang chi tiết sản phẩm
+
+// 34. Hiển thị trạng thái loading
+function setProductLoading(isLoading) {
+    if (!productTableBody) {
+        return;
+    }
+
+    if (isLoading) {
+        productTableBody.innerHTML = `
+            <tr>
+                <td colspan="8">Đang tải danh sách sản phẩm...</td>
+            </tr>
+        `;
+    }
+}
+
+
+// 35. Hiển thị lỗi tải sản phẩm
+function renderProductError(error) {
+    console.error(error);
+
+    if (productTableBody) {
+        productTableBody.innerHTML = "";
+    }
+
+    if (emptyProductText) {
+        emptyProductText.classList.add("show");
+        emptyProductText.textContent = "Không tải được danh sách sản phẩm.";
+    }
+
+    renderProductStats([]);
+}
+
+
+// 36. Load sản phẩm từ API
+async function loadProductsFromApi() {
+    setProductLoading(true);
+
+    const response = await window.AdminApi.get(
+        "admin/products/get-products.php?page=1&limit=100&status=all&sort=latest"
+    );
+
+    const data = response.data || {};
+    const products = Array.isArray(data.products) ? data.products : [];
+
+    adminProducts = products.map(function (product) {
+        return normalizeProduct(product);
+    });
+
+    renderProductFilterOptions();
+    renderProductTable();
+}
+
+
+// 37. Chuyển sang trang chi tiết sản phẩm
 function goToProductDetail(productId) {
-    if (!productId) return;
+    if (!productId) {
+        return;
+    }
 
     window.location.href = "../html/admin-product-detail.html?id=" + encodeURIComponent(productId);
 }
 
-// 25. Xóa sản phẩm
-function deleteProduct(productId) {
-    const products = getProducts();
-    const product = getProductById(productId);
 
-    if (!product) return;
-
-    const isConfirm = confirm("Bạn có chắc muốn xóa sản phẩm " + product.name + "?");
-
-    if (!isConfirm) return;
-
-    const updatedProducts = products.filter(function(item) {
-        return item.id !== productId;
+// 38. Tìm sản phẩm theo id
+function getProductById(productId) {
+    return adminProducts.find(function (product) {
+        return String(product.id) === String(productId);
     });
-
-    saveProducts(updatedProducts);
-    renderProductTable();
 }
 
-// 26. Xử lý thao tác bảng sản phẩm
+
+// 39. Cập nhật trạng thái ẩn/hiện sản phẩm
+async function toggleProductStatus(productId) {
+    const product = getProductById(productId);
+
+    if (!product) {
+        return;
+    }
+
+    const newStatus = product.status === "active" ? "inactive" : "active";
+    const actionText = newStatus === "inactive" ? "ẩn" : "hiển thị";
+
+    const isConfirm = confirm(
+        "Bạn có chắc muốn " + actionText + " sản phẩm " + product.name + " không?"
+    );
+
+    if (!isConfirm) {
+        return;
+    }
+
+    try {
+        await window.AdminApi.post("admin/products/update-product-status.php", {
+            product_id: Number(productId),
+            status: newStatus
+        });
+
+        await loadProductsFromApi();
+    } catch (error) {
+        alert(
+            window.AdminApi.getApiErrorMessage(
+                error,
+                "Cập nhật trạng thái sản phẩm thất bại."
+            )
+        );
+    }
+}
+
+
+// 40. Xử lý thao tác bảng sản phẩm
 function handleProductTableAction(event) {
     const actionButton = event.target.closest("[data-action]");
     const row = event.target.closest("tr");
 
-    if (!row) return;
+    if (!row) {
+        return;
+    }
 
     const productId = row.dataset.productId;
 
@@ -516,7 +840,7 @@ function handleProductTableAction(event) {
         const action = actionButton.dataset.action;
 
         if (action === "delete") {
-            deleteProduct(productId);
+            toggleProductStatus(productId);
         }
 
         return;
@@ -525,7 +849,28 @@ function handleProductTableAction(event) {
     goToProductDetail(productId);
 }
 
-// 27. Gắn sự kiện trang sản phẩm
+
+// 41. Xử lý đổi nhóm lọc
+function handleProductGroupFilterChange() {
+    renderCategoryFilterOptions();
+    renderProductTable();
+}
+
+
+// 42. Xử lý đăng xuất
+function handleAdminLogout() {
+    if (window.AdminApi && window.AdminApi.logoutAdmin) {
+        window.AdminApi.logoutAdmin();
+        return;
+    }
+
+    localStorage.removeItem("admin_current_user");
+    localStorage.removeItem("admin_is_login");
+    window.location.href = "../html/admin-login.html";
+}
+
+
+// 43. Gắn sự kiện trang sản phẩm
 function bindProductEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -540,7 +885,7 @@ function bindProductEvents() {
     }
 
     if (productGroupFilter) {
-        productGroupFilter.addEventListener("change", renderProductTable);
+        productGroupFilter.addEventListener("change", handleProductGroupFilterChange);
     }
 
     if (categoryFilter) {
@@ -552,16 +897,48 @@ function bindProductEvents() {
     }
 }
 
-// 28. Khởi tạo trang quản lý sản phẩm
-function initAdminProductsPage() {
-    currentAdminUser = checkAdminLogin();
 
-    if (!currentAdminUser) return;
+// 44. Kiểm tra đăng nhập local
+function checkAdminLoginLocal() {
+    if (!window.AdminApi) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    const adminUser = window.AdminApi.getCurrentAdminFromLocal();
+
+    if (!adminUser) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    return adminUser;
+}
+
+
+// 45. Khởi tạo trang quản lý sản phẩm
+async function initAdminProductsPage() {
+    currentAdminUser = checkAdminLoginLocal();
+
+    if (!currentAdminUser) {
+        return;
+    }
 
     renderAdminInfo(currentAdminUser);
     renderCurrentDate();
-    renderProductTable();
     bindProductEvents();
+
+    try {
+        await loadProductsFromApi();
+    } catch (error) {
+        if (error && error.status === 401) {
+            window.AdminApi.clearAdminLocalAuth();
+            window.location.href = "../html/admin-login.html";
+            return;
+        }
+
+        renderProductError(error);
+    }
 }
 
 initAdminProductsPage();

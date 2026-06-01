@@ -1,34 +1,50 @@
-// 1. Chờ HTML tải xong
+// =========================================================
+// File: Frontend/js/search.js
+// Mục đích: Trang tìm kiếm lấy sản phẩm thật từ API backend
+// =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. Kiểm tra đúng trang tìm kiếm
     const searchPage = document.querySelector('[data-page="search"]');
 
     if (!searchPage) {
         return;
     }
 
-    // 2. Key localStorage
 
+    // 2. Key localStorage
     const CART_STORAGE_KEY = "cart_items";
     const CHECKOUT_STORAGE_KEY = "checkout_items";
 
-    // 3. Biến trạng thái search
 
+    // 3. Biến trạng thái search
+    let currentPage = 1;
+    let currentLimit = 12;
     let currentView = "grid";
     let currentKeyword = getKeywordFromUrl();
 
-    // 4. Biến trạng thái quick view
+    let products = [];
+    let productDetailCache = {};
+    let paginationData = {
+        page: 1,
+        limit: 12,
+        total_products: 0,
+        total_pages: 1
+    };
 
+
+    // 4. Biến trạng thái quick view
     let quickViewProduct = null;
     let quickViewImageIndex = 0;
     let quickViewSelectedColor = "";
+    let quickViewSelectedColorId = "";
     let quickViewSelectedSize = "";
+    let quickViewSelectedSizeId = "";
     let quickViewQuantity = 1;
 
+
     // 5. Lấy DOM search
-
     const searchPageTitle = document.getElementById("searchPageTitle");
-
     const searchForm = document.getElementById("searchForm");
     const searchKeywordInput = document.getElementById("searchKeyword");
 
@@ -37,8 +53,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const btnResetFilter = document.getElementById("btnResetFilter");
 
     const sortSelect = document.getElementById("sort");
-
-    const viewMode = document.getElementById("viewMode");
     const gridViewBtn = document.getElementById("gridViewBtn");
     const listViewBtn = document.getElementById("listViewBtn");
 
@@ -52,15 +66,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const productCardTemplate = document.getElementById("productCardTemplate");
 
-    // 6. Lấy DOM quick view
 
+    // 6. Lấy DOM quick view
     const quickViewOverlay = document.getElementById("quickViewOverlay");
     const quickViewPopup = document.getElementById("quickViewPopup");
     const quickViewCloseBtn = document.getElementById("quickViewCloseBtn");
 
     const quickViewThumbs = document.getElementById("quickViewThumbs");
     const quickViewThumbTemplate = document.getElementById("quickViewThumbTemplate");
-
     const quickViewImage = document.getElementById("quickViewImage");
     const quickViewPrevImageBtn = document.getElementById("quickViewPrevImageBtn");
     const quickViewNextImageBtn = document.getElementById("quickViewNextImageBtn");
@@ -71,8 +84,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const quickViewCurrentPrice = document.getElementById("quickViewCurrentPrice");
     const quickViewOldPrice = document.getElementById("quickViewOldPrice");
     const quickViewDiscount = document.getElementById("quickViewDiscount");
-
     const quickViewSelectedColorText = document.getElementById("quickViewSelectedColor");
+
     const quickViewColorList = document.getElementById("quickViewColorList");
     const quickViewColorTemplate = document.getElementById("quickViewColorTemplate");
 
@@ -82,18 +95,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const quickViewMinusQty = document.getElementById("quickViewMinusQty");
     const quickViewPlusQty = document.getElementById("quickViewPlusQty");
     const quickViewQuantityInput = document.getElementById("quickViewQuantityInput");
-
     const quickViewBuyBtn = document.getElementById("quickViewBuyBtn");
+
     const quickViewMaterial = document.getElementById("quickViewMaterial");
     const quickViewDescription = document.getElementById("quickViewDescription");
     const quickViewDetailLink = document.getElementById("quickViewDetailLink");
 
-    // 7. Lấy DOM cart drawer
 
+    // 7. Lấy DOM cart drawer
     const cartDrawerOverlay = document.getElementById("cartDrawerOverlay");
     const cartDrawer = document.getElementById("cartDrawer");
     const cartDrawerCloseBtn = document.getElementById("cartDrawerCloseBtn");
-
     const cartDrawerCount = document.getElementById("cartDrawerCount");
     const cartDrawerEmptyState = document.getElementById("cartDrawerEmptyState");
     const cartDrawerList = document.getElementById("cartDrawerList");
@@ -101,404 +113,36 @@ document.addEventListener("DOMContentLoaded", function () {
     const cartDrawerCheckoutBtn = document.getElementById("cartDrawerCheckoutBtn");
     const cartDrawerItemTemplate = document.getElementById("cartDrawerItemTemplate");
 
-    // 8. Nhóm danh mục
 
-    const categoryChildrenMap = {
-        "ao-tay-ngan": ["ao-thun", "ao-polo", "ao-so-mi"],
-        "ao-tay-dai": ["ao-sweater", "hoodie", "ao-khoac"],
-        "quan": ["quan-dai", "quan-ngan"],
-        "vay": ["vay-ngan", "vay-dai"],
-        "phu-kien": ["mu", "quan-lot", "tat"]
+    // 8. Alias slug danh mục dự phòng
+    const categorySlugAliasMap = {
+        "hoodie": ["hoodie", "ao-hoodie"],
+        "ao-hoodie": ["ao-hoodie", "hoodie"]
     };
 
-    // 9. Dữ liệu sản phẩm mẫu
 
-    const allProducts = [
-        {
-            id: "at001",
-            category: "ao-thun",
-            name: "Áo Thun Basic Cotton",
-            brand: "DUHU Shop",
-            meta: "Áo thun · Form regular · Màu trắng",
-            shortDesc: "Áo thun basic dễ phối đồ, phù hợp mặc hằng ngày.",
-            material: "Cotton mềm, thấm hút tốt và tạo cảm giác thoải mái.",
-            description: "Thiết kế tối giản, form regular dễ mặc.",
-            price: 159000,
-            oldPrice: 199000,
-            image: "../img/ao-thun-1.jpg",
-            images: ["../img/ao-thun-1.jpg", "../img/ao-thun-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 126,
-            colors: [
-                { name: "Trắng", value: "#f5f5f5" },
-                { name: "Đen", value: "#111111" }
-            ],
-            sizes: ["S", "M", "L", "XL"]
-        },
-        {
-            id: "at002",
-            category: "ao-thun",
-            name: "Áo Thun Local Brand",
-            brand: "DUHU Shop",
-            meta: "Áo thun · Form oversize · Màu đen",
-            shortDesc: "Áo thun form oversize trẻ trung.",
-            material: "Cotton pha nhẹ, giữ form tốt.",
-            description: "Thiết kế basic phong cách local brand.",
-            price: 189000,
-            oldPrice: 0,
-            image: "../img/ao-thun-2.jpg",
-            images: ["../img/ao-thun-2.jpg", "../img/ao-thun-2.jpg"],
-            isNew: false,
-            isSale: false,
-            inStock: true,
-            sold: 98,
-            colors: [{ name: "Đen", value: "#111111" }],
-            sizes: ["M", "L", "XL"]
-        },
-        {
-            id: "at003",
-            category: "ao-thun",
-            name: "Áo Thun Graphic Street",
-            brand: "DUHU Shop",
-            meta: "Áo thun · Form rộng · Màu xám",
-            shortDesc: "Áo thun graphic nổi bật.",
-            material: "Cotton dày vừa, bề mặt mềm.",
-            description: "Họa tiết graphic tạo điểm nhấn.",
-            price: 219000,
-            oldPrice: 259000,
-            image: "../img/ao-thun-3.jpg",
-            images: ["../img/ao-thun-3.jpg", "../img/ao-thun-3.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 84,
-            colors: [
-                { name: "Xám", value: "#888888" },
-                { name: "Kem", value: "#e8dcc8" }
-            ],
-            sizes: ["M", "L"]
-        },
-        {
-            id: "ap001",
-            category: "ao-polo",
-            name: "Áo Polo Nam Basic",
-            brand: "DUHU Shop",
-            meta: "Áo polo · Form regular · Màu navy",
-            shortDesc: "Áo polo basic lịch sự.",
-            material: "Vải cá sấu co giãn nhẹ.",
-            description: "Mẫu polo cổ bẻ dễ mặc.",
-            price: 229000,
-            oldPrice: 279000,
-            image: "../img/ao-polo-1.jpg",
-            images: ["../img/ao-polo-1.jpg", "../img/ao-polo-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 105,
-            colors: [
-                { name: "Navy", value: "#243b6b" },
-                { name: "Trắng", value: "#f5f5f5" }
-            ],
-            sizes: ["S", "M", "L", "XL"]
-        },
-        {
-            id: "ap002",
-            category: "ao-polo",
-            name: "Áo Polo Cổ Bẻ Classic",
-            brand: "DUHU Shop",
-            meta: "Áo polo · Form vừa · Màu đen",
-            shortDesc: "Áo polo cổ bẻ đơn giản.",
-            material: "Vải thun cá sấu mềm.",
-            description: "Thiết kế classic phù hợp nhiều hoàn cảnh.",
-            price: 249000,
-            oldPrice: 0,
-            image: "../img/ao-polo-2.jpg",
-            images: ["../img/ao-polo-2.jpg", "../img/ao-polo-2.jpg"],
-            isNew: false,
-            isSale: false,
-            inStock: true,
-            sold: 73,
-            colors: [{ name: "Đen", value: "#111111" }],
-            sizes: ["M", "L", "XL"]
-        },
-        {
-            id: "asm001",
-            category: "ao-so-mi",
-            name: "Áo Sơ Mi Trắng Công Sở",
-            brand: "DUHU Shop",
-            meta: "Áo sơ mi · Form regular · Màu trắng",
-            shortDesc: "Áo sơ mi trắng thanh lịch.",
-            material: "Vải kate cotton mềm, thoáng.",
-            description: "Thiết kế tối giản, dễ phối quần tây.",
-            price: 259000,
-            oldPrice: 319000,
-            image: "../img/ao-so-mi-1.jpg",
-            images: ["../img/ao-so-mi-1.jpg", "../img/ao-so-mi-1.jpg"],
-            isNew: false,
-            isSale: true,
-            inStock: true,
-            sold: 91,
-            colors: [{ name: "Trắng", value: "#f5f5f5" }],
-            sizes: ["S", "M", "L", "XL"]
-        },
-        {
-            id: "sw001",
-            category: "ao-sweater",
-            name: "Áo Sweater Basic Nỉ",
-            brand: "DUHU Shop",
-            meta: "Áo sweater · Form rộng · Màu xám",
-            shortDesc: "Áo sweater nỉ mềm, dễ phối.",
-            material: "Nỉ cotton mềm, mặt trong êm.",
-            description: "Thiết kế basic, phù hợp mặc đi học.",
-            price: 279000,
-            oldPrice: 339000,
-            image: "../img/ao-sweater-1.jpg",
-            images: ["../img/ao-sweater-1.jpg", "../img/ao-sweater-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 88,
-            colors: [
-                { name: "Xám", value: "#888888" },
-                { name: "Đen", value: "#111111" }
-            ],
-            sizes: ["M", "L", "XL"]
-        },
-        {
-            id: "sw002",
-            category: "ao-sweater",
-            name: "Áo Sweater Minimal Logo",
-            brand: "DUHU Shop",
-            meta: "Áo sweater · Form regular · Màu be",
-            shortDesc: "Áo sweater logo nhỏ, đơn giản.",
-            material: "Nỉ da cá nhẹ, thoáng.",
-            description: "Màu be trung tính, dễ phối.",
-            price: 309000,
-            oldPrice: 0,
-            image: "../img/ao-sweater-2.jpg",
-            images: ["../img/ao-sweater-2.jpg", "../img/ao-sweater-2.jpg"],
-            isNew: false,
-            isSale: false,
-            inStock: true,
-            sold: 74,
-            colors: [{ name: "Be", value: "#d8c3a5" }],
-            sizes: ["S", "M", "L"]
-        },
-        {
-            id: "hd001",
-            category: "hoodie",
-            name: "Áo Hoodie Basic Cotton",
-            brand: "DUHU Shop",
-            meta: "Áo hoodie · Form rộng · Màu đen",
-            shortDesc: "Áo hoodie basic dễ phối đồ.",
-            material: "Cotton pha nỉ nhẹ, mềm tay.",
-            description: "Thiết kế tối giản, hiện đại.",
-            price: 329000,
-            oldPrice: 399000,
-            image: "../img/hoodie-1.jpg",
-            images: ["../img/hoodie-1.jpg", "../img/hoodie-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 120,
-            colors: [
-                { name: "Đen", value: "#111111" },
-                { name: "Xám", value: "#888888" }
-            ],
-            sizes: ["M", "L", "XL"]
-        },
-        {
-            id: "hd002",
-            category: "hoodie",
-            name: "Áo Hoodie Urban Style",
-            brand: "DUHU Shop",
-            meta: "Áo hoodie · Form vừa · Màu xám",
-            shortDesc: "Mẫu hoodie trẻ trung, dễ mặc.",
-            material: "Cotton pha polyester giúp áo đứng form.",
-            description: "Thiết kế hướng streetwear hiện đại.",
-            price: 289000,
-            oldPrice: 0,
-            image: "../img/hoodie-2.jpg",
-            images: ["../img/hoodie-2.jpg", "../img/hoodie-2.jpg"],
-            isNew: false,
-            isSale: false,
-            inStock: true,
-            sold: 80,
-            colors: [{ name: "Xám", value: "#888888" }],
-            sizes: ["S", "M", "L"]
-        },
-        {
-            id: "ak001",
-            category: "ao-khoac",
-            name: "Áo Khoác Dù Chống Nắng",
-            brand: "DUHU Shop",
-            meta: "Áo khoác · Chất dù · Màu đen",
-            shortDesc: "Áo khoác dù nhẹ, tiện lợi.",
-            material: "Vải dù nhẹ, dễ vệ sinh.",
-            description: "Thiết kế đơn giản, mặc ngoài áo thun.",
-            price: 299000,
-            oldPrice: 359000,
-            image: "../img/ao-khoac-1.jpg",
-            images: ["../img/ao-khoac-1.jpg", "../img/ao-khoac-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 112,
-            colors: [
-                { name: "Đen", value: "#111111" },
-                { name: "Xám", value: "#888888" }
-            ],
-            sizes: ["M", "L", "XL"]
-        },
-        {
-            id: "qd001",
-            category: "quan-dai",
-            name: "Quần Dài Kaki Basic",
-            brand: "DUHU Shop",
-            meta: "Quần dài · Kaki · Màu đen",
-            shortDesc: "Quần dài kaki basic dễ phối.",
-            material: "Vải kaki mềm, giữ form tốt.",
-            description: "Phù hợp đi học, đi chơi, đi làm.",
-            price: 299000,
-            oldPrice: 359000,
-            image: "../img/quan-dai-1.jpg",
-            images: ["../img/quan-dai-1.jpg", "../img/quan-dai-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 90,
-            colors: [
-                { name: "Đen", value: "#111111" },
-                { name: "Be", value: "#d8c3a5" }
-            ],
-            sizes: ["M", "L", "XL"]
-        },
-        {
-            id: "qn001",
-            category: "quan-ngan",
-            name: "Quần Short Basic",
-            brand: "DUHU Shop",
-            meta: "Quần ngắn · Short · Màu xám",
-            shortDesc: "Quần short basic thoải mái.",
-            material: "Vải cotton pha, mềm và thoáng.",
-            description: "Phù hợp mặc ở nhà, đi chơi.",
-            price: 179000,
-            oldPrice: 219000,
-            image: "../img/quan-ngan-1.jpg",
-            images: ["../img/quan-ngan-1.jpg", "../img/quan-ngan-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 66,
-            colors: [{ name: "Xám", value: "#888888" }],
-            sizes: ["M", "L", "XL"]
-        },
-        {
-            id: "vn001",
-            category: "vay-ngan",
-            name: "Váy Ngắn Chữ A",
-            brand: "DUHU Shop",
-            meta: "Váy ngắn · Chữ A · Màu đen",
-            shortDesc: "Váy ngắn chữ A dễ phối.",
-            material: "Vải mềm, đứng form nhẹ.",
-            description: "Phù hợp đi chơi, dạo phố.",
-            price: 249000,
-            oldPrice: 299000,
-            image: "../img/vay-ngan-1.jpg",
-            images: ["../img/vay-ngan-1.jpg", "../img/vay-ngan-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 50,
-            colors: [{ name: "Đen", value: "#111111" }],
-            sizes: ["S", "M", "L"]
-        },
-        {
-            id: "vd001",
-            category: "vay-dai",
-            name: "Váy Dài Basic",
-            brand: "DUHU Shop",
-            meta: "Váy dài · Basic · Màu be",
-            shortDesc: "Váy dài basic nhẹ nhàng.",
-            material: "Vải mềm, rũ nhẹ.",
-            description: "Phong cách nữ tính, dễ mặc.",
-            price: 329000,
-            oldPrice: 389000,
-            image: "../img/vay-dai-1.jpg",
-            images: ["../img/vay-dai-1.jpg", "../img/vay-dai-1.jpg"],
-            isNew: false,
-            isSale: true,
-            inStock: true,
-            sold: 42,
-            colors: [{ name: "Be", value: "#d8c3a5" }],
-            sizes: ["S", "M", "L"]
-        },
-        {
-            id: "pk001",
-            category: "mu",
-            name: "Mũ Lưỡi Trai Basic",
-            brand: "DUHU Shop",
-            meta: "Phụ kiện · Mũ · Màu đen",
-            shortDesc: "Mũ lưỡi trai basic dễ phối.",
-            material: "Vải canvas nhẹ, bền.",
-            description: "Phụ kiện phù hợp nhiều outfit.",
-            price: 99000,
-            oldPrice: 0,
-            image: "../img/mu-1.jpg",
-            images: ["../img/mu-1.jpg", "../img/mu-1.jpg"],
-            isNew: false,
-            isSale: false,
-            inStock: true,
-            sold: 75,
-            colors: [{ name: "Đen", value: "#111111" }],
-            sizes: ["F"]
-        },
-        {
-            id: "ql001",
-            category: "quan-lot",
-            name: "Quần Lót Cotton Basic",
-            brand: "DUHU Shop",
-            meta: "Phụ kiện · Quần lót · Cotton",
-            shortDesc: "Quần lót cotton mềm và thoáng.",
-            material: "Cotton co giãn nhẹ.",
-            description: "Thiết kế basic, thoải mái.",
-            price: 79000,
-            oldPrice: 99000,
-            image: "../img/quan-lot-1.jpg",
-            images: ["../img/quan-lot-1.jpg", "../img/quan-lot-1.jpg"],
-            isNew: false,
-            isSale: true,
-            inStock: true,
-            sold: 70,
-            colors: [{ name: "Đen", value: "#111111" }],
-            sizes: ["M", "L", "XL"]
-        },
-        {
-            id: "tat001",
-            category: "tat",
-            name: "Tất Cổ Cao Basic",
-            brand: "DUHU Shop",
-            meta: "Phụ kiện · Tất · Màu trắng",
-            shortDesc: "Tất cổ cao basic dễ mang.",
-            material: "Cotton pha co giãn.",
-            description: "Phù hợp đi giày sneaker.",
-            price: 49000,
-            oldPrice: 69000,
-            image: "../img/tat-1.jpg",
-            images: ["../img/tat-1.jpg", "../img/tat-1.jpg"],
-            isNew: true,
-            isSale: true,
-            inStock: true,
-            sold: 110,
-            colors: [{ name: "Trắng", value: "#f5f5f5" }],
-            sizes: ["F"]
+    // 9. Gọi API
+    async function getApi(endpoint) {
+        if (window.CustomerApi && typeof window.CustomerApi.get === "function") {
+            return await window.CustomerApi.get(endpoint);
         }
-    ];
+
+        const response = await fetch("../../BackEnd/php/api/" + endpoint, {
+            method: "GET",
+            credentials: "same-origin"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            throw data;
+        }
+
+        return data;
+    }
+
 
     // 10. Hàm tiện ích
-
     function getKeywordFromUrl() {
         const params = new URLSearchParams(window.location.search);
 
@@ -506,12 +150,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateSearchUrl(keyword) {
-        const nextUrl = "../html/search.html?keyword=" + encodeURIComponent(keyword);
+        const nextUrl = "../html/search.html?keyword=" + encodeURIComponent(keyword || "");
 
         window.history.replaceState(null, "", nextUrl);
     }
 
     function formatPrice(price) {
+        if (window.CustomerApi && typeof window.CustomerApi.formatPrice === "function") {
+            return window.CustomerApi.formatPrice(price);
+        }
+
         return Number(price || 0).toLocaleString("vi-VN") + "đ";
     }
 
@@ -523,26 +171,22 @@ document.addEventListener("DOMContentLoaded", function () {
         return Math.round(((oldPrice - price) / oldPrice) * 100);
     }
 
-    function getProductById(productId) {
-        return allProducts.find(function (product) {
-            return product.id === productId;
-        });
-    }
-
-    function getProductImages(product) {
-        if (Array.isArray(product.images) && product.images.length > 0) {
-            return product.images;
-        }
-
-        return [product.image];
-    }
-
     function getProductDetailUrl(productId) {
         return "../html/product-detail.html?id=" + encodeURIComponent(productId);
     }
 
     function createCartItemId(productId, size, color) {
         return productId + "_" + size + "_" + color;
+    }
+
+    function normalizeQuantity(value) {
+        const numberValue = Number(value || 1);
+
+        if (Number.isNaN(numberValue) || numberValue < 1) {
+            return 1;
+        }
+
+        return Math.floor(numberValue);
     }
 
     function calculateCartSubtotal(cartItems) {
@@ -557,27 +201,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 0);
     }
 
-    function normalizeQuantity(value) {
-        const numberValue = Number(value || 1);
-
-        if (Number.isNaN(numberValue) || numberValue < 1) {
-            return 1;
-        }
-
-        return Math.floor(numberValue);
+    function getProductById(productId) {
+        return products.find(function (product) {
+            return String(product.id) === String(productId);
+        });
     }
 
+    function getProductImages(product) {
+        if (Array.isArray(product.images) && product.images.length > 0) {
+            return product.images;
+        }
+
+        if (product.image) {
+            return [product.image];
+        }
+
+        return ["../img/products/default.jpg"];
+    }
+
+
     // 11. LocalStorage
-
     function getDataFromStorage(key, fallbackValue) {
-        const rawData = localStorage.getItem(key);
+        const data = localStorage.getItem(key);
 
-        if (!rawData) {
+        if (!data) {
             return fallbackValue;
         }
 
         try {
-            return JSON.parse(rawData);
+            return JSON.parse(data);
         } catch (error) {
             console.error("Lỗi đọc localStorage:", error);
             return fallbackValue;
@@ -606,182 +258,387 @@ document.addEventListener("DOMContentLoaded", function () {
         saveDataToStorage(CHECKOUT_STORAGE_KEY, checkoutItems);
     }
 
-    // 12. Lấy filter
 
-    function getSelectedPriceFilter() {
-        const checkedPrice = filterForm?.querySelector('input[name="price"]:checked');
-
-        if (!checkedPrice) {
-            return "";
+    // 12. Trạng thái hiển thị
+    function hideSearchStates() {
+        if (loadingState) {
+            loadingState.hidden = true;
+            loadingState.classList.remove("show");
         }
 
-        return checkedPrice.value;
+        if (emptyState) {
+            emptyState.hidden = true;
+            emptyState.classList.remove("show");
+        }
+
+        if (errorState) {
+            errorState.hidden = true;
+            errorState.classList.remove("show");
+        }
+
+        if (categoryGrid) {
+            categoryGrid.hidden = true;
+        }
+
+        if (pagination) {
+            pagination.hidden = true;
+        }
     }
 
-    function getSelectedTypeFilter() {
-        const checkedType = filterForm?.querySelector('input[name="type"]:checked');
+    function showLoadingState() {
+        hideSearchStates();
 
-        if (!checkedType) {
-            return "";
-        }
-
-        return checkedType.value;
-    }
-
-    // 13. Lọc sản phẩm
-
-    function getAllowedCategoriesByType(typeValue) {
-        if (!typeValue) {
-            return [];
-        }
-
-        if (categoryChildrenMap[typeValue]) {
-            return categoryChildrenMap[typeValue];
-        }
-
-        return [typeValue];
-    }
-
-    function filterByKeyword(products, keyword) {
-        const normalizedKeyword = keyword.trim().toLowerCase();
-
-        if (!normalizedKeyword) {
-            return products;
-        }
-
-        return products.filter(function (product) {
-            return (
-                product.name.toLowerCase().includes(normalizedKeyword) ||
-                product.meta.toLowerCase().includes(normalizedKeyword) ||
-                product.category.toLowerCase().includes(normalizedKeyword) ||
-                product.shortDesc.toLowerCase().includes(normalizedKeyword)
-            );
-        });
-    }
-
-    function filterByPrice(products, priceValue) {
-        if (!priceValue) {
-            return products;
-        }
-
-        return products.filter(function (product) {
-            if (priceValue === "under-200") {
-                return product.price < 200000;
-            }
-
-            if (priceValue === "200-300") {
-                return product.price >= 200000 && product.price <= 300000;
-            }
-
-            if (priceValue === "over-300") {
-                return product.price > 300000;
-            }
-
-            return true;
-        });
-    }
-
-    function filterByType(products, typeValue) {
-        if (!typeValue) {
-            return products;
-        }
-
-        const allowedCategories = getAllowedCategoriesByType(typeValue);
-
-        return products.filter(function (product) {
-            return allowedCategories.includes(product.category);
-        });
-    }
-
-    // 14. Sắp xếp sản phẩm
-
-    function sortProducts(products, sortValue) {
-        const clonedProducts = [...products];
-
-        if (sortValue === "price-asc") {
-            clonedProducts.sort(function (a, b) {
-                return a.price - b.price;
-            });
-        }
-
-        if (sortValue === "price-desc") {
-            clonedProducts.sort(function (a, b) {
-                return b.price - a.price;
-            });
-        }
-
-        if (sortValue === "newest") {
-            clonedProducts.sort(function (a, b) {
-                return Number(b.isNew) - Number(a.isNew);
-            });
-        }
-
-        if (sortValue === "best-seller") {
-            clonedProducts.sort(function (a, b) {
-                return Number(b.sold || 0) - Number(a.sold || 0);
-            });
-        }
-
-        return clonedProducts;
-    }
-
-    // 15. Hiển thị trạng thái
-
-    function showState(type) {
-        loadingState?.classList.remove("show");
-        emptyState?.classList.remove("show");
-        errorState?.classList.remove("show");
-
-        if (loadingState) loadingState.hidden = true;
-        if (emptyState) emptyState.hidden = true;
-        if (errorState) errorState.hidden = true;
-
-        if (type === "loading" && loadingState) {
+        if (loadingState) {
             loadingState.hidden = false;
             loadingState.classList.add("show");
         }
+    }
 
-        if (type === "empty" && emptyState) {
+    function showEmptyState() {
+        hideSearchStates();
+
+        if (emptyState) {
             emptyState.hidden = false;
             emptyState.classList.add("show");
         }
+    }
 
-        if (type === "error" && errorState) {
+    function showErrorState() {
+        hideSearchStates();
+
+        if (errorState) {
             errorState.hidden = false;
             errorState.classList.add("show");
         }
     }
 
-    function clearProductGrid() {
+    function showProductContent() {
+        hideSearchStates();
+
         if (categoryGrid) {
-            categoryGrid.innerHTML = "";
+            categoryGrid.hidden = false;
+        }
+
+        if (pagination) {
+            pagination.hidden = false;
         }
     }
 
-    function updateProductCount(count) {
-        if (productCount) {
-            productCount.textContent = String(count);
-        }
-    }
 
-    function updateSearchTitle() {
+    // 13. Render tiêu đề tìm kiếm
+    function renderSearchTitle() {
         if (!searchPageTitle) {
             return;
         }
 
-        if (currentKeyword.trim()) {
-            searchPageTitle.textContent = 'KẾT QUẢ TÌM KIẾM: "' + currentKeyword.trim() + '"';
-        } else {
-            searchPageTitle.textContent = "TẤT CẢ SẢN PHẨM";
+        if (!currentKeyword) {
+            searchPageTitle.textContent = "TÌM KIẾM SẢN PHẨM";
+            return;
         }
 
-        document.title = currentKeyword.trim()
-            ? "Tìm kiếm: " + currentKeyword.trim()
-            : "Tìm kiếm sản phẩm";
+        searchPageTitle.textContent = 'KẾT QUẢ TÌM KIẾM: "' + currentKeyword + '"';
     }
 
-    // 16. Tạo card sản phẩm
 
+    // 14. Lấy filter giá
+    function getSelectedPriceFilter() {
+        const checkedPrice = filterForm
+            ? filterForm.querySelector('input[name="price"]:checked')
+            : null;
+
+        return checkedPrice ? checkedPrice.value : "";
+    }
+
+    function getPriceFilterParams() {
+        const priceValue = getSelectedPriceFilter();
+
+        if (priceValue === "under-200") {
+            return {
+                minPrice: "",
+                maxPrice: 199999
+            };
+        }
+
+        if (priceValue === "200-300") {
+            return {
+                minPrice: 200000,
+                maxPrice: 300000
+            };
+        }
+
+        if (priceValue === "over-300") {
+            return {
+                minPrice: 300001,
+                maxPrice: ""
+            };
+        }
+
+        return {
+            minPrice: "",
+            maxPrice: ""
+        };
+    }
+
+
+    // 15. Lấy filter danh mục
+    function getSelectedCategoryFilter() {
+        const checkedCategory = filterForm
+            ? filterForm.querySelector('input[name="category"]:checked')
+            : null;
+
+        if (!checkedCategory) {
+            return "";
+        }
+
+        if (checkedCategory.value === "all") {
+            return "";
+        }
+
+        return checkedCategory.value || "";
+    }
+
+    function getCategorySlugCandidates(categorySlug) {
+        if (!categorySlug) {
+            return [""];
+        }
+
+        if (categorySlugAliasMap[categorySlug]) {
+            return categorySlugAliasMap[categorySlug];
+        }
+
+        return [categorySlug];
+    }
+
+
+    // 16. Map sort UI sang API
+    function getSortParam() {
+        const sortValue = sortSelect ? sortSelect.value : "default";
+
+        if (sortValue === "price-asc") {
+            return "price_asc";
+        }
+
+        if (sortValue === "price-desc") {
+            return "price_desc";
+        }
+
+        if (sortValue === "newest") {
+            return "latest";
+        }
+
+        if (sortValue === "best-seller") {
+            return "featured";
+        }
+
+        return "";
+    }
+
+
+    // 17. Tạo endpoint tìm kiếm
+    function buildSearchEndpoint(categorySlug) {
+        const priceParams = getPriceFilterParams();
+        const sortParam = getSortParam();
+
+        let endpoint = "products/get-products.php?";
+        endpoint += "page=" + encodeURIComponent(currentPage);
+        endpoint += "&limit=" + encodeURIComponent(currentLimit);
+
+        if (currentKeyword) {
+            endpoint += "&keyword=" + encodeURIComponent(currentKeyword);
+        }
+
+        if (categorySlug) {
+            endpoint += "&category_slug=" + encodeURIComponent(categorySlug);
+        }
+
+        if (priceParams.minPrice !== "") {
+            endpoint += "&min_price=" + encodeURIComponent(priceParams.minPrice);
+        }
+
+        if (priceParams.maxPrice !== "") {
+            endpoint += "&max_price=" + encodeURIComponent(priceParams.maxPrice);
+        }
+
+        if (sortParam) {
+            endpoint += "&sort=" + encodeURIComponent(sortParam);
+        }
+
+        return endpoint;
+    }
+
+
+    // 18. Chuẩn hóa sản phẩm từ API danh sách
+    function normalizeProductFromApi(product) {
+        const image = product.main_image || product.image_url || product.image || "../img/products/default.jpg";
+        const price = Number(product.base_price || product.price || 0);
+        const oldPrice = product.old_price !== null && product.old_price !== undefined
+            ? Number(product.old_price || 0)
+            : 0;
+
+        return {
+            id: String(product.id),
+            category: product.category_slug || product.category_name || "",
+            name: product.name || "Sản phẩm",
+            brand: product.brand || "DUHU Shop",
+
+            meta: product.category_name || "",
+            shortDesc: product.short_description || "",
+            material: product.material || "Chưa có thông tin chất liệu.",
+            description: product.short_description || product.description || "Chưa có mô tả sản phẩm.",
+
+            price: price,
+            oldPrice: oldPrice,
+
+            image: image,
+            images: [image],
+
+            isNew: Number(product.is_new || 0) === 1,
+            isSale: Number(product.is_sale || 0) === 1 || oldPrice > price,
+
+            inStock: Number(product.total_stock || 0) > 0,
+            totalStock: Number(product.total_stock || 0),
+
+            colors: [],
+            sizes: [],
+            variants: [],
+
+            raw: product
+        };
+    }
+
+
+    // 19. Chuẩn hóa sản phẩm từ API chi tiết
+    function normalizeProductDetailFromApi(product) {
+        const imageList = Array.isArray(product.images)
+            ? product.images.map(function (image) {
+                return image.image_url;
+            }).filter(Boolean)
+            : [];
+
+        const mainImage = product.main_image || imageList[0] || "../img/products/default.jpg";
+
+        const price = Number(product.base_price || product.price || 0);
+        const oldPrice = product.old_price !== null && product.old_price !== undefined
+            ? Number(product.old_price || 0)
+            : 0;
+
+        const colors = Array.isArray(product.colors)
+            ? product.colors.map(function (color) {
+                return {
+                    id: color.id,
+                    name: color.name,
+                    code: color.code,
+                    value: color.hex_code || "#111111"
+                };
+            })
+            : [];
+
+        const sizes = Array.isArray(product.sizes)
+            ? product.sizes.map(function (size) {
+                return {
+                    id: size.id,
+                    name: size.name,
+                    code: size.code
+                };
+            })
+            : [];
+
+        const variants = Array.isArray(product.variants)
+            ? product.variants.map(function (variant) {
+                return {
+                    id: variant.id,
+                    colorId: variant.color ? variant.color.id : variant.color_id,
+                    colorName: variant.color ? variant.color.name : "",
+                    sizeId: variant.size ? variant.size.id : variant.size_id,
+                    sizeName: variant.size ? variant.size.name : "",
+                    sku: variant.sku,
+                    price: variant.price !== null && variant.price !== undefined
+                        ? Number(variant.price)
+                        : price,
+                    oldPrice: variant.old_price !== null && variant.old_price !== undefined
+                        ? Number(variant.old_price)
+                        : oldPrice,
+                    stockQuantity: Number(variant.stock_quantity || 0),
+                    status: variant.status || "active"
+                };
+            })
+            : [];
+
+        return {
+            id: String(product.id),
+            category: product.category ? product.category.slug : "",
+            name: product.name || "Sản phẩm",
+            brand: product.brand || "DUHU Shop",
+
+            meta: product.category ? product.category.name : "",
+            shortDesc: product.short_description || "",
+            material: product.material || "Chưa có thông tin chất liệu.",
+            description: product.description || product.short_description || "Chưa có mô tả sản phẩm.",
+
+            price: price,
+            oldPrice: oldPrice,
+
+            image: mainImage,
+            images: imageList.length > 0 ? imageList : [mainImage],
+
+            isNew: Number(product.is_new || 0) === 1,
+            isSale: Number(product.is_sale || 0) === 1 || oldPrice > price,
+
+            inStock: Number(product.total_stock || 0) > 0,
+            totalStock: Number(product.total_stock || 0),
+
+            colors: colors,
+            sizes: sizes,
+            variants: variants,
+
+            raw: product
+        };
+    }
+
+
+    // 20. Load sản phẩm tìm kiếm từ API
+    async function loadSearchProductsFromApi() {
+        showLoadingState();
+        renderSearchTitle();
+
+        const selectedCategorySlug = getSelectedCategoryFilter();
+        const slugCandidates = getCategorySlugCandidates(selectedCategorySlug);
+
+        let responseData = null;
+
+        for (let i = 0; i < slugCandidates.length; i += 1) {
+            const endpoint = buildSearchEndpoint(slugCandidates[i]);
+            const response = await getApi(endpoint);
+            const data = response.data || {};
+            const productList = Array.isArray(data.products) ? data.products : [];
+
+            responseData = data;
+
+            if (productList.length > 0 || i === slugCandidates.length - 1) {
+                break;
+            }
+        }
+
+        const productList = responseData && Array.isArray(responseData.products)
+            ? responseData.products
+            : [];
+
+        products = productList.map(normalizeProductFromApi);
+
+        paginationData = responseData && responseData.pagination
+            ? responseData.pagination
+            : {
+                page: currentPage,
+                limit: currentLimit,
+                total_products: products.length,
+                total_pages: 1
+            };
+
+        renderSearchProducts();
+    }
+
+
+    // 21. Render card sản phẩm
     function createProductCard(product) {
         if (!productCardTemplate) {
             return null;
@@ -789,63 +646,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const clone = productCardTemplate.content.cloneNode(true);
 
-        const article = clone.querySelector(".productCard");
-        const imageLink = clone.querySelector('[data-role="product-link"]');
-        const image = clone.querySelector('[data-role="product-image"]');
-        const nameLink = clone.querySelector('[data-role="product-link-text"]');
-        const currentPrice = clone.querySelector('[data-role="product-price-current"]');
-        const oldPrice = clone.querySelector('[data-role="product-price-old"]');
-        const discountText = clone.querySelector('[data-role="product-discount"]');
+        const productCard = clone.querySelector(".productCard");
+        const productImage = clone.querySelector('[data-role="product-image"]');
+        const productLinks = clone.querySelectorAll('[data-role="product-link"], [data-role="product-link-text"]');
+        const productName = clone.querySelector('[data-role="product-link-text"]');
+        const productPrice = clone.querySelector('[data-role="product-price-current"]');
+        const productOldPrice = clone.querySelector('[data-role="product-price-old"]');
+        const productDiscount = clone.querySelector('[data-role="product-discount"]');
         const quickBuyBtn = clone.querySelector('[data-role="quick-buy-btn"]');
         const viewDetailBtn = clone.querySelector('[data-role="view-detail-btn"]');
 
         const detailUrl = getProductDetailUrl(product.id);
-        const discount = calculateDiscountPercent(product.price, product.oldPrice);
+        const discountPercent = calculateDiscountPercent(product.price, product.oldPrice);
 
-        if (article) {
-            article.dataset.productId = product.id;
+        if (productCard) {
+            productCard.dataset.productId = product.id;
+            productCard.classList.toggle("outOfStock", !product.inStock);
         }
 
-        if (imageLink) {
-            imageLink.href = detailUrl;
+        if (productImage) {
+            productImage.src = product.image;
+            productImage.alt = product.name;
         }
 
-        if (image) {
-            image.src = product.image;
-            image.alt = product.name;
+        productLinks.forEach(function (link) {
+            link.href = detailUrl;
+        });
+
+        if (productName) {
+            productName.textContent = product.name;
         }
 
-        if (nameLink) {
-            nameLink.href = detailUrl;
-            nameLink.textContent = product.name;
+        if (productPrice) {
+            productPrice.textContent = formatPrice(product.price);
         }
 
-        if (currentPrice) {
-            currentPrice.textContent = formatPrice(product.price);
-        }
-
-        if (oldPrice) {
-            if (product.oldPrice && product.oldPrice > product.price) {
-                oldPrice.textContent = formatPrice(product.oldPrice);
-                oldPrice.hidden = false;
+        if (productOldPrice) {
+            if (product.oldPrice > product.price) {
+                productOldPrice.textContent = formatPrice(product.oldPrice);
+                productOldPrice.hidden = false;
             } else {
-                oldPrice.textContent = "";
-                oldPrice.hidden = true;
+                productOldPrice.textContent = "";
+                productOldPrice.hidden = true;
             }
         }
 
-        if (discountText) {
-            if (discount > 0) {
-                discountText.textContent = "Giảm " + discount + "%";
-                discountText.hidden = false;
+        if (productDiscount) {
+            if (discountPercent > 0) {
+                productDiscount.textContent = "Giảm " + discountPercent + "%";
+                productDiscount.hidden = false;
             } else {
-                discountText.textContent = "";
-                discountText.hidden = true;
+                productDiscount.textContent = "";
+                productDiscount.hidden = true;
             }
         }
 
         if (quickBuyBtn) {
             quickBuyBtn.dataset.productId = product.id;
+            quickBuyBtn.disabled = !product.inStock;
         }
 
         if (viewDetailBtn) {
@@ -856,93 +714,152 @@ document.addEventListener("DOMContentLoaded", function () {
         return clone;
     }
 
-    // 17. Render sản phẩm
 
-    function renderProducts(products) {
-        clearProductGrid();
-        updateProductCount(products.length);
-
-        if (!products.length) {
-            showState("empty");
+    // 22. Render danh sách sản phẩm
+    function renderProductCount() {
+        if (!productCount) {
             return;
         }
 
-        showState("");
+        productCount.textContent = Number(paginationData.total_products || products.length);
+    }
 
-        const fragment = document.createDocumentFragment();
+    function renderProductGrid() {
+        if (!categoryGrid || !productCardTemplate) {
+            return;
+        }
+
+        categoryGrid.innerHTML = "";
 
         products.forEach(function (product) {
-            const productCard = createProductCard(product);
+            const card = createProductCard(product);
 
-            if (productCard) {
-                fragment.appendChild(productCard);
+            if (card) {
+                categoryGrid.appendChild(card);
             }
         });
 
-        categoryGrid?.appendChild(fragment);
+        categoryGrid.classList.toggle("listView", currentView === "list");
+        categoryGrid.classList.toggle("gridView", currentView === "grid");
     }
 
     function renderPagination() {
-        if (pagination) {
-            pagination.innerHTML = "";
-        }
-    }
-
-    function applyViewMode(view) {
-        currentView = view;
-
-        if (!categoryGrid || !gridViewBtn || !listViewBtn) {
+        if (!pagination) {
             return;
         }
 
-        categoryGrid.classList.toggle("listView", view === "list");
-        gridViewBtn.classList.toggle("active", view === "grid");
-        listViewBtn.classList.toggle("active", view === "list");
+        const totalPages = Number(paginationData.total_pages || 1);
+
+        pagination.innerHTML = "";
+
+        if (totalPages <= 1) {
+            pagination.hidden = true;
+            return;
+        }
+
+        const prevButton = document.createElement("button");
+        prevButton.type = "button";
+        prevButton.className = "paginationBtn";
+        prevButton.textContent = "Trước";
+        prevButton.disabled = currentPage <= 1;
+        prevButton.dataset.page = String(currentPage - 1);
+        pagination.appendChild(prevButton);
+
+        for (let page = 1; page <= totalPages; page += 1) {
+            const pageButton = document.createElement("button");
+
+            pageButton.type = "button";
+            pageButton.className = "paginationBtn";
+
+            if (page === currentPage) {
+                pageButton.classList.add("active");
+            }
+
+            pageButton.textContent = String(page);
+            pageButton.dataset.page = String(page);
+
+            pagination.appendChild(pageButton);
+        }
+
+        const nextButton = document.createElement("button");
+        nextButton.type = "button";
+        nextButton.className = "paginationBtn";
+        nextButton.textContent = "Sau";
+        nextButton.disabled = currentPage >= totalPages;
+        nextButton.dataset.page = String(currentPage + 1);
+        pagination.appendChild(nextButton);
     }
 
-    function getFilteredAndSortedProducts() {
-        let products = [...allProducts];
+    function renderSearchProducts() {
+        renderProductCount();
 
-        const selectedPrice = getSelectedPriceFilter();
-        const selectedType = getSelectedTypeFilter();
-        const selectedSort = sortSelect?.value || "default";
+        if (products.length === 0) {
+            if (categoryGrid) {
+                categoryGrid.innerHTML = "";
+            }
 
-        products = filterByKeyword(products, currentKeyword);
-        products = filterByPrice(products, selectedPrice);
-        products = filterByType(products, selectedType);
-        products = sortProducts(products, selectedSort);
+            if (pagination) {
+                pagination.innerHTML = "";
+            }
 
-        return products;
+            showEmptyState();
+            return;
+        }
+
+        renderProductGrid();
+        renderPagination();
+        showProductContent();
     }
 
-    function renderPage() {
+
+    // 23. Load chi tiết sản phẩm cho quick view
+    async function getProductDetailForQuickView(productId) {
+        const productKey = String(productId);
+
+        if (productDetailCache[productKey]) {
+            return productDetailCache[productKey];
+        }
+
         try {
-            updateSearchTitle();
+            const response = await getApi(
+                "products/get-product-detail.php?id=" + encodeURIComponent(productId)
+            );
 
-            const finalProducts = getFilteredAndSortedProducts();
+            const product = response.data && response.data.product
+                ? normalizeProductDetailFromApi(response.data.product)
+                : null;
 
-            renderProducts(finalProducts);
-            renderPagination();
-            applyViewMode(currentView);
+            if (!product) {
+                return getProductById(productId);
+            }
+
+            productDetailCache[productKey] = product;
+
+            const oldProductIndex = products.findIndex(function (item) {
+                return String(item.id) === String(product.id);
+            });
+
+            if (oldProductIndex >= 0) {
+                products[oldProductIndex] = product;
+            }
+
+            return product;
         } catch (error) {
-            console.error("Lỗi search:", error);
-            clearProductGrid();
-            updateProductCount(0);
-            showState("error");
+            console.error(error);
+            return getProductById(productId);
         }
     }
 
-    // 18. Render quick view
 
+    // 24. Render quick view
     function renderQuickViewThumbs(product) {
         if (!quickViewThumbs || !quickViewThumbTemplate) {
             return;
         }
 
         const images = getProductImages(product);
-        quickViewThumbs.innerHTML = "";
 
-        const fragment = document.createDocumentFragment();
+        quickViewThumbs.innerHTML = "";
 
         images.forEach(function (imageUrl, index) {
             const clone = quickViewThumbTemplate.content.cloneNode(true);
@@ -951,10 +868,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (button) {
                 button.dataset.imageIndex = String(index);
-
-                if (index === quickViewImageIndex) {
-                    button.classList.add("active");
-                }
+                button.classList.toggle("active", index === quickViewImageIndex);
             }
 
             if (image) {
@@ -962,10 +876,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 image.alt = product.name + " " + (index + 1);
             }
 
-            fragment.appendChild(clone);
+            quickViewThumbs.appendChild(clone);
         });
-
-        quickViewThumbs.appendChild(fragment);
     }
 
     function renderQuickViewMainImage(product) {
@@ -974,7 +886,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const images = getProductImages(product);
-        const imageUrl = images[quickViewImageIndex];
+        const imageUrl = images[quickViewImageIndex] || images[0];
 
         quickViewImage.src = imageUrl;
         quickViewImage.alt = product.name;
@@ -985,37 +897,37 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const colors = Array.isArray(product.colors) && product.colors.length
+        const colors = product.colors.length > 0
             ? product.colors
-            : [{ name: "Mặc định", value: "#111111" }];
+            : [
+                {
+                    id: "",
+                    name: "Mặc định",
+                    value: "#111111"
+                }
+            ];
 
         quickViewSelectedColor = colors[0].name;
-        quickViewColorList.innerHTML = "";
+        quickViewSelectedColorId = colors[0].id || "";
 
-        const fragment = document.createDocumentFragment();
+        quickViewColorList.innerHTML = "";
 
         colors.forEach(function (color, index) {
             const clone = quickViewColorTemplate.content.cloneNode(true);
             const button = clone.querySelector(".quickViewColorItem");
 
-            if (!button) {
-                return;
+            if (button) {
+                button.dataset.colorId = color.id || "";
+                button.dataset.colorName = color.name;
+                button.dataset.colorValue = color.value || "#111111";
+                button.title = color.name;
+                button.setAttribute("aria-label", color.name);
+                button.style.background = color.value || "#111111";
+                button.classList.toggle("active", index === 0);
             }
 
-            button.dataset.colorName = color.name;
-            button.dataset.colorValue = color.value;
-            button.title = color.name;
-            button.setAttribute("aria-label", color.name);
-            button.style.background = color.value;
-
-            if (index === 0) {
-                button.classList.add("active");
-            }
-
-            fragment.appendChild(button);
+            quickViewColorList.appendChild(clone);
         });
-
-        quickViewColorList.appendChild(fragment);
 
         if (quickViewSelectedColorText) {
             quickViewSelectedColorText.textContent = quickViewSelectedColor;
@@ -1027,32 +939,34 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const sizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : ["M"];
+        const sizes = product.sizes.length > 0
+            ? product.sizes
+            : [
+                {
+                    id: "",
+                    name: "M",
+                    code: "M"
+                }
+            ];
 
-        quickViewSelectedSize = sizes[0];
+        quickViewSelectedSize = sizes[0].name;
+        quickViewSelectedSizeId = sizes[0].id || "";
+
         quickViewSizeList.innerHTML = "";
-
-        const fragment = document.createDocumentFragment();
 
         sizes.forEach(function (size, index) {
             const clone = quickViewSizeTemplate.content.cloneNode(true);
             const button = clone.querySelector(".quickViewSizeItem");
 
-            if (!button) {
-                return;
+            if (button) {
+                button.dataset.sizeId = size.id || "";
+                button.dataset.size = size.name;
+                button.textContent = size.name;
+                button.classList.toggle("active", index === 0);
             }
 
-            button.dataset.size = size;
-            button.textContent = size;
-
-            if (index === 0) {
-                button.classList.add("active");
-            }
-
-            fragment.appendChild(button);
+            quickViewSizeList.appendChild(clone);
         });
-
-        quickViewSizeList.appendChild(fragment);
     }
 
     function renderQuickViewInfo(product) {
@@ -1075,7 +989,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (quickViewOldPrice) {
-            if (product.oldPrice && product.oldPrice > product.price) {
+            if (product.oldPrice > product.price) {
                 quickViewOldPrice.textContent = formatPrice(product.oldPrice);
                 quickViewOldPrice.hidden = false;
             } else {
@@ -1129,10 +1043,10 @@ document.addEventListener("DOMContentLoaded", function () {
         renderQuickViewInfo(product);
     }
 
-    // 19. Mở đóng quick view
 
-    function openQuickView(productId) {
-        const product = getProductById(productId);
+    // 25. Mở đóng quick view
+    async function openQuickView(productId) {
+        const product = await getProductDetailForQuickView(productId);
 
         if (!product) {
             alert("Không tìm thấy sản phẩm.");
@@ -1168,8 +1082,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.style.overflow = "";
     }
 
-    // 20. Chọn trong quick view
 
+    // 26. Xử lý quick view
     function updateQuickViewImage(index) {
         if (!quickViewProduct) {
             return;
@@ -1191,6 +1105,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function selectQuickViewColor(button) {
         quickViewSelectedColor = button.dataset.colorName || "";
+        quickViewSelectedColorId = button.dataset.colorId || "";
 
         quickViewColorList?.querySelectorAll(".quickViewColorItem").forEach(function (item) {
             item.classList.remove("active");
@@ -1205,6 +1120,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function selectQuickViewSize(button) {
         quickViewSelectedSize = button.dataset.size || "";
+        quickViewSelectedSizeId = button.dataset.sizeId || "";
 
         quickViewSizeList?.querySelectorAll(".quickViewSizeItem").forEach(function (item) {
             item.classList.remove("active");
@@ -1213,32 +1129,29 @@ document.addEventListener("DOMContentLoaded", function () {
         button.classList.add("active");
     }
 
+    function renderQuickViewQuantityInput() {
+        if (quickViewQuantityInput) {
+            quickViewQuantityInput.value = String(quickViewQuantity);
+        }
+    }
+
     function decreaseQuickViewQuantity() {
         if (quickViewQuantity <= 1) {
             return;
         }
 
         quickViewQuantity -= 1;
-
-        if (quickViewQuantityInput) {
-            quickViewQuantityInput.value = String(quickViewQuantity);
-        }
+        renderQuickViewQuantityInput();
     }
 
     function increaseQuickViewQuantity() {
         quickViewQuantity += 1;
-
-        if (quickViewQuantityInput) {
-            quickViewQuantityInput.value = String(quickViewQuantity);
-        }
+        renderQuickViewQuantityInput();
     }
 
     function updateQuickViewQuantityFromInput() {
         quickViewQuantity = normalizeQuantity(quickViewQuantityInput?.value || 1);
-
-        if (quickViewQuantityInput) {
-            quickViewQuantityInput.value = String(quickViewQuantity);
-        }
+        renderQuickViewQuantityInput();
     }
 
     function toggleQuickViewContent(action) {
@@ -1259,23 +1172,55 @@ document.addEventListener("DOMContentLoaded", function () {
         targetContent.hidden = !targetContent.hidden;
     }
 
-    // 21. Tạo item giỏ hàng
 
+    // 27. Lấy biến thể đang chọn
+    function getSelectedQuickViewVariant() {
+        if (!quickViewProduct || !Array.isArray(quickViewProduct.variants)) {
+            return null;
+        }
+
+        return quickViewProduct.variants.find(function (variant) {
+            return (
+                String(variant.colorId || "") === String(quickViewSelectedColorId || "") &&
+                String(variant.sizeId || "") === String(quickViewSelectedSizeId || "")
+            );
+        }) || null;
+    }
+
+
+    // 28. Tạo item giỏ hàng
     function createCartItemFromQuickView() {
+        const selectedVariant = getSelectedQuickViewVariant();
+
         return {
             cartItemId: createCartItemId(
                 quickViewProduct.id,
                 quickViewSelectedSize,
                 quickViewSelectedColor
             ),
+
             id: quickViewProduct.id,
+            productId: quickViewProduct.id,
+            product_id: quickViewProduct.id,
+
+            variantId: selectedVariant ? selectedVariant.id : null,
+            productVariantId: selectedVariant ? selectedVariant.id : null,
+            product_variant_id: selectedVariant ? selectedVariant.id : null,
+
             name: quickViewProduct.name,
-            price: Number(quickViewProduct.price || 0),
+            price: selectedVariant && selectedVariant.price
+                ? Number(selectedVariant.price || 0)
+                : Number(quickViewProduct.price || 0),
             oldPrice: Number(quickViewProduct.oldPrice || 0),
+
             image: quickViewProduct.image,
+
             meta: "Màu: " + quickViewSelectedColor + " / Size: " + quickViewSelectedSize,
             color: quickViewSelectedColor,
+            colorId: quickViewSelectedColorId,
             size: quickViewSelectedSize,
+            sizeId: quickViewSelectedSizeId,
+
             quantity: normalizeQuantity(quickViewQuantity),
             selected: true
         };
@@ -1283,12 +1228,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function addQuickViewProductToCart() {
         if (!quickViewProduct) {
-            return;
+            return false;
         }
 
         if (!quickViewProduct.inStock) {
             alert("Sản phẩm hiện đã hết hàng.");
-            return;
+            return false;
+        }
+
+        const selectedVariant = getSelectedQuickViewVariant();
+
+        if (quickViewProduct.variants.length > 0 && !selectedVariant) {
+            alert("Vui lòng chọn đúng màu và size còn tồn tại.");
+            return false;
+        }
+
+        if (selectedVariant && selectedVariant.stockQuantity <= 0) {
+            alert("Phân loại này hiện đã hết hàng.");
+            return false;
         }
 
         const cartItems = getCartItemsFromStorage();
@@ -1299,19 +1256,19 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         if (existingItem) {
-            existingItem.quantity =
-                normalizeQuantity(existingItem.quantity) +
-                normalizeQuantity(newItem.quantity);
+            existingItem.quantity = normalizeQuantity(existingItem.quantity) + normalizeQuantity(newItem.quantity);
             existingItem.selected = true;
         } else {
             cartItems.push(newItem);
         }
 
         saveCartItemsToStorage(cartItems);
+
+        return true;
     }
 
-    // 22. Render cart drawer
 
+    // 29. Render cart drawer
     function createCartDrawerItemElement(item) {
         if (!cartDrawerItemTemplate) {
             return null;
@@ -1348,14 +1305,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (productVariant) {
-            productVariant.textContent =
-                "Màu: " + (item.color || "Chưa chọn") +
-                " / Size: " + (item.size || "Chưa chọn");
+            productVariant.textContent = "Màu: " + (item.color || "Chưa chọn") + " / Size: " + (item.size || "Chưa chọn");
         }
 
         if (productPriceQuantity) {
-            productPriceQuantity.textContent =
-                formatPrice(item.price) + " x " + Number(item.quantity || 0);
+            productPriceQuantity.textContent = formatPrice(item.price) + " x " + Number(item.quantity || 0);
         }
 
         if (removeButton) {
@@ -1403,21 +1357,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
         cartDrawerList.hidden = false;
 
-        const fragment = document.createDocumentFragment();
-
         cartItems.forEach(function (item) {
             const cartItemElement = createCartDrawerItemElement(item);
 
             if (cartItemElement) {
-                fragment.appendChild(cartItemElement);
+                cartDrawerList.appendChild(cartItemElement);
             }
         });
-
-        cartDrawerList.appendChild(fragment);
     }
 
-    // 23. Mở đóng cart drawer
 
+    // 30. Mở đóng cart drawer
     function openCartDrawer() {
         renderCartDrawer();
 
@@ -1465,10 +1415,15 @@ document.addEventListener("DOMContentLoaded", function () {
         renderCartDrawer();
     }
 
-    // 24. Sở hữu ngay và checkout
 
+    // 31. Sở hữu ngay và checkout
     function handleQuickViewBuy() {
-        addQuickViewProductToCart();
+        const isAdded = addQuickViewProductToCart();
+
+        if (!isAdded) {
+            return;
+        }
+
         closeQuickView();
         openCartDrawer();
     }
@@ -1484,6 +1439,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const checkoutItems = cartItems.map(function (item) {
             return {
                 ...item,
+                quantity: normalizeQuantity(item.quantity),
                 selected: true
             };
         });
@@ -1493,64 +1449,16 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/checkout.html?mode=cart";
     }
 
-    // 25. Sự kiện search/filter
 
-    btnApplyFilter?.addEventListener("click", function () {
-        renderPage();
-    });
-
-    btnResetFilter?.addEventListener("click", function () {
-        filterForm?.reset();
-
-        if (sortSelect) {
-            sortSelect.value = "default";
-        }
-
-        currentKeyword = "";
-
-        if (searchKeywordInput) {
-            searchKeywordInput.value = "";
-        }
-
-        updateSearchUrl("");
-        renderPage();
-    });
-
-    sortSelect?.addEventListener("change", function () {
-        renderPage();
-    });
-
-    searchForm?.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        currentKeyword = searchKeywordInput?.value.trim() || "";
-
-        updateSearchUrl(currentKeyword);
-        renderPage();
-    });
-
-    viewMode?.addEventListener("click", function (event) {
-        const button = event.target.closest(".viewModeBtn");
-
-        if (!button) {
-            return;
-        }
-
-        const selectedView = button.dataset.view;
-
-        if (!selectedView) {
-            return;
-        }
-
-        applyViewMode(selectedView);
-    });
-
-    categoryGrid?.addEventListener("click", function (event) {
+    // 32. Xử lý sản phẩm / filter / view
+    function handleProductClick(event) {
         const quickBuyBtn = event.target.closest('[data-role="quick-buy-btn"]');
 
         if (!quickBuyBtn) {
             return;
         }
+
+        event.preventDefault();
 
         const productId = quickBuyBtn.dataset.productId;
 
@@ -1559,76 +1467,117 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         openQuickView(productId);
-    });
+    }
 
-    // 26. Sự kiện quick view
+    function handleApplyFilter() {
+        currentPage = 1;
 
-    quickViewCloseBtn?.addEventListener("click", closeQuickView);
-    quickViewOverlay?.addEventListener("click", closeQuickView);
+        loadSearchProductsFromApi().catch(function (error) {
+            console.error(error);
+            showErrorState();
+        });
+    }
 
-    quickViewThumbs?.addEventListener("click", function (event) {
+    function handleResetFilter() {
+        if (filterForm) {
+            filterForm.reset();
+        }
+
+        if (sortSelect) {
+            sortSelect.value = "default";
+        }
+
+        currentPage = 1;
+
+        loadSearchProductsFromApi().catch(function (error) {
+            console.error(error);
+            showErrorState();
+        });
+    }
+
+    function handleSortChange() {
+        currentPage = 1;
+
+        loadSearchProductsFromApi().catch(function (error) {
+            console.error(error);
+            showErrorState();
+        });
+    }
+
+    function setViewMode(view) {
+        currentView = view;
+
+        if (gridViewBtn) {
+            gridViewBtn.classList.toggle("active", view === "grid");
+        }
+
+        if (listViewBtn) {
+            listViewBtn.classList.toggle("active", view === "list");
+        }
+
+        if (categoryGrid) {
+            categoryGrid.classList.toggle("listView", view === "list");
+            categoryGrid.classList.toggle("gridView", view === "grid");
+        }
+    }
+
+    function handlePaginationClick(event) {
+        const button = event.target.closest(".paginationBtn");
+
+        if (!button || button.disabled) {
+            return;
+        }
+
+        const page = Number(button.dataset.page || 1);
+
+        if (page < 1 || page === currentPage) {
+            return;
+        }
+
+        currentPage = page;
+
+        loadSearchProductsFromApi().catch(function (error) {
+            console.error(error);
+            showErrorState();
+        });
+
+        searchPage.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+
+
+    // 33. Xử lý quick view
+    function handleQuickViewClick(event) {
         const thumbButton = event.target.closest(".quickViewThumb");
-
-        if (!thumbButton) {
-            return;
-        }
-
-        const imageIndex = Number(thumbButton.dataset.imageIndex || 0);
-
-        updateQuickViewImage(imageIndex);
-    });
-
-    quickViewColorList?.addEventListener("click", function (event) {
         const colorButton = event.target.closest(".quickViewColorItem");
-
-        if (!colorButton) {
-            return;
-        }
-
-        selectQuickViewColor(colorButton);
-    });
-
-    quickViewSizeList?.addEventListener("click", function (event) {
         const sizeButton = event.target.closest(".quickViewSizeItem");
-
-        if (!sizeButton) {
-            return;
-        }
-
-        selectQuickViewSize(sizeButton);
-    });
-
-    quickViewPopup?.addEventListener("click", function (event) {
         const toggleButton = event.target.closest(".quickViewToggleBtn");
 
-        if (!toggleButton) {
+        if (thumbButton) {
+            updateQuickViewImage(Number(thumbButton.dataset.imageIndex || 0));
             return;
         }
 
-        const action = toggleButton.dataset.action || "";
+        if (colorButton) {
+            selectQuickViewColor(colorButton);
+            return;
+        }
 
-        toggleQuickViewContent(action);
-    });
+        if (sizeButton) {
+            selectQuickViewSize(sizeButton);
+            return;
+        }
 
-    quickViewPrevImageBtn?.addEventListener("click", function () {
-        updateQuickViewImage(quickViewImageIndex - 1);
-    });
+        if (toggleButton) {
+            toggleQuickViewContent(toggleButton.dataset.action || "");
+        }
+    }
 
-    quickViewNextImageBtn?.addEventListener("click", function () {
-        updateQuickViewImage(quickViewImageIndex + 1);
-    });
 
-    quickViewMinusQty?.addEventListener("click", decreaseQuickViewQuantity);
-    quickViewPlusQty?.addEventListener("click", increaseQuickViewQuantity);
-    quickViewQuantityInput?.addEventListener("change", updateQuickViewQuantityFromInput);
-    quickViewBuyBtn?.addEventListener("click", handleQuickViewBuy);
-
-    // 27. Sự kiện cart drawer
-
-    cartDrawerCloseBtn?.addEventListener("click", closeCartDrawer);
-    cartDrawerOverlay?.addEventListener("click", closeCartDrawer);
-
-    cartDrawerList?.addEventListener("click", function (event) {
+    // 34. Xử lý cart drawer
+    function handleCartDrawerClick(event) {
         const removeButton = event.target.closest('[data-role="drawer-remove-item-btn"]');
 
         if (!removeButton) {
@@ -1642,36 +1591,167 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         removeCartDrawerItem(cartItemId);
-    });
+    }
 
-    cartDrawerCheckoutBtn?.addEventListener("click", handleCartDrawerCheckout);
 
-    // 28. Phím ESC
+    // 35. Xử lý tìm kiếm
+    function handleSearchSubmit(event) {
+        event.preventDefault();
 
-    document.addEventListener("keydown", function (event) {
+        const keyword = searchKeywordInput ? searchKeywordInput.value.trim() : "";
+
+        if (!keyword) {
+            alert("Vui lòng nhập từ khóa tìm kiếm.");
+            return;
+        }
+
+        currentKeyword = keyword;
+        currentPage = 1;
+
+        updateSearchUrl(currentKeyword);
+
+        loadSearchProductsFromApi().catch(function (error) {
+            console.error(error);
+            showErrorState();
+        });
+    }
+
+
+    // 36. Phím ESC
+    function handleEscapeKey(event) {
         if (event.key !== "Escape") {
             return;
         }
 
         closeQuickView();
         closeCartDrawer();
-    });
+    }
 
-    // 29. Khởi tạo search page
 
-    function initSearchPage() {
-        showState("loading");
-        clearProductGrid();
-        updateProductCount(0);
-        renderCartDrawer();
+    // 37. Gắn sự kiện
+    function bindEvents() {
+        document.addEventListener("click", handleProductClick);
+        document.addEventListener("keydown", handleEscapeKey);
 
+        if (searchForm) {
+            searchForm.addEventListener("submit", handleSearchSubmit);
+        }
+
+        if (btnApplyFilter) {
+            btnApplyFilter.addEventListener("click", handleApplyFilter);
+        }
+
+        if (btnResetFilter) {
+            btnResetFilter.addEventListener("click", handleResetFilter);
+        }
+
+        if (sortSelect) {
+            sortSelect.addEventListener("change", handleSortChange);
+        }
+
+        if (gridViewBtn) {
+            gridViewBtn.addEventListener("click", function () {
+                setViewMode("grid");
+            });
+        }
+
+        if (listViewBtn) {
+            listViewBtn.addEventListener("click", function () {
+                setViewMode("list");
+            });
+        }
+
+        if (pagination) {
+            pagination.addEventListener("click", handlePaginationClick);
+        }
+
+        if (quickViewCloseBtn) {
+            quickViewCloseBtn.addEventListener("click", closeQuickView);
+        }
+
+        if (quickViewOverlay) {
+            quickViewOverlay.addEventListener("click", closeQuickView);
+        }
+
+        if (quickViewThumbs) {
+            quickViewThumbs.addEventListener("click", handleQuickViewClick);
+        }
+
+        if (quickViewColorList) {
+            quickViewColorList.addEventListener("click", handleQuickViewClick);
+        }
+
+        if (quickViewSizeList) {
+            quickViewSizeList.addEventListener("click", handleQuickViewClick);
+        }
+
+        if (quickViewPopup) {
+            quickViewPopup.addEventListener("click", handleQuickViewClick);
+        }
+
+        if (quickViewPrevImageBtn) {
+            quickViewPrevImageBtn.addEventListener("click", function () {
+                updateQuickViewImage(quickViewImageIndex - 1);
+            });
+        }
+
+        if (quickViewNextImageBtn) {
+            quickViewNextImageBtn.addEventListener("click", function () {
+                updateQuickViewImage(quickViewImageIndex + 1);
+            });
+        }
+
+        if (quickViewMinusQty) {
+            quickViewMinusQty.addEventListener("click", decreaseQuickViewQuantity);
+        }
+
+        if (quickViewPlusQty) {
+            quickViewPlusQty.addEventListener("click", increaseQuickViewQuantity);
+        }
+
+        if (quickViewQuantityInput) {
+            quickViewQuantityInput.addEventListener("change", updateQuickViewQuantityFromInput);
+        }
+
+        if (quickViewBuyBtn) {
+            quickViewBuyBtn.addEventListener("click", handleQuickViewBuy);
+        }
+
+        if (cartDrawerCloseBtn) {
+            cartDrawerCloseBtn.addEventListener("click", closeCartDrawer);
+        }
+
+        if (cartDrawerOverlay) {
+            cartDrawerOverlay.addEventListener("click", closeCartDrawer);
+        }
+
+        if (cartDrawerList) {
+            cartDrawerList.addEventListener("click", handleCartDrawerClick);
+        }
+
+        if (cartDrawerCheckoutBtn) {
+            cartDrawerCheckoutBtn.addEventListener("click", handleCartDrawerCheckout);
+        }
+    }
+
+
+    // 38. Khởi tạo trang tìm kiếm
+    async function initSearchPage() {
         if (searchKeywordInput) {
             searchKeywordInput.value = currentKeyword;
         }
 
-        setTimeout(function () {
-            renderPage();
-        }, 300);
+        bindEvents();
+        setViewMode("grid");
+        renderCartDrawer();
+        renderSearchTitle();
+
+        try {
+            await loadSearchProductsFromApi();
+        } catch (error) {
+            console.error(error);
+            showErrorState();
+        }
     }
 
     initSearchPage();

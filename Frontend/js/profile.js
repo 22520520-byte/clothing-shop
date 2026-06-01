@@ -1,25 +1,27 @@
-// 1. Chờ HTML tải xong
+// =========================================================
+// File: Frontend/js/profile.js
+// Mục đích: Trang thông tin tài khoản khách hàng dùng API thật
+// =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. Kiểm tra đúng trang profile
     const profilePage = document.querySelector('[data-page="profile"]');
 
     if (!profilePage) {
         return;
     }
 
-    // 2. Key localStorage
 
-    const USERS_STORAGE_KEY = "users";
+    // 2. Key localStorage
     const CURRENT_USER_STORAGE_KEY = "current_user";
     const IS_LOGIN_STORAGE_KEY = "is_login";
-    const REMEMBER_LOGIN_STORAGE_KEY = "remember_login";
     const USER_POINTS_STORAGE_KEY = "user_points";
 
-    // 3. Dữ liệu địa chỉ
 
+    // 3. Dữ liệu địa chỉ
     const addressData = [
         {
-            name: "TP. Hồ Chí Minh",
+            name: "TP Hồ Chí Minh",
             districts: [
                 {
                     name: "Thành phố Thủ Đức",
@@ -40,33 +42,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 {
                     name: "Quận 1",
-                    wards: [
-                        "Bến Nghé",
-                        "Bến Thành",
-                        "Cầu Kho",
-                        "Cầu Ông Lãnh",
-                        "Cô Giang"
-                    ]
+                    wards: ["Bến Nghé", "Bến Thành", "Cầu Kho", "Cầu Ông Lãnh"]
                 },
                 {
-                    name: "Quận 3",
-                    wards: [
-                        "Phường 1",
-                        "Phường 2",
-                        "Phường 3",
-                        "Phường 4",
-                        "Phường 5"
-                    ]
-                },
-                {
-                    name: "Quận Bình Thạnh",
-                    wards: [
-                        "Phường 1",
-                        "Phường 2",
-                        "Phường 3",
-                        "Phường 5",
-                        "Phường 7"
-                    ]
+                    name: "Bình Thạnh",
+                    wards: ["Phường 1", "Phường 2", "Phường 3", "Phường 5"]
                 }
             ]
         },
@@ -74,22 +54,12 @@ document.addEventListener("DOMContentLoaded", function () {
             name: "Hà Nội",
             districts: [
                 {
-                    name: "Quận Ba Đình",
-                    wards: [
-                        "Phúc Xá",
-                        "Trúc Bạch",
-                        "Vĩnh Phúc",
-                        "Cống Vị"
-                    ]
+                    name: "Ba Đình",
+                    wards: ["Phúc Xá", "Trúc Bạch", "Vĩnh Phúc"]
                 },
                 {
-                    name: "Quận Hoàn Kiếm",
-                    wards: [
-                        "Hàng Bạc",
-                        "Hàng Bài",
-                        "Hàng Đào",
-                        "Tràng Tiền"
-                    ]
+                    name: "Cầu Giấy",
+                    wards: ["Dịch Vọng", "Dịch Vọng Hậu", "Mai Dịch"]
                 }
             ]
         },
@@ -97,39 +67,33 @@ document.addEventListener("DOMContentLoaded", function () {
             name: "Đà Nẵng",
             districts: [
                 {
-                    name: "Quận Hải Châu",
-                    wards: [
-                        "Hải Châu 1",
-                        "Hải Châu 2",
-                        "Thạch Thang"
-                    ]
+                    name: "Hải Châu",
+                    wards: ["Hải Châu I", "Hải Châu II", "Thạch Thang"]
                 },
                 {
-                    name: "Quận Sơn Trà",
-                    wards: [
-                        "An Hải Bắc",
-                        "An Hải Đông",
-                        "Phước Mỹ"
-                    ]
+                    name: "Sơn Trà",
+                    wards: ["An Hải Bắc", "An Hải Đông", "Mân Thái"]
                 }
             ]
         }
     ];
 
-    // 4. Biến dữ liệu
 
+    // 4. Biến trạng thái
     let currentUser = null;
-    let fullCurrentUser = null;
+    let currentDefaultAddress = null;
     let currentUserPoints = 0;
 
-    // 5. Lấy DOM sidebar
 
+    // 5. Lấy DOM sidebar
     const profileUserName = document.getElementById("profileUserName");
+    const profileUserEmail = document.getElementById("profileUserEmail");
     const profileUserRank = document.getElementById("profileUserRank");
+    const profileUserAvatar = document.getElementById("profileUserAvatar");
     const logoutBtn = document.getElementById("logoutBtn");
 
-    // 6. Lấy DOM form thông tin
 
+    // 6. Lấy DOM form thông tin
     const profileInfoForm = document.getElementById("profileInfoForm");
     const profileInfoErrorState = document.getElementById("profileInfoErrorState");
     const profileInfoSuccessState = document.getElementById("profileInfoSuccessState");
@@ -145,8 +109,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const genderInputs = document.querySelectorAll('input[name="gender"]');
     const updateProfileBtn = document.getElementById("updateProfileBtn");
 
-    // 7. Lấy DOM đổi mật khẩu
 
+    // 7. Lấy DOM đổi mật khẩu
     const changePasswordForm = document.getElementById("changePasswordForm");
     const passwordErrorState = document.getElementById("passwordErrorState");
     const passwordSuccessState = document.getElementById("passwordSuccessState");
@@ -156,31 +120,85 @@ document.addEventListener("DOMContentLoaded", function () {
     const confirmNewPassword = document.getElementById("confirmNewPassword");
     const changePasswordBtn = document.getElementById("changePasswordBtn");
 
-    // 8. Lấy DOM tìm kiếm
 
+    // 8. Lấy DOM tìm kiếm
     const searchForm = document.getElementById("searchForm");
     const searchKeyword = document.getElementById("searchKeyword");
 
-    // 9. Hàm tiện ích
 
-    function normalizeText(value) {
-        return String(value || "").trim().toLowerCase();
+    // 9. Gọi API GET
+    async function getApi(endpoint) {
+        if (window.CustomerApi && typeof window.CustomerApi.get === "function") {
+            return await window.CustomerApi.get(endpoint);
+        }
+
+        const response = await fetch("../../BackEnd/php/api/" + endpoint, {
+            method: "GET",
+            credentials: "same-origin"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            throw data;
+        }
+
+        return data;
     }
 
+
+    // 10. Gọi API POST
+    async function postApi(endpoint, body) {
+        if (window.CustomerApi && typeof window.CustomerApi.post === "function") {
+            return await window.CustomerApi.post(endpoint, body);
+        }
+
+        const response = await fetch("../../BackEnd/php/api/" + endpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body || {})
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            throw data;
+        }
+
+        return data;
+    }
+
+
+    // 11. Hàm tiện ích
     function isEmpty(value) {
         return String(value || "").trim() === "";
     }
 
     function isValidEmail(value) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        return emailRegex.test(value);
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
     }
 
     function isValidPhone(value) {
-        const phoneRegex = /^0\d{9}$/;
+        return /^0\d{9}$/.test(String(value || "").trim());
+    }
 
-        return phoneRegex.test(value);
+    function getApiErrorMessage(error, fallbackMessage) {
+        if (window.CustomerApi && typeof window.CustomerApi.getApiErrorMessage === "function") {
+            return window.CustomerApi.getApiErrorMessage(error, fallbackMessage);
+        }
+
+        return error && error.message ? error.message : fallbackMessage;
+    }
+
+    function getFirstLetter(text) {
+        if (!text) {
+            return "K";
+        }
+
+        return String(text).trim().charAt(0).toUpperCase();
     }
 
     function getDisplayName(user) {
@@ -190,6 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return (
             user.fullName ||
+            user.full_name ||
             user.name ||
             user.username ||
             user.email ||
@@ -232,28 +251,8 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     }
 
-    function createSafeUser(user) {
-        return {
-            id: user.id,
-            userId: user.userId,
-            fullName: user.fullName,
-            username: user.username,
-            email: user.email,
-            phone: user.phone,
-            role: user.role,
-            points: Number(user.points || 0),
-            birthDate: user.birthDate || "",
-            gender: user.gender || "",
-            city: user.city || "",
-            district: user.district || "",
-            ward: user.ward || "",
-            addressDetail: user.addressDetail || "",
-            address: user.address || null
-        };
-    }
 
-    // 10. Đọc ghi localStorage
-
+    // 12. Đọc ghi localStorage
     function getDataFromStorage(key, fallbackValue) {
         const rawData = localStorage.getItem(key);
 
@@ -264,7 +263,6 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             return JSON.parse(rawData);
         } catch (error) {
-            console.error("Lỗi đọc localStorage:", error);
             return fallbackValue;
         }
     }
@@ -273,49 +271,32 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem(key, JSON.stringify(data));
     }
 
-    function getUsersFromStorage() {
-        const users = getDataFromStorage(USERS_STORAGE_KEY, []);
-
-        if (!Array.isArray(users)) {
-            return [];
+    function getCurrentUserFromLocal() {
+        if (window.CustomerApi && typeof window.CustomerApi.getCurrentCustomerFromLocal === "function") {
+            return window.CustomerApi.getCurrentCustomerFromLocal();
         }
 
-        return users;
-    }
+        const isLogin = localStorage.getItem(IS_LOGIN_STORAGE_KEY) === "true";
 
-    function saveUsersToStorage(users) {
-        saveDataToStorage(USERS_STORAGE_KEY, users);
-    }
-
-    function getCurrentUserFromStorage() {
-        const user = getDataFromStorage(CURRENT_USER_STORAGE_KEY, null);
-
-        if (!user) {
+        if (!isLogin) {
             return null;
         }
 
-        if (typeof user === "string") {
-            return {
-                id: user,
-                fullName: user
-            };
+        return getDataFromStorage(CURRENT_USER_STORAGE_KEY, null);
+    }
+
+    function saveCurrentUserToLocal(user) {
+        if (window.CustomerApi && typeof window.CustomerApi.saveCustomerLocalAuth === "function") {
+            window.CustomerApi.saveCustomerLocalAuth(user);
+            return;
         }
 
-        return user;
+        localStorage.setItem(IS_LOGIN_STORAGE_KEY, "true");
+        saveDataToStorage(CURRENT_USER_STORAGE_KEY, normalizeUserForLocal(user));
     }
 
-    function saveCurrentUserToStorage(user) {
-        saveDataToStorage(CURRENT_USER_STORAGE_KEY, createSafeUser(user));
-    }
 
-    function isLoggedIn() {
-        const isLogin = localStorage.getItem(IS_LOGIN_STORAGE_KEY);
-
-        return isLogin === "true" && getCurrentUserFromStorage() !== null;
-    }
-
-    // 11. Đồng bộ điểm
-
+    // 13. Đồng bộ điểm
     function getUserPointMap() {
         const pointMap = getDataFromStorage(USER_POINTS_STORAGE_KEY, {});
 
@@ -330,27 +311,7 @@ document.addEventListener("DOMContentLoaded", function () {
         saveDataToStorage(USER_POINTS_STORAGE_KEY, pointMap);
     }
 
-    function getSyncedUserPoints(user) {
-        const userKey = getUserKey(user);
-
-        if (!userKey) {
-            return Number(user?.points || 0);
-        }
-
-        const pointMap = getUserPointMap();
-
-        if (typeof pointMap[userKey] === "number") {
-            return pointMap[userKey];
-        }
-
-        const fallbackPoints = Number(user?.points || 0);
-        pointMap[userKey] = fallbackPoints;
-        saveUserPointMap(pointMap);
-
-        return fallbackPoints;
-    }
-
-    function saveSyncedUserPoints(user, points) {
+    function syncUserPoints(user) {
         const userKey = getUserKey(user);
 
         if (!userKey) {
@@ -358,62 +319,101 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const pointMap = getUserPointMap();
-        pointMap[userKey] = Number(points || 0);
 
+        pointMap[userKey] = Number(user.points || 0);
         saveUserPointMap(pointMap);
     }
 
-    function syncUserPointsToUsers(user, points) {
-        const users = getUsersFromStorage();
 
-        const userIndex = users.findIndex(function (item) {
-            return isSameUser(item, user);
-        });
-
-        if (userIndex >= 0) {
-            users[userIndex].points = Number(points || 0);
-            saveUsersToStorage(users);
-        }
-    }
-
-    // 12. Tìm user hiện tại
-
-    function isSameUser(userA, userB) {
-        if (!userA || !userB) {
-            return false;
-        }
-
-        return (
-            Boolean(userA.id && userB.id && userA.id === userB.id) ||
-            Boolean(userA.userId && userB.userId && userA.userId === userB.userId) ||
-            Boolean(userA.email && userB.email && userA.email === userB.email) ||
-            Boolean(userA.phone && userB.phone && userA.phone === userB.phone) ||
-            Boolean(userA.username && userB.username && userA.username === userB.username)
-        );
-    }
-
-    function getFullCurrentUser() {
-        const users = getUsersFromStorage();
-
-        if (!currentUser) {
+    // 14. Chuẩn hóa user từ API
+    function normalizeUserFromApi(user) {
+        if (!user) {
             return null;
         }
 
-        const foundUser = users.find(function (user) {
-            return isSameUser(user, currentUser);
-        });
+        const customerProfile = user.customer_profile || {};
+        const defaultAddress = user.default_address || null;
+        const roleCode = user.role && user.role.code ? user.role.code : user.role || "customer";
 
-        return foundUser || currentUser;
+        return {
+            id: user.id,
+            userId: user.id,
+
+            fullName: user.full_name || user.fullName || user.name || "Khách hàng",
+            name: user.full_name || user.fullName || user.name || "Khách hàng",
+
+            username: user.username || user.email || user.phone || "",
+            email: user.email || "",
+            phone: user.phone || "",
+            avatar: user.avatar || "",
+
+            role: roleCode,
+            status: user.status || "active",
+
+            gender: user.gender || "other",
+            birthDate: user.date_of_birth || user.birthDate || "",
+            dateOfBirth: user.date_of_birth || user.birthDate || "",
+
+            points: Number(customerProfile.points_balance || user.points || 0),
+            membershipLevel: customerProfile.membership_level || "normal",
+
+            city: defaultAddress ? defaultAddress.province : "",
+            district: defaultAddress ? defaultAddress.district : "",
+            ward: defaultAddress ? defaultAddress.ward : "",
+            addressDetail: defaultAddress ? defaultAddress.address_detail : "",
+            address: {
+                city: defaultAddress ? defaultAddress.province : "",
+                district: defaultAddress ? defaultAddress.district : "",
+                ward: defaultAddress ? defaultAddress.ward : "",
+                addressDetail: defaultAddress ? defaultAddress.address_detail : ""
+            },
+
+            raw: user
+        };
     }
 
-    function findCurrentUserIndex(users) {
-        return users.findIndex(function (user) {
-            return isSameUser(user, currentUser);
-        });
+    function normalizeUserForLocal(user) {
+        if (!user) {
+            return null;
+        }
+
+        return {
+            id: user.id,
+            userId: user.userId || user.id,
+
+            fullName: user.fullName || user.full_name || user.name || "Khách hàng",
+            name: user.fullName || user.full_name || user.name || "Khách hàng",
+
+            username: user.username || user.email || "",
+            email: user.email || "",
+            phone: user.phone || "",
+
+            avatar: user.avatar || "",
+            role: user.role || "customer",
+            status: user.status || "active",
+
+            gender: user.gender || "other",
+            birthDate: user.birthDate || user.dateOfBirth || user.date_of_birth || "",
+            dateOfBirth: user.birthDate || user.dateOfBirth || user.date_of_birth || "",
+
+            points: Number(user.points || 0),
+            membershipLevel: user.membershipLevel || "normal",
+
+            city: user.city || "",
+            district: user.district || "",
+            ward: user.ward || "",
+            addressDetail: user.addressDetail || "",
+            address: {
+                city: user.city || "",
+                district: user.district || "",
+                ward: user.ward || "",
+                addressDetail: user.addressDetail || ""
+            }
+        };
     }
 
-    // 13. Trạng thái thông báo
 
+    // 15. Thông báo form thông tin
     function hideProfileInfoStates() {
         if (profileInfoErrorState) {
             profileInfoErrorState.hidden = true;
@@ -444,6 +444,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+
+    // 16. Thông báo form mật khẩu
     function hidePasswordStates() {
         if (passwordErrorState) {
             passwordErrorState.hidden = true;
@@ -474,8 +476,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 14. Render địa chỉ
 
+    // 17. Render địa chỉ
     function createOption(value, text) {
         const option = document.createElement("option");
 
@@ -516,6 +518,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderCityOptions(selectedCity) {
         resetSelect(city, "Chọn Tỉnh/Thành phố");
 
+        if (!city) {
+            return;
+        }
+
         addressData.forEach(function (item) {
             city.appendChild(createOption(item.name, item.name));
         });
@@ -528,6 +534,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderDistrictOptions(cityName, selectedDistrict) {
         resetSelect(district, "Chọn Quận/Huyện");
         resetSelect(ward, "Chọn Phường/Xã");
+
+        if (!district || !ward) {
+            return;
+        }
 
         district.disabled = true;
         ward.disabled = true;
@@ -552,6 +562,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderWardOptions(cityName, districtName, selectedWard) {
         resetSelect(ward, "Chọn Phường/Xã");
 
+        if (!ward) {
+            return;
+        }
+
         ward.disabled = true;
 
         const districtData = getDistrictData(cityName, districtName);
@@ -571,21 +585,43 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 15. Render thông tin tài khoản
+    function handleCityChange() {
+        renderDistrictOptions(city ? city.value : "", "");
+    }
 
+    function handleDistrictChange() {
+        renderWardOptions(
+            city ? city.value : "",
+            district ? district.value : "",
+            ""
+        );
+    }
+
+
+    // 18. Render thông tin tài khoản
     function renderProfileUserBox(user) {
+        const displayName = getDisplayName(user);
+
         if (profileUserName) {
-            profileUserName.textContent = getDisplayName(user);
+            profileUserName.textContent = displayName;
+        }
+
+        if (profileUserEmail) {
+            profileUserEmail.textContent = user.email || user.phone || "";
         }
 
         if (profileUserRank) {
             profileUserRank.textContent = getRankNameByPoints(currentUserPoints);
         }
+
+        if (profileUserAvatar) {
+            profileUserAvatar.textContent = getFirstLetter(displayName);
+        }
     }
 
     function renderGender(user) {
         genderInputs.forEach(function (input) {
-            input.checked = input.value === user.gender;
+            input.checked = input.value === (user.gender || "other");
         });
     }
 
@@ -595,11 +631,25 @@ document.addEventListener("DOMContentLoaded", function () {
         const userWard = user.ward || user.address?.ward || "";
         const userAddressDetail = user.addressDetail || user.address?.addressDetail || "";
 
-        if (fullName) fullName.value = user.fullName || "";
-        if (email) email.value = user.email || "";
-        if (phone) phone.value = user.phone || "";
-        if (birthDate) birthDate.value = user.birthDate || "";
-        if (addressDetail) addressDetail.value = userAddressDetail;
+        if (fullName) {
+            fullName.value = user.fullName || user.full_name || user.name || "";
+        }
+
+        if (email) {
+            email.value = user.email || "";
+        }
+
+        if (phone) {
+            phone.value = user.phone || "";
+        }
+
+        if (birthDate) {
+            birthDate.value = user.birthDate || user.dateOfBirth || user.date_of_birth || "";
+        }
+
+        if (addressDetail) {
+            addressDetail.value = userAddressDetail;
+        }
 
         renderCityOptions(userCity);
 
@@ -607,70 +657,148 @@ document.addEventListener("DOMContentLoaded", function () {
             renderDistrictOptions(userCity, userDistrict);
         } else {
             resetSelect(district, "Chọn Quận/Huyện");
-            if (district) district.disabled = true;
+
+            if (district) {
+                district.disabled = true;
+            }
         }
 
         if (userCity && userDistrict) {
             renderWardOptions(userCity, userDistrict, userWard);
         } else {
             resetSelect(ward, "Chọn Phường/Xã");
-            if (ward) ward.disabled = true;
+
+            if (ward) {
+                ward.disabled = true;
+            }
         }
 
         renderGender(user);
     }
 
-    function refreshCurrentUserData() {
-        currentUser = getCurrentUserFromStorage();
-        fullCurrentUser = getFullCurrentUser();
-        currentUserPoints = getSyncedUserPoints(fullCurrentUser || currentUser);
-
-        if (fullCurrentUser) {
-            fullCurrentUser.points = currentUserPoints;
-        }
-
-        if (currentUser) {
-            currentUser.points = currentUserPoints;
-        }
-    }
-
     function renderProfilePage() {
-        refreshCurrentUserData();
-
-        if (!fullCurrentUser) {
+        if (!currentUser) {
             return;
         }
 
-        renderProfileUserBox(fullCurrentUser);
-        renderProfileForm(fullCurrentUser);
+        currentUserPoints = Number(currentUser.points || 0);
+
+        renderProfileUserBox(currentUser);
+        renderProfileForm(currentUser);
     }
 
-    // 16. Kiểm tra dữ liệu cập nhật
 
-    function isEmailExistsInOtherUser(value) {
-        const users = getUsersFromStorage();
-        const normalizedEmail = normalizeText(value);
+    // 19. Load profile từ API
+    async function loadProfileFromApi() {
+        const response = await getApi("users/get-profile.php");
+        const apiUser = response.data && response.data.user
+            ? response.data.user
+            : null;
 
-        return users.some(function (user) {
-            return !isSameUser(user, currentUser) &&
-                normalizeText(user.email) === normalizedEmail;
-        });
+        if (!apiUser) {
+            throw {
+                message: "Không lấy được thông tin tài khoản."
+            };
+        }
+
+        currentDefaultAddress = apiUser.default_address || null;
+        currentUser = normalizeUserFromApi(apiUser);
+
+        saveCurrentUserToLocal(currentUser);
+        syncUserPoints(currentUser);
     }
 
-    function isPhoneExistsInOtherUser(value) {
-        const users = getUsersFromStorage();
-        const normalizedPhone = normalizeText(value);
+    async function loadDefaultAddressFromApi() {
+        try {
+            const response = await getApi("users/get-addresses.php");
+            const data = response.data || {};
 
-        return users.some(function (user) {
-            return !isSameUser(user, currentUser) &&
-                normalizeText(user.phone) === normalizedPhone;
-        });
+            currentDefaultAddress = data.default_address || currentDefaultAddress;
+
+            if (!currentDefaultAddress || !currentUser) {
+                return;
+            }
+
+            currentUser.city = currentDefaultAddress.province || "";
+            currentUser.district = currentDefaultAddress.district || "";
+            currentUser.ward = currentDefaultAddress.ward || "";
+            currentUser.addressDetail = currentDefaultAddress.address_detail || "";
+            currentUser.address = {
+                city: currentDefaultAddress.province || "",
+                district: currentDefaultAddress.district || "",
+                ward: currentDefaultAddress.ward || "",
+                addressDetail: currentDefaultAddress.address_detail || ""
+            };
+
+            saveCurrentUserToLocal(currentUser);
+        } catch (error) {
+            console.warn("Không lấy được địa chỉ mặc định:", error);
+        }
     }
 
+    async function loadProfileData() {
+        try {
+            await loadProfileFromApi();
+            await loadDefaultAddressFromApi();
+            renderProfilePage();
+        } catch (error) {
+            const localUser = getCurrentUserFromLocal();
+
+            if (!localUser) {
+                const redirectUrl = encodeURIComponent(window.location.href);
+                window.location.href = "../html/login.html?redirect=" + redirectUrl;
+                return;
+            }
+
+            currentUser = normalizeUserForLocal(localUser);
+            currentUserPoints = Number(currentUser.points || 0);
+
+            renderProfilePage();
+            showProfileInfoError("Không tải được hồ sơ từ API, đang hiển thị dữ liệu tạm trên máy.");
+        }
+    }
+
+
+    // 20. Kiểm tra đăng nhập
+    async function requireLogin() {
+        if (!window.CustomerApi) {
+            currentUser = getCurrentUserFromLocal();
+
+            if (!currentUser) {
+                window.location.href = "../html/login.html";
+                return false;
+            }
+
+            return true;
+        }
+
+        const localUser = window.CustomerApi.getCurrentCustomerFromLocal();
+
+        if (!localUser) {
+            const redirectUrl = encodeURIComponent(window.location.href);
+            window.location.href = "../html/login.html?redirect=" + redirectUrl;
+            return false;
+        }
+
+        try {
+            await window.CustomerApi.getCurrentCustomerFromSession();
+            return true;
+        } catch (error) {
+            window.CustomerApi.clearCustomerLocalAuth();
+
+            const redirectUrl = encodeURIComponent(window.location.href);
+            window.location.href = "../html/login.html?redirect=" + redirectUrl;
+
+            return false;
+        }
+    }
+
+
+    // 21. Validate thông tin
     function validateProfileInfoForm() {
-        const inputFullName = fullName?.value.trim() || "";
-        const inputEmail = email?.value.trim() || "";
-        const inputPhone = phone?.value.trim() || "";
+        const inputFullName = fullName ? fullName.value.trim() : "";
+        const inputEmail = email ? email.value.trim() : "";
+        const inputPhone = phone ? phone.value.trim() : "";
 
         if (isEmpty(inputFullName)) {
             showProfileInfoError("Vui lòng nhập họ và tên.");
@@ -696,12 +824,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return false;
         }
 
-        if (isEmailExistsInOtherUser(inputEmail)) {
-            showProfileInfoError("Email này đã được sử dụng bởi tài khoản khác.");
-            email?.focus();
-            return false;
-        }
-
         if (isEmpty(inputPhone)) {
             showProfileInfoError("Vui lòng nhập số điện thoại.");
             phone?.focus();
@@ -714,129 +836,223 @@ document.addEventListener("DOMContentLoaded", function () {
             return false;
         }
 
-        if (isPhoneExistsInOtherUser(inputPhone)) {
-            showProfileInfoError("Số điện thoại này đã được sử dụng bởi tài khoản khác.");
-            phone?.focus();
+        return true;
+    }
+
+
+    // 22. Lấy dữ liệu cập nhật
+    function getSelectedGender() {
+        const selectedGender = document.querySelector('input[name="gender"]:checked');
+
+        if (!selectedGender) {
+            return "other";
+        }
+
+        return selectedGender.value;
+    }
+
+    function getProfileUpdateData() {
+        return {
+            full_name: fullName ? fullName.value.trim() : "",
+            fullName: fullName ? fullName.value.trim() : "",
+
+            email: email ? email.value.trim() : "",
+            phone: phone ? phone.value.trim() : "",
+
+            gender: getSelectedGender(),
+
+            date_of_birth: birthDate ? birthDate.value : "",
+            birthDate: birthDate ? birthDate.value : ""
+        };
+    }
+
+    function hasAddressInput() {
+        return Boolean(
+            (city && city.value) ||
+            (district && district.value) ||
+            (ward && ward.value) ||
+            (addressDetail && addressDetail.value.trim())
+        );
+    }
+
+    function validateAddressIfFilled() {
+        if (!hasAddressInput()) {
+            return true;
+        }
+
+        if (!city || !city.value) {
+            showProfileInfoError("Vui lòng chọn Tỉnh/Thành phố.");
+            city?.focus();
+            return false;
+        }
+
+        if (!district || !district.value) {
+            showProfileInfoError("Vui lòng chọn Quận/Huyện.");
+            district?.focus();
+            return false;
+        }
+
+        if (!ward || !ward.value) {
+            showProfileInfoError("Vui lòng chọn Phường/Xã.");
+            ward?.focus();
+            return false;
+        }
+
+        if (!addressDetail || !addressDetail.value.trim()) {
+            showProfileInfoError("Vui lòng nhập địa chỉ chi tiết.");
+            addressDetail?.focus();
             return false;
         }
 
         return true;
     }
 
-    // 17. Cập nhật thông tin tài khoản
-
-    function getSelectedGender() {
-        const selectedGender = document.querySelector('input[name="gender"]:checked');
-
-        if (!selectedGender) {
-            return "";
-        }
-
-        return selectedGender.value;
-    }
-
-    function getUpdatedProfileData() {
+    function getAddressPayload() {
         return {
-            fullName: fullName.value.trim(),
-            email: email.value.trim(),
-            phone: phone.value.trim(),
-            birthDate: birthDate?.value || "",
-            gender: getSelectedGender(),
-            city: city?.value || "",
-            district: district?.value || "",
-            ward: ward?.value || "",
-            addressDetail: addressDetail?.value.trim() || "",
-            address: {
-                city: city?.value || "",
-                district: district?.value || "",
-                ward: ward?.value || "",
-                addressDetail: addressDetail?.value.trim() || ""
-            }
+            receiver_name: fullName ? fullName.value.trim() : "",
+            receiverName: fullName ? fullName.value.trim() : "",
+
+            receiver_phone: phone ? phone.value.trim() : "",
+            receiverPhone: phone ? phone.value.trim() : "",
+
+            province: city ? city.value : "",
+            district: district ? district.value : "",
+            ward: ward ? ward.value : "",
+            address_detail: addressDetail ? addressDetail.value.trim() : "",
+            addressDetail: addressDetail ? addressDetail.value.trim() : "",
+
+            is_default: 1,
+            isDefault: 1
         };
     }
 
-    function updateUserInStorage(updatedData) {
-        const users = getUsersFromStorage();
-        const userIndex = findCurrentUserIndex(users);
 
-        const baseUser = fullCurrentUser || currentUser || {};
-        const updatedUser = {
-            ...baseUser,
-            ...updatedData,
-            points: currentUserPoints
-        };
-
-        if (userIndex >= 0) {
-            users[userIndex] = {
-                ...users[userIndex],
-                ...updatedData,
-                points: currentUserPoints
-            };
-
-            saveUsersToStorage(users);
-            fullCurrentUser = users[userIndex];
-        } else {
-            fullCurrentUser = updatedUser;
+    // 23. Cập nhật địa chỉ mặc định
+    async function saveDefaultAddress() {
+        if (!hasAddressInput()) {
+            return null;
         }
 
-        saveSyncedUserPoints(updatedUser, currentUserPoints);
-        syncUserPointsToUsers(updatedUser, currentUserPoints);
-        saveCurrentUserToStorage(updatedUser);
+        if (!validateAddressIfFilled()) {
+            return null;
+        }
 
-        currentUser = createSafeUser(updatedUser);
+        const addressPayload = getAddressPayload();
 
-        return updatedUser;
+        if (currentDefaultAddress && currentDefaultAddress.id) {
+            addressPayload.address_id = Number(currentDefaultAddress.id);
+            addressPayload.addressId = Number(currentDefaultAddress.id);
+
+            const response = await postApi("users/update-address.php", addressPayload);
+
+            return response.data && response.data.address
+                ? response.data.address
+                : null;
+        }
+
+        const response = await postApi("users/add-address.php", addressPayload);
+
+        return response.data && response.data.address
+            ? response.data.address
+            : null;
     }
 
-    function handleProfileInfoSubmit(event) {
-        event.preventDefault();
 
+    // 24. Gộp user sau cập nhật
+    function mergeUpdatedUser(apiUser, address) {
+        const normalizedUser = normalizeUserFromApi({
+            ...apiUser,
+            default_address: address || currentDefaultAddress
+        });
+
+        currentUser = {
+            ...currentUser,
+            ...normalizedUser
+        };
+
+        if (address) {
+            currentDefaultAddress = address;
+
+            currentUser.city = address.province || "";
+            currentUser.district = address.district || "";
+            currentUser.ward = address.ward || "";
+            currentUser.addressDetail = address.address_detail || "";
+            currentUser.address = {
+                city: address.province || "",
+                district: address.district || "",
+                ward: address.ward || "",
+                addressDetail: address.address_detail || ""
+            };
+        }
+
+        saveCurrentUserToLocal(currentUser);
+        syncUserPoints(currentUser);
+
+        if (window.authUI && typeof window.authUI.renderTopbarAccount === "function") {
+            window.authUI.renderTopbarAccount();
+        }
+    }
+
+
+    // 25. Submit cập nhật profile
+    async function handleProfileInfoSubmit(event) {
+        event.preventDefault();
         hideProfileInfoStates();
 
         if (!validateProfileInfoForm()) {
             return;
         }
 
-        if (updateProfileBtn) {
-            updateProfileBtn.disabled = true;
-            updateProfileBtn.textContent = "ĐANG CẬP NHẬT...";
+        if (!validateAddressIfFilled()) {
+            return;
         }
 
-        setTimeout(function () {
-            const updatedData = getUpdatedProfileData();
-            const updatedUser = updateUserInStorage(updatedData);
-
-            renderProfileUserBox(updatedUser);
-            renderProfileForm(updatedUser);
-
-            if (window.authUI && typeof window.authUI.renderTopbarAccount === "function") {
-                window.authUI.renderTopbarAccount();
+        try {
+            if (updateProfileBtn) {
+                updateProfileBtn.disabled = true;
+                updateProfileBtn.textContent = "ĐANG CẬP NHẬT...";
             }
 
-            showProfileInfoSuccess("Cập nhật thông tin thành công.");
+            const profileResponse = await postApi("users/update-profile.php", getProfileUpdateData());
 
+            const updatedApiUser = profileResponse.data && profileResponse.data.user
+                ? profileResponse.data.user
+                : null;
+
+            if (!updatedApiUser) {
+                throw {
+                    message: "API cập nhật thành công nhưng không trả về thông tin user."
+                };
+            }
+
+            const savedAddress = await saveDefaultAddress();
+
+            mergeUpdatedUser(updatedApiUser, savedAddress);
+
+            renderProfilePage();
+
+            showProfileInfoSuccess("Cập nhật thông tin thành công.");
+        } catch (error) {
+            showProfileInfoError(
+                getApiErrorMessage(error, "Cập nhật thông tin thất bại.")
+            );
+        } finally {
             if (updateProfileBtn) {
                 updateProfileBtn.disabled = false;
                 updateProfileBtn.textContent = "CẬP NHẬT THÔNG TIN";
             }
-        }, 300);
+        }
     }
 
-    // 18. Đổi mật khẩu
 
+    // 26. Validate đổi mật khẩu
     function validatePasswordForm() {
-        const inputCurrentPassword = currentPassword?.value.trim() || "";
-        const inputNewPassword = newPassword?.value.trim() || "";
-        const inputConfirmPassword = confirmNewPassword?.value.trim() || "";
+        const inputCurrentPassword = currentPassword ? currentPassword.value.trim() : "";
+        const inputNewPassword = newPassword ? newPassword.value.trim() : "";
+        const inputConfirmPassword = confirmNewPassword ? confirmNewPassword.value.trim() : "";
 
         if (isEmpty(inputCurrentPassword)) {
             showPasswordError("Vui lòng nhập mật khẩu hiện tại.");
-            currentPassword?.focus();
-            return false;
-        }
-
-        if (!fullCurrentUser || fullCurrentUser.password !== inputCurrentPassword) {
-            showPasswordError("Mật khẩu hiện tại không đúng.");
             currentPassword?.focus();
             return false;
         }
@@ -874,93 +1090,82 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
     }
 
-    function updatePasswordInStorage(newPasswordValue) {
-        const users = getUsersFromStorage();
-        const userIndex = findCurrentUserIndex(users);
-
-        if (userIndex === -1) {
-            return false;
-        }
-
-        users[userIndex].password = newPasswordValue;
-        users[userIndex].points = currentUserPoints;
-
-        saveUsersToStorage(users);
-
-        fullCurrentUser = users[userIndex];
-
-        return true;
-    }
-
     function clearPasswordForm() {
         if (currentPassword) currentPassword.value = "";
         if (newPassword) newPassword.value = "";
         if (confirmNewPassword) confirmNewPassword.value = "";
     }
 
-    function handleChangePasswordSubmit(event) {
-        event.preventDefault();
 
+    // 27. Submit đổi mật khẩu
+    async function handleChangePasswordSubmit(event) {
+        event.preventDefault();
         hidePasswordStates();
 
         if (!validatePasswordForm()) {
             return;
         }
 
-        if (changePasswordBtn) {
-            changePasswordBtn.disabled = true;
-            changePasswordBtn.textContent = "ĐANG ĐỔI...";
-        }
-
-        setTimeout(function () {
-            const isUpdated = updatePasswordInStorage(newPassword.value.trim());
-
-            if (!isUpdated) {
-                showPasswordError("Không tìm thấy tài khoản để đổi mật khẩu.");
-            } else {
-                clearPasswordForm();
-                showPasswordSuccess("Đổi mật khẩu thành công.");
+        try {
+            if (changePasswordBtn) {
+                changePasswordBtn.disabled = true;
+                changePasswordBtn.textContent = "ĐANG ĐỔI...";
             }
 
+            await postApi("users/change-password.php", {
+                current_password: currentPassword.value.trim(),
+                currentPassword: currentPassword.value.trim(),
+
+                new_password: newPassword.value.trim(),
+                newPassword: newPassword.value.trim(),
+
+                confirm_password: confirmNewPassword.value.trim(),
+                confirmPassword: confirmNewPassword.value.trim()
+            });
+
+            clearPasswordForm();
+            showPasswordSuccess("Đổi mật khẩu thành công.");
+        } catch (error) {
+            showPasswordError(
+                "Backend hiện chưa có API đổi mật khẩu hoặc API chưa sẵn sàng. Sau khi thêm users/change-password.php, form này sẽ dùng được."
+            );
+        } finally {
             if (changePasswordBtn) {
                 changePasswordBtn.disabled = false;
                 changePasswordBtn.textContent = "ĐỔI MẬT KHẨU";
             }
-        }, 300);
+        }
     }
 
-    // 19. Đăng xuất
 
-    function handleLogout() {
+    // 28. Đăng xuất
+    async function handleLogout(event) {
+        if (event) {
+            event.preventDefault();
+        }
+
         const confirmLogout = confirm("Bạn có chắc muốn đăng xuất không?");
 
         if (!confirmLogout) {
             return;
         }
 
-        localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
-        localStorage.removeItem(REMEMBER_LOGIN_STORAGE_KEY);
-        localStorage.setItem(IS_LOGIN_STORAGE_KEY, "false");
+        if (window.CustomerApi && typeof window.CustomerApi.logoutCustomer === "function") {
+            await window.CustomerApi.logoutCustomer();
+            return;
+        }
 
+        localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+        localStorage.setItem(IS_LOGIN_STORAGE_KEY, "false");
         window.location.href = "../html/login.html";
     }
 
-    // 20. Xử lý địa chỉ
 
-    function handleCityChange() {
-        renderDistrictOptions(city.value, "");
-    }
-
-    function handleDistrictChange() {
-        renderWardOptions(city.value, district.value, "");
-    }
-
-    // 21. Xử lý tìm kiếm
-
+    // 29. Tìm kiếm
     function handleSearchSubmit(event) {
         event.preventDefault();
 
-        const keyword = searchKeyword?.value.trim() || "";
+        const keyword = searchKeyword ? searchKeyword.value.trim() : "";
 
         if (!keyword) {
             alert("Vui lòng nhập từ khóa tìm kiếm.");
@@ -970,43 +1175,83 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
     }
 
-    // 22. Bảo vệ trang tài khoản
 
-    function redirectToLoginIfNeeded() {
-        if (isLoggedIn()) {
-            return false;
+    // 30. Gắn sự kiện
+    function bindEvents() {
+        if (profileInfoForm) {
+            profileInfoForm.addEventListener("submit", handleProfileInfoSubmit);
         }
 
-        alert("Vui lòng đăng nhập để xem tài khoản của bạn.");
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener("submit", handleChangePasswordSubmit);
+        }
 
-        const redirectUrl = encodeURIComponent("../html/profile.html");
-        window.location.href = "../html/login.html?redirect=" + redirectUrl;
+        if (city) {
+            city.addEventListener("change", handleCityChange);
+        }
 
-        return true;
+        if (district) {
+            district.addEventListener("change", handleDistrictChange);
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", handleLogout);
+        }
+
+        if (searchForm) {
+            searchForm.addEventListener("submit", handleSearchSubmit);
+        }
+
+        const profileInputs = [
+            fullName,
+            email,
+            phone,
+            birthDate,
+            city,
+            district,
+            ward,
+            addressDetail
+        ];
+
+        profileInputs.forEach(function (input) {
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener("input", hideProfileInfoStates);
+            input.addEventListener("change", hideProfileInfoStates);
+        });
+
+        genderInputs.forEach(function (input) {
+            input.addEventListener("change", hideProfileInfoStates);
+        });
+
+        const passwordInputs = [
+            currentPassword,
+            newPassword,
+            confirmNewPassword
+        ];
+
+        passwordInputs.forEach(function (input) {
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener("input", hidePasswordStates);
+        });
     }
 
-    // 23. Gắn sự kiện
 
-    function bindEvents() {
-        profileInfoForm?.addEventListener("submit", handleProfileInfoSubmit);
-        changePasswordForm?.addEventListener("submit", handleChangePasswordSubmit);
-        logoutBtn?.addEventListener("click", handleLogout);
+    // 31. Khởi tạo trang profile
+    async function initProfilePage() {
+        const isLogin = await requireLogin();
 
-        city?.addEventListener("change", handleCityChange);
-        district?.addEventListener("change", handleDistrictChange);
-
-        searchForm?.addEventListener("submit", handleSearchSubmit);
-    }
-
-    // 24. Khởi tạo trang
-
-    function initProfilePage() {
-        if (redirectToLoginIfNeeded()) {
+        if (!isLogin) {
             return;
         }
 
-        renderProfilePage();
         bindEvents();
+        await loadProfileData();
     }
 
     initProfilePage();

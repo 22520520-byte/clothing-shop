@@ -1,84 +1,94 @@
-// 1. Chờ HTML tải xong
+// =========================================================
+// File: Frontend/js/my-order.js
+// Mục đích: Trang đơn hàng của tôi lấy dữ liệu thật từ API
+// =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
-    const myOrderPage = document.querySelector('[data-page="my-order"]');
+    // 1. Kiểm tra đúng trang đơn hàng của tôi
+    const myOrderPage = document.querySelector('[data-page="my-order"], .myOrderPage, .profilePage');
 
     if (!myOrderPage) {
         return;
     }
 
-    // 2. Key localStorage
 
+    // 2. Key localStorage
     const ORDERS_STORAGE_KEY = "orders";
-    const CURRENT_ORDER_STORAGE_KEY = "current_order";
     const CURRENT_USER_STORAGE_KEY = "current_user";
     const IS_LOGIN_STORAGE_KEY = "is_login";
-    const USER_POINTS_STORAGE_KEY = "user_points";
-    const ORDER_REVIEWS_STORAGE_KEY = "order_reviews";
 
-    // 3. Cấu hình điểm thưởng đánh giá
 
-    const REVIEW_REWARD_POINTS = 100;
+    // 3. Biến trạng thái
+    let currentUser = null;
+    let allOrders = [];
+    let currentStatusFilter = "all";
 
-    // 4. Biến trạng thái
 
-    let currentOrders = [];
-    let selectedReceivedOrderId = "";
-    let selectedReviewRating = 0;
+    // 4. Lấy DOM tìm kiếm
+    const searchForm = document.getElementById("searchForm");
+    const searchKeyword = document.getElementById("searchKeyword");
 
-    // 5. Lấy DOM sidebar
 
+    // 5. Lấy DOM thông tin sidebar/profile
     const profileUserName = document.getElementById("profileUserName");
-    const profileUserRank = document.getElementById("profileUserRank");
-    const logoutBtn = document.getElementById("logoutBtn");
+    const profileUserEmail = document.getElementById("profileUserEmail");
+    const profileUserAvatar = document.getElementById("profileUserAvatar");
 
-    // 6. Lấy DOM trạng thái trang
 
-    const myOrderLoadingState = document.getElementById("myOrderLoadingState");
-    const myOrderEmptyState = document.getElementById("myOrderEmptyState");
-    const myOrderErrorState = document.getElementById("myOrderErrorState");
-    const myOrderContent = document.getElementById("myOrderContent");
-    const myOrderList = document.getElementById("myOrderList");
+    // 6. Lấy DOM danh sách đơn hàng
+    const orderTableBody = document.getElementById("orderTableBody");
+    const orderHistoryRowTemplate =
+        document.getElementById("orderHistoryRowTemplate") ||
+        document.getElementById("myOrderRowTemplate") ||
+        document.getElementById("orderRowTemplate");
 
-    // 7. Lấy DOM template
+    const emptyOrderText =
+        document.getElementById("emptyOrderText") ||
+        document.getElementById("emptyMyOrderText") ||
+        document.getElementById("orderEmptyState");
 
-    const myOrderCardTemplate = document.getElementById("myOrderCardTemplate");
-    const orderProductItemTemplate = document.getElementById("orderProductItemTemplate");
+    const orderLoadingState =
+        document.getElementById("orderLoadingState") ||
+        document.getElementById("myOrderLoadingState");
 
-    // 8. Lấy DOM popup nhận hàng
+    const orderErrorState =
+        document.getElementById("orderErrorState") ||
+        document.getElementById("myOrderErrorState");
 
-    const rewardPopup = document.getElementById("rewardPopup");
-    const rewardPopupOverlay = document.getElementById("rewardPopupOverlay");
-    const closeRewardPopupBtn = document.getElementById("closeRewardPopupBtn");
-    const rewardLaterBtn = document.getElementById("rewardLaterBtn");
-    const rewardReviewNowBtn = document.getElementById("rewardReviewNowBtn");
 
-    // 9. Lấy DOM popup đánh giá
+    // 7. Lấy DOM bộ lọc trạng thái
+    const orderStatusTabs = document.querySelectorAll("[data-order-status]");
+    const orderStatusFilter = document.getElementById("orderStatusFilter");
 
-    const reviewPopup = document.getElementById("reviewPopup");
-    const reviewPopupOverlay = document.getElementById("reviewPopupOverlay");
-    const closeReviewPopupBtn = document.getElementById("closeReviewPopupBtn");
-    const cancelReviewBtn = document.getElementById("cancelReviewBtn");
-    const reviewForm = document.getElementById("reviewForm");
-    const reviewOrderId = document.getElementById("reviewOrderId");
-    const reviewStars = document.getElementById("reviewStars");
-    const reviewRating = document.getElementById("reviewRating");
-    const reviewContent = document.getElementById("reviewContent");
 
-    // 10. Hàm tiện ích
-
-    function formatPrice(price) {
-        return Number(price || 0).toLocaleString("vi-VN") + "đ";
-    }
-
-    function formatDiscount(price) {
-        const value = Number(price || 0);
-
-        if (value <= 0) {
-            return "-0đ";
+    // 8. Gọi API GET
+    async function getApi(endpoint) {
+        if (window.CustomerApi && typeof window.CustomerApi.get === "function") {
+            return await window.CustomerApi.get(endpoint);
         }
 
-        return "-" + formatPrice(value);
+        const response = await fetch("../../BackEnd/php/api/" + endpoint, {
+            method: "GET",
+            credentials: "same-origin"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            throw data;
+        }
+
+        return data;
+    }
+
+
+    // 9. Hàm tiện ích
+    function formatPrice(price) {
+        if (window.CustomerApi && typeof window.CustomerApi.formatPrice === "function") {
+            return window.CustomerApi.formatPrice(price);
+        }
+
+        return Number(price || 0).toLocaleString("vi-VN") + "đ";
     }
 
     function formatDateTime(value) {
@@ -89,16 +99,28 @@ document.addEventListener("DOMContentLoaded", function () {
         const date = new Date(value);
 
         if (Number.isNaN(date.getTime())) {
-            return "--/--/----";
+            return value;
         }
 
-        return date.toLocaleString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
+        return date.toLocaleDateString("vi-VN", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric"
         });
+    }
+
+    function getFirstLetter(text) {
+        if (!text) {
+            return "K";
+        }
+
+        return String(text).trim().charAt(0).toUpperCase();
+    }
+
+    function getOrderDetailUrl(order) {
+        const orderId = order.id || order.orderId || order.orderCode || order.order_code || "";
+
+        return "../html/order-detail.html?id=" + encodeURIComponent(orderId);
     }
 
     function getProductDetailUrl(productId) {
@@ -109,16 +131,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return "../html/product-detail.html?id=" + encodeURIComponent(productId);
     }
 
-    function getOrderDetailUrl(orderId) {
-        return "../html/order-detail.html?id=" + encodeURIComponent(orderId);
-    }
 
-    function showMessage(message) {
-        alert(message);
-    }
-
-    // 11. Đọc ghi localStorage
-
+    // 10. Đọc localStorage
     function getDataFromStorage(key, fallbackValue) {
         const rawData = localStorage.getItem(key);
 
@@ -129,13 +143,8 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             return JSON.parse(rawData);
         } catch (error) {
-            console.error("Lỗi đọc localStorage:", error);
             return fallbackValue;
         }
-    }
-
-    function saveDataToStorage(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
     }
 
     function getOrdersFromStorage() {
@@ -148,53 +157,51 @@ document.addEventListener("DOMContentLoaded", function () {
         return orders;
     }
 
-    function saveOrdersToStorage(orders) {
-        saveDataToStorage(ORDERS_STORAGE_KEY, orders);
-    }
 
-    // 12. Kiểm tra đăng nhập
+    // 11. Lấy user hiện tại
+    function getCurrentUserLocal() {
+        if (window.CustomerApi && typeof window.CustomerApi.getCurrentCustomerFromLocal === "function") {
+            return window.CustomerApi.getCurrentCustomerFromLocal();
+        }
 
-    function getCurrentUser() {
         const isLogin = localStorage.getItem(IS_LOGIN_STORAGE_KEY) === "true";
-        const currentUserData = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+        const userData = getDataFromStorage(CURRENT_USER_STORAGE_KEY, null);
 
-        if (!isLogin) {
+        if (!isLogin || !userData) {
             return null;
         }
 
-        if (!currentUserData) {
-            return {
-                id: "member",
-                fullName: "Thành viên"
-            };
+        return userData;
+    }
+
+    async function requireLogin() {
+        if (!window.CustomerApi) {
+            currentUser = getCurrentUserLocal();
+            return Boolean(currentUser);
+        }
+
+        const localUser = window.CustomerApi.getCurrentCustomerFromLocal();
+
+        if (!localUser) {
+            const redirectUrl = encodeURIComponent(window.location.href);
+            window.location.href = "../html/login.html?redirect=" + redirectUrl;
+            return false;
         }
 
         try {
-            const parsedUser = JSON.parse(currentUserData);
-
-            if (typeof parsedUser === "string") {
-                return {
-                    id: parsedUser,
-                    fullName: parsedUser
-                };
-            }
-
-            return parsedUser;
+            currentUser = await window.CustomerApi.getCurrentCustomerFromSession();
+            return true;
         } catch (error) {
-            return {
-                id: currentUserData,
-                fullName: currentUserData
-            };
+            window.CustomerApi.clearCustomerLocalAuth();
+
+            const redirectUrl = encodeURIComponent(window.location.href);
+            window.location.href = "../html/login.html?redirect=" + redirectUrl;
+
+            return false;
         }
     }
 
-    function isUserLoggedIn() {
-        return Boolean(getCurrentUser());
-    }
-
     function getCurrentUserKey() {
-        const currentUser = getCurrentUser();
-
         if (!currentUser) {
             return "";
         }
@@ -211,96 +218,107 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     }
 
-    function getCurrentUserName() {
-        const currentUser = getCurrentUser();
 
+    // 12. Render thông tin user
+    function renderCurrentUserInfo() {
         if (!currentUser) {
-            return "Khách hàng";
+            return;
         }
 
-        return (
+        const fullName =
             currentUser.fullName ||
+            currentUser.full_name ||
             currentUser.name ||
-            currentUser.username ||
-            currentUser.email ||
-            "Thành viên"
-        );
-    }
+            "Khách hàng";
 
-    // 13. Hiển thị thông tin sidebar
-
-    function renderSidebarUser() {
-        const currentUser = getCurrentUser();
+        const email = currentUser.email || currentUser.phone || "";
 
         if (profileUserName) {
-            profileUserName.textContent = getCurrentUserName();
+            profileUserName.textContent = fullName;
         }
 
-        if (profileUserRank) {
-            profileUserRank.textContent = currentUser ? "Thành viên" : "Chưa đăng nhập";
+        if (profileUserEmail) {
+            profileUserEmail.textContent = email;
+        }
+
+        if (profileUserAvatar) {
+            profileUserAvatar.textContent = getFirstLetter(fullName);
         }
     }
 
-    // 14. Lọc đơn hàng hiện tại
 
-    function isCurrentUserOrder(order) {
-        const currentUser = getCurrentUser();
-        const currentUserKey = getCurrentUserKey();
-
-        if (!currentUser || !currentUserKey) {
-            return false;
+    // 13. Lấy trạng thái đơn hàng
+    function getStatusInfo(status) {
+        if (status === "pending") {
+            return {
+                text: "Chờ xác nhận",
+                className: "statusPending"
+            };
         }
 
-        if (order.userKey && order.userKey === currentUserKey) {
-            return true;
+        if (status === "confirmed") {
+            return {
+                text: "Đã xác nhận",
+                className: "statusShipping"
+            };
         }
 
-        const customer = order.customer || {};
-
-        if (currentUser.email && customer.email && currentUser.email === customer.email) {
-            return true;
+        if (status === "shipping") {
+            return {
+                text: "Đang giao",
+                className: "statusShipping"
+            };
         }
 
-        if (currentUser.phone && customer.phone && currentUser.phone === customer.phone) {
-            return true;
+        if (status === "completed") {
+            return {
+                text: "Hoàn thành",
+                className: "statusCompleted"
+            };
         }
 
-        return false;
+        if (status === "cancelled") {
+            return {
+                text: "Đã hủy",
+                className: "statusCancelled"
+            };
+        }
+
+        return {
+            text: "Chờ xác nhận",
+            className: "statusPending"
+        };
     }
 
-    function isCurrentOrder(order) {
-        const status = String(order.status || "").toLowerCase();
-        const statusText = order.statusText || order.statusName || "";
-
-        const completedTexts = ["Hoàn thành", "Đã hoàn thành"];
-        const cancelledTexts = ["Đã hủy", "Hủy đơn"];
-
-        if (status === "completed" || status === "cancelled") {
-            return false;
+    function getOrderStatus(order) {
+        if (order.status && order.status.code) {
+            return order.status.code;
         }
 
-        if (completedTexts.includes(statusText) || cancelledTexts.includes(statusText)) {
-            return false;
+        return order.status || order.order_status || "pending";
+    }
+
+    function getOrderStatusLabel(order) {
+        if (order.status && order.status.label) {
+            return order.status.label;
         }
 
-        return true;
+        return order.statusText || getStatusInfo(getOrderStatus(order)).text;
     }
 
-    function getCurrentOrders() {
-        const orders = getOrdersFromStorage();
 
-        return orders
-            .filter(isCurrentUserOrder)
-            .filter(isCurrentOrder)
-            .sort(function (a, b) {
-                return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-            });
-    }
+    // 14. Lấy dữ liệu tiền
+    function getOrderMoney(order) {
+        const summary = order.summary || {};
+        const money = order.money || {};
 
-    // 15. Chuẩn hóa dữ liệu đơn hàng
-
-    function getOrderId(order) {
-        return order.orderId || order.id || "";
+        return {
+            subtotal: Number(summary.subtotal ?? money.total_product_price ?? 0),
+            shippingFee: Number(summary.shippingFee ?? money.shipping_fee ?? 0),
+            pointDiscount: Number(summary.pointDiscount ?? money.points_discount ?? 0),
+            voucherDiscount: Number(summary.voucherDiscount ?? money.discount_amount ?? 0),
+            total: Number(summary.total ?? money.final_total ?? order.finalTotal ?? order.total ?? 0)
+        };
     }
 
     function getOrderItems(order) {
@@ -315,829 +333,421 @@ document.addEventListener("DOMContentLoaded", function () {
         return [];
     }
 
-    function calculateSubtotal(items) {
+    function getOrderItemCount(order) {
+        const items = getOrderItems(order);
+
         return items.reduce(function (total, item) {
-            return total + Number(item.price || item.currentPrice || 0) * Number(item.quantity || item.qty || 0);
+            return total + Number(item.quantity || item.qty || 1);
         }, 0);
     }
 
-    function getOrderSummary(order) {
-        const items = getOrderItems(order);
-        const summary = order.summary || {};
-        const benefits = order.benefits || {};
 
-        const pointBenefit = benefits.point || null;
-        const voucherBenefit = benefits.voucher || null;
-
-        const subtotal = Number(
-            summary.subtotal ??
-            order.subtotal ??
-            calculateSubtotal(items)
-        );
-
-        const shippingFee = Number(
-            summary.shippingFee ??
-            order.shippingFee ??
-            order.shipping?.fee ??
-            0
-        );
-
-        const pointDiscount = Number(
-            summary.pointDiscount ??
-            order.pointDiscount ??
-            pointBenefit?.discountAmount ??
-            0
-        );
-
-        const voucherDiscount = Number(
-            summary.voucherDiscount ??
-            order.voucherDiscount ??
-            voucherBenefit?.discountAmount ??
-            0
-        );
-
-        const discountTotal = Number(
-            summary.discountTotal ??
-            order.discountTotal ??
-            order.discount ??
-            pointDiscount + voucherDiscount
-        );
-
-        const total = Number(
-            summary.total ??
-            order.total ??
-            Math.max(subtotal + shippingFee - discountTotal, 0)
-        );
+    // 15. Chuẩn hóa đơn từ API
+    function normalizeApiOrder(order) {
+        const money = order.money || {};
+        const status = order.status || {};
 
         return {
-            subtotal: subtotal,
-            shippingFee: shippingFee,
-            pointDiscount: pointDiscount,
-            voucherDiscount: voucherDiscount,
-            discountTotal: discountTotal,
-            total: total
+            id: order.id,
+            orderId: order.order_code || String(order.id),
+            orderCode: order.order_code || String(order.id),
+
+            createdAt: order.created_at || "",
+            orderDate: order.created_at || "",
+
+            status: status.code || order.order_status || "pending",
+            statusText: status.label || getStatusInfo(order.order_status).text,
+
+            paymentMethod: order.payment ? order.payment.method : order.payment_method,
+            paymentMethodName: order.payment ? order.payment.method_label : "",
+
+            customerType: "member",
+            userKey: getCurrentUserKey(),
+
+            items: Array.isArray(order.items) ? order.items : [],
+
+            summary: {
+                subtotal: Number(money.total_product_price || 0),
+                shippingFee: Number(money.shipping_fee || 0),
+                pointDiscount: Number(money.points_discount || 0),
+                voucherDiscount: Number(money.discount_amount || 0),
+                discountTotal: Number(money.points_discount || 0) + Number(money.discount_amount || 0),
+                total: Number(money.final_total || 0)
+            },
+
+            raw: order
         };
     }
 
-    function getOrderStatusText(order) {
-        return order.statusText || order.statusName || "Chờ xác nhận";
+
+    // 16. Chuẩn hóa đơn localStorage
+    function normalizeLocalOrder(order) {
+        return {
+            ...order,
+            id: order.id || order.orderId || order.orderCode,
+            orderId: order.orderId || order.orderCode || order.id,
+            orderCode: order.orderCode || order.orderId || order.id,
+            createdAt: order.createdAt || order.created_at || order.orderDate || "",
+            status: order.status || order.order_status || "pending",
+            statusText: order.statusText || getStatusInfo(order.status || "pending").text,
+            items: getOrderItems(order),
+            summary: order.summary || {}
+        };
     }
 
-    function getPaymentName(order) {
-        if (order.payment && order.payment.name) {
-            return order.payment.name;
-        }
 
-        if (order.paymentMethodName) {
-            return order.paymentMethodName;
-        }
+    // 17. Kiểm tra đơn hiện tại hay lịch sử
+    function isCurrentOrder(order) {
+        const status = getOrderStatus(order);
 
-        if (order.paymentMethod === "cod") {
-            return "Thanh toán khi nhận hàng";
-        }
-
-        if (order.paymentMethod === "qr_transfer") {
-            return "Chuyển khoản qua mã QR";
-        }
-
-        return "---";
+        return status === "pending" || status === "confirmed" || status === "shipping";
     }
 
-    function buildFullAddress(customer) {
-        if (!customer) {
-            return "---";
-        }
 
-        const parts = [
-            customer.address,
-            customer.ward,
-            customer.district,
-            customer.province
-        ].filter(Boolean);
+    // 18. Load đơn hàng từ API
+    async function loadOrdersFromApi() {
+        const response = await getApi("orders/get-orders.php?page=1&limit=100&order_status=all&sort=latest");
+        const data = response.data || {};
+        const orders = Array.isArray(data.orders) ? data.orders : [];
 
-        if (parts.length === 0) {
-            return "---";
-        }
-
-        return parts.join(", ");
+        return orders.map(normalizeApiOrder);
     }
 
-    function buildVariantText(item) {
-        if (item.meta) {
-            return item.meta;
-        }
 
-        const parts = [];
+    // 19. Load đơn hàng từ localStorage
+    function loadOrdersFromLocalStorage() {
+        const userKey = getCurrentUserKey();
+        const orders = getOrdersFromStorage();
 
-        if (item.color) {
-            parts.push("Màu: " + item.color);
-        }
+        return orders
+            .map(normalizeLocalOrder)
+            .filter(function (order) {
+                if (!order.userKey) {
+                    return false;
+                }
 
-        if (item.size) {
-            parts.push("Size: " + item.size);
-        }
-
-        if (parts.length === 0) {
-            return "Chưa chọn phân loại";
-        }
-
-        return parts.join(" / ");
+                return String(order.userKey) === String(userKey);
+            });
     }
 
-    function getTotalQuantity(items) {
-        return items.reduce(function (total, item) {
-            return total + Number(item.quantity || item.qty || 0);
-        }, 0);
+
+    // 20. Load danh sách đơn hàng
+    async function loadOrders() {
+        showLoadingState();
+
+        try {
+            allOrders = await loadOrdersFromApi();
+        } catch (error) {
+            console.warn("Không lấy được đơn hàng từ API, fallback localStorage:", error);
+            allOrders = loadOrdersFromLocalStorage();
+        }
+
+        allOrders = allOrders.filter(isCurrentOrder);
+
+        renderOrders();
     }
 
-    // 16. Hiển thị trạng thái trang
 
-    function showPageState(type) {
-        if (myOrderLoadingState) myOrderLoadingState.hidden = true;
-        if (myOrderEmptyState) myOrderEmptyState.hidden = true;
-        if (myOrderErrorState) myOrderErrorState.hidden = true;
-        if (myOrderContent) myOrderContent.hidden = true;
-
-        if (type === "loading" && myOrderLoadingState) {
-            myOrderLoadingState.hidden = false;
+    // 21. Trạng thái hiển thị
+    function showLoadingState() {
+        if (orderLoadingState) {
+            orderLoadingState.hidden = false;
         }
 
-        if (type === "empty" && myOrderEmptyState) {
-            myOrderEmptyState.hidden = false;
+        if (orderErrorState) {
+            orderErrorState.hidden = true;
         }
 
-        if (type === "error" && myOrderErrorState) {
-            myOrderErrorState.hidden = false;
+        if (emptyOrderText) {
+            emptyOrderText.hidden = true;
+            emptyOrderText.classList.remove("show");
         }
 
-        if (type === "content" && myOrderContent) {
-            myOrderContent.hidden = false;
+        if (orderTableBody) {
+            orderTableBody.innerHTML = "";
         }
     }
 
-    function updateEmptyMessageForGuest() {
-        if (isUserLoggedIn()) {
-            return;
+    function showEmptyState() {
+        if (orderLoadingState) {
+            orderLoadingState.hidden = true;
         }
 
-        const emptyTitle = myOrderEmptyState?.querySelector("h3");
-        const emptyDesc = myOrderEmptyState?.querySelector("p");
-        const emptyLink = myOrderEmptyState?.querySelector("a");
-
-        if (emptyTitle) {
-            emptyTitle.textContent = "Vui lòng đăng nhập để xem đơn hàng";
+        if (orderErrorState) {
+            orderErrorState.hidden = true;
         }
 
-        if (emptyDesc) {
-            emptyDesc.textContent = "Trang đơn hàng của tôi chỉ hiển thị đơn hàng của tài khoản thành viên.";
-        }
-
-        if (emptyLink) {
-            emptyLink.textContent = "Đăng nhập ngay";
-            emptyLink.href = "../html/login.html";
+        if (emptyOrderText) {
+            emptyOrderText.hidden = false;
+            emptyOrderText.classList.add("show");
+            emptyOrderText.textContent = "Bạn chưa có đơn hàng đang xử lý.";
         }
     }
 
-    // 17. Render sản phẩm trong đơn
-
-    function createOrderProductElement(item) {
-        if (!orderProductItemTemplate) {
-            return null;
+    function showContentState() {
+        if (orderLoadingState) {
+            orderLoadingState.hidden = true;
         }
 
-        const clone = orderProductItemTemplate.content.cloneNode(true);
-
-        const productItem = clone.querySelector(".orderProductItem");
-        const productLink = clone.querySelector('[data-role="product-link"]');
-        const productImage = clone.querySelector('[data-role="product-image"]');
-        const productName = clone.querySelector('[data-role="product-name"]');
-        const productVariant = clone.querySelector('[data-role="product-variant"]');
-        const productQuantity = clone.querySelector('[data-role="product-quantity"]');
-        const productPrice = clone.querySelector('[data-role="product-price"]');
-
-        const productId = item.id || item.productId || "";
-        const name = item.name || item.productName || "Sản phẩm";
-        const image = item.image || item.img || item.thumbnail || "";
-        const price = Number(item.price || item.currentPrice || 0);
-        const quantity = Number(item.quantity || item.qty || 1);
-        const detailUrl = getProductDetailUrl(productId);
-
-        if (productItem) {
-            productItem.dataset.productId = productId;
+        if (orderErrorState) {
+            orderErrorState.hidden = true;
         }
 
-        if (productLink) {
-            productLink.href = detailUrl;
+        if (emptyOrderText) {
+            emptyOrderText.hidden = true;
+            emptyOrderText.classList.remove("show");
         }
-
-        if (productImage) {
-            productImage.src = image;
-            productImage.alt = name;
-        }
-
-        if (productName) {
-            productName.textContent = name;
-            productName.href = detailUrl;
-        }
-
-        if (productVariant) {
-            productVariant.textContent = buildVariantText(item);
-        }
-
-        if (productQuantity) {
-            productQuantity.textContent = "Số lượng: " + quantity;
-        }
-
-        if (productPrice) {
-            productPrice.textContent = formatPrice(price * quantity);
-        }
-
-        return clone;
     }
 
-    function renderProductsInOrder(order, productListElement) {
-        if (!productListElement) {
-            return;
+
+    // 22. Lọc đơn hàng
+    function getFilteredOrders() {
+        if (currentStatusFilter === "all") {
+            return allOrders;
         }
 
+        return allOrders.filter(function (order) {
+            return getOrderStatus(order) === currentStatusFilter;
+        });
+    }
+
+
+    // 23. Render sản phẩm trong đơn dạng text
+    function getOrderProductText(order) {
         const items = getOrderItems(order);
-        productListElement.innerHTML = "";
 
         if (items.length === 0) {
-            productListElement.innerHTML = "<p>Không có sản phẩm trong đơn hàng.</p>";
-            return;
+            return "Chưa có sản phẩm";
         }
 
-        const fragment = document.createDocumentFragment();
+        if (items.length === 1) {
+            const item = items[0];
+            const product = item.product || {};
 
-        items.forEach(function (item) {
-            const productElement = createOrderProductElement(item);
+            return product.name || item.name || item.productName || item.product_name || "Sản phẩm";
+        }
 
-            if (productElement) {
-                fragment.appendChild(productElement);
-            }
-        });
+        const firstItem = items[0];
+        const firstProduct = firstItem.product || {};
+        const firstName =
+            firstProduct.name ||
+            firstItem.name ||
+            firstItem.productName ||
+            firstItem.product_name ||
+            "Sản phẩm";
 
-        productListElement.appendChild(fragment);
+        return firstName + " và " + (items.length - 1) + " sản phẩm khác";
     }
 
-    // 18. Render card đơn hàng
 
-    function createMyOrderCard(order) {
-        if (!myOrderCardTemplate) {
-            return null;
+    // 24. Render dòng fallback nếu template không khớp
+    function createFallbackOrderRow(order) {
+        const status = getOrderStatus(order);
+        const statusInfo = getStatusInfo(status);
+        const money = getOrderMoney(order);
+
+        const row = document.createElement("tr");
+
+        row.dataset.orderId = order.id;
+        row.className = "orderRow";
+        row.innerHTML = `
+            <td>${order.orderCode}</td>
+            <td>${formatDateTime(order.createdAt)}</td>
+            <td>${getOrderProductText(order)}</td>
+            <td>${getOrderItemCount(order)} sản phẩm</td>
+            <td>${formatPrice(money.total)}</td>
+            <td><span class="statusBadge ${statusInfo.className}">${getOrderStatusLabel(order)}</span></td>
+            <td><a class="tableActionBtn" href="${getOrderDetailUrl(order)}">Chi tiết</a></td>
+        `;
+
+        return row;
+    }
+
+
+    // 25. Render một dòng đơn hàng bằng template
+    function createOrderRow(order) {
+        if (!orderHistoryRowTemplate) {
+            return createFallbackOrderRow(order);
         }
 
-        const clone = myOrderCardTemplate.content.cloneNode(true);
+        const clone = orderHistoryRowTemplate.content.cloneNode(true);
+        const row = clone.querySelector("tr") || clone.querySelector(".orderRow");
 
-        const card = clone.querySelector(".myOrderCard");
-        const orderCode = clone.querySelector('[data-role="order-code"]');
-        const orderStatus = clone.querySelector('[data-role="order-status"]');
-        const orderDate = clone.querySelector('[data-role="order-date"]');
-        const paymentMethod = clone.querySelector('[data-role="payment-method"]');
-        const receiverName = clone.querySelector('[data-role="receiver-name"]');
-        const receiverPhone = clone.querySelector('[data-role="receiver-phone"]');
-        const receiverAddress = clone.querySelector('[data-role="receiver-address"]');
+        const status = getOrderStatus(order);
+        const statusInfo = getStatusInfo(status);
+        const money = getOrderMoney(order);
 
-        const totalProducts = clone.querySelector('[data-role="total-products"]');
-        const productList = clone.querySelector('[data-role="product-list"]');
-
-        const orderTotal = clone.querySelector('[data-role="order-total"]');
-        const orderSubtotal = clone.querySelector('[data-role="order-subtotal"]');
-        const orderShippingFee = clone.querySelector('[data-role="order-shipping-fee"]');
-        const orderPointDiscount = clone.querySelector('[data-role="order-point-discount"]');
-        const orderVoucherDiscount = clone.querySelector('[data-role="order-voucher-discount"]');
-        const orderDiscountTotal = clone.querySelector('[data-role="order-discount-total"]');
-        const orderFinalTotal = clone.querySelector('[data-role="order-final-total"]');
-
-        const orderDetailLink = clone.querySelector('[data-role="order-detail-link"]');
-        const receivedOrderBtn = clone.querySelector('[data-role="received-order-btn"]');
-
-        const orderId = getOrderId(order);
-        const items = getOrderItems(order);
-        const summary = getOrderSummary(order);
-        const customer = order.customer || {};
-        const statusText = getOrderStatusText(order);
-
-        if (card) {
-            card.dataset.orderId = orderId;
+        if (row) {
+            row.dataset.orderId = order.id;
+            row.dataset.orderCode = order.orderCode;
         }
 
-        if (orderCode) {
-            orderCode.textContent = orderId || "---";
+        const orderCodeText = clone.querySelector(".orderCodeText");
+        const orderDateText = clone.querySelector(".orderDateText");
+        const orderProductText = clone.querySelector(".orderProductText");
+        const orderItemCountText = clone.querySelector(".orderItemCountText");
+        const orderTotalText = clone.querySelector(".orderTotalText");
+        const orderStatusText = clone.querySelector(".orderStatusText");
+        const orderDetailLink = clone.querySelector(".orderDetailLink, [data-role='order-detail-link']");
+        const orderActionBtn = clone.querySelector("[data-action='view-detail'], .orderActionBtn");
+
+        if (orderCodeText) {
+            orderCodeText.textContent = order.orderCode;
         }
 
-        if (orderStatus) {
-            orderStatus.textContent = statusText;
-            orderStatus.dataset.status = statusText;
+        if (orderDateText) {
+            orderDateText.textContent = formatDateTime(order.createdAt);
         }
 
-        if (orderDate) {
-            orderDate.textContent = formatDateTime(order.createdAt || order.orderDate);
+        if (orderProductText) {
+            orderProductText.textContent = getOrderProductText(order);
         }
 
-        if (paymentMethod) {
-            paymentMethod.textContent = getPaymentName(order);
+        if (orderItemCountText) {
+            orderItemCountText.textContent = getOrderItemCount(order) + " sản phẩm";
         }
 
-        if (receiverName) {
-            receiverName.textContent = customer.fullName || customer.name || "---";
+        if (orderTotalText) {
+            orderTotalText.textContent = formatPrice(money.total);
         }
 
-        if (receiverPhone) {
-            receiverPhone.textContent = customer.phone || "---";
-        }
-
-        if (receiverAddress) {
-            receiverAddress.textContent = buildFullAddress(customer);
-        }
-
-        if (totalProducts) {
-            totalProducts.textContent = getTotalQuantity(items) + " sản phẩm";
-        }
-
-        if (productList) {
-            renderProductsInOrder(order, productList);
-        }
-
-        if (orderTotal) {
-            orderTotal.textContent = formatPrice(summary.total);
-        }
-
-        if (orderSubtotal) {
-            orderSubtotal.textContent = formatPrice(summary.subtotal);
-        }
-
-        if (orderShippingFee) {
-            orderShippingFee.textContent = formatPrice(summary.shippingFee);
-        }
-
-        if (orderPointDiscount) {
-            orderPointDiscount.textContent = formatDiscount(summary.pointDiscount);
-            orderPointDiscount.closest(".orderTotalBreakdownRow").hidden = summary.pointDiscount <= 0;
-        }
-
-        if (orderVoucherDiscount) {
-            orderVoucherDiscount.textContent = formatDiscount(summary.voucherDiscount);
-            orderVoucherDiscount.closest(".orderTotalBreakdownRow").hidden = summary.voucherDiscount <= 0;
-        }
-
-        if (orderDiscountTotal) {
-            orderDiscountTotal.textContent = formatDiscount(summary.discountTotal);
-            orderDiscountTotal.closest(".orderTotalBreakdownRow").hidden = summary.discountTotal <= 0;
-        }
-
-        if (orderFinalTotal) {
-            orderFinalTotal.textContent = formatPrice(summary.total);
+        if (orderStatusText) {
+            orderStatusText.textContent = getOrderStatusLabel(order);
+            orderStatusText.className = "statusBadge orderStatusText " + statusInfo.className;
         }
 
         if (orderDetailLink) {
-            orderDetailLink.href = getOrderDetailUrl(orderId);
+            orderDetailLink.href = getOrderDetailUrl(order);
         }
 
-        if (receivedOrderBtn) {
-            receivedOrderBtn.dataset.orderId = orderId;
+        if (orderActionBtn) {
+            if (orderActionBtn.tagName === "A") {
+                orderActionBtn.href = getOrderDetailUrl(order);
+            }
+
+            orderActionBtn.dataset.orderId = order.id;
+            orderActionBtn.textContent = "Chi tiết";
         }
 
         return clone;
     }
 
-    function renderMyOrderList(orders) {
-        if (!myOrderList) {
+
+    // 26. Render danh sách đơn hàng
+    function renderOrders() {
+        if (!orderTableBody) {
             return;
         }
 
-        myOrderList.innerHTML = "";
+        const filteredOrders = getFilteredOrders();
+
+        orderTableBody.innerHTML = "";
+
+        if (filteredOrders.length === 0) {
+            showEmptyState();
+            return;
+        }
 
         const fragment = document.createDocumentFragment();
 
-        orders.forEach(function (order) {
-            const orderCard = createMyOrderCard(order);
+        filteredOrders.forEach(function (order) {
+            const row = createOrderRow(order);
 
-            if (orderCard) {
-                fragment.appendChild(orderCard);
+            if (row) {
+                fragment.appendChild(row);
             }
         });
 
-        myOrderList.appendChild(fragment);
+        orderTableBody.appendChild(fragment);
+        showContentState();
     }
 
-    // 19. Toggle dropdown
 
-    function toggleDropdown(button, dropdown) {
-        if (!button || !dropdown) {
-            return;
-        }
+    // 27. Đổi trạng thái tab
+    function setActiveStatusFilter(status) {
+        currentStatusFilter = status || "all";
 
-        const isOpening = dropdown.hidden;
-
-        dropdown.hidden = !isOpening;
-        button.setAttribute("aria-expanded", String(isOpening));
-    }
-
-    function handleToggleProducts(button) {
-        const card = button.closest(".myOrderCard");
-        const dropdown = card?.querySelector('[data-role="product-dropdown"]');
-
-        toggleDropdown(button, dropdown);
-    }
-
-    function handleToggleTotal(button) {
-        const card = button.closest(".myOrderCard");
-        const dropdown = card?.querySelector('[data-role="total-breakdown"]');
-
-        toggleDropdown(button, dropdown);
-    }
-
-    // 20. Cập nhật đơn hàng
-
-    function updateOrderById(orderId, updater) {
-        const orders = getOrdersFromStorage();
-
-        const updatedOrders = orders.map(function (order) {
-            const currentOrderId = getOrderId(order);
-
-            if (currentOrderId !== orderId) {
-                return order;
-            }
-
-            return updater(order);
+        orderStatusTabs.forEach(function (tab) {
+            tab.classList.toggle("active", tab.dataset.orderStatus === currentStatusFilter);
         });
 
-        saveOrdersToStorage(updatedOrders);
-
-        const currentOrder = getDataFromStorage(CURRENT_ORDER_STORAGE_KEY, null);
-
-        if (currentOrder && getOrderId(currentOrder) === orderId) {
-            const updatedCurrentOrder = updater(currentOrder);
-            saveDataToStorage(CURRENT_ORDER_STORAGE_KEY, updatedCurrentOrder);
+        if (orderStatusFilter) {
+            orderStatusFilter.value = currentStatusFilter;
         }
+
+        renderOrders();
     }
 
-    function markOrderAsReceived(orderId) {
-        updateOrderById(orderId, function (order) {
-            return {
-                ...order,
-                status: "completed",
-                statusText: "Hoàn thành",
-                completedAt: new Date().toISOString()
-            };
-        });
 
-        selectedReceivedOrderId = orderId;
-        openRewardPopup();
-    }
-
-    // 21. Popup nhận hàng
-
-    function openRewardPopup() {
-        if (!rewardPopup) {
-            return;
-        }
-
-        rewardPopup.hidden = false;
-        document.body.style.overflow = "hidden";
-    }
-
-    function closeRewardPopupAndRefresh() {
-        if (!rewardPopup) {
-            return;
-        }
-
-        rewardPopup.hidden = true;
-        document.body.style.overflow = "";
-        renderMyOrderPage();
-    }
-
-    // 22. Popup đánh giá
-
-    function openReviewPopup(orderId) {
-        if (!reviewPopup) {
-            return;
-        }
-
-        selectedReviewRating = 0;
-
-        if (reviewOrderId) {
-            reviewOrderId.value = orderId;
-        }
-
-        if (reviewRating) {
-            reviewRating.value = "";
-        }
-
-        if (reviewContent) {
-            reviewContent.value = "";
-        }
-
-        reviewStars?.querySelectorAll(".reviewStarBtn").forEach(function (button) {
-            button.classList.remove("active");
-        });
-
-        reviewPopup.hidden = false;
-        document.body.style.overflow = "hidden";
-    }
-
-    function closeReviewPopupAndRefresh() {
-        if (!reviewPopup) {
-            return;
-        }
-
-        reviewPopup.hidden = true;
-        document.body.style.overflow = "";
-        renderMyOrderPage();
-    }
-
-    function selectReviewRating(ratingValue) {
-        selectedReviewRating = Number(ratingValue || 0);
-
-        if (reviewRating) {
-            reviewRating.value = String(selectedReviewRating);
-        }
-
-        reviewStars?.querySelectorAll(".reviewStarBtn").forEach(function (button) {
-            const buttonValue = Number(button.dataset.value || 0);
-            button.classList.toggle("active", buttonValue <= selectedReviewRating);
-        });
-    }
-
-    // 23. Lưu đánh giá và cộng điểm
-
-    function getReviewsFromStorage() {
-        const reviews = getDataFromStorage(ORDER_REVIEWS_STORAGE_KEY, []);
-
-        if (!Array.isArray(reviews)) {
-            return [];
-        }
-
-        return reviews;
-    }
-
-    function saveReview(reviewData) {
-        const reviews = getReviewsFromStorage();
-
-        const existedIndex = reviews.findIndex(function (review) {
-            return review.orderId === reviewData.orderId;
-        });
-
-        if (existedIndex >= 0) {
-            reviews[existedIndex] = reviewData;
-        } else {
-            reviews.unshift(reviewData);
-        }
-
-        saveDataToStorage(ORDER_REVIEWS_STORAGE_KEY, reviews);
-    }
-
-    function getUserPointMap() {
-        const pointMap = getDataFromStorage(USER_POINTS_STORAGE_KEY, {});
-
-        if (!pointMap || typeof pointMap !== "object" || Array.isArray(pointMap)) {
-            return {};
-        }
-
-        return pointMap;
-    }
-
-    function getCurrentUserPoints() {
-        const userKey = getCurrentUserKey();
-        const currentUser = getCurrentUser();
-
-        if (!userKey) {
-            return 0;
-        }
-
-        const pointMap = getUserPointMap();
-
-        if (typeof pointMap[userKey] === "number") {
-            return pointMap[userKey];
-        }
-
-        if (currentUser && typeof currentUser.points === "number") {
-            return currentUser.points;
-        }
-
-        return 0;
-    }
-
-    function saveCurrentUserPoints(points) {
-        const userKey = getCurrentUserKey();
-        const currentUser = getCurrentUser();
-
-        if (!userKey) {
-            return;
-        }
-
-        const pointMap = getUserPointMap();
-        pointMap[userKey] = Number(points || 0);
-
-        saveDataToStorage(USER_POINTS_STORAGE_KEY, pointMap);
-
-        if (currentUser && typeof currentUser === "object") {
-            currentUser.points = Number(points || 0);
-            saveDataToStorage(CURRENT_USER_STORAGE_KEY, currentUser);
-        }
-    }
-
-    function addReviewRewardPoints(orderId) {
-        let shouldAddPoints = false;
-
-        updateOrderById(orderId, function (order) {
-            if (order.reviewRewardAdded) {
-                return order;
-            }
-
-            shouldAddPoints = true;
-
-            return {
-                ...order,
-                reviewRewardAdded: true,
-                reviewRewardPoints: REVIEW_REWARD_POINTS
-            };
-        });
-
-        if (!shouldAddPoints) {
-            return false;
-        }
-
-        const currentPoints = getCurrentUserPoints();
-        saveCurrentUserPoints(currentPoints + REVIEW_REWARD_POINTS);
-
-        return true;
-    }
-
-    function handleSubmitReview(event) {
+    // 28. Xử lý tìm kiếm
+    function handleSearchSubmit(event) {
         event.preventDefault();
 
-        const orderId = reviewOrderId?.value || selectedReceivedOrderId;
-        const rating = Number(reviewRating?.value || 0);
-        const content = reviewContent?.value.trim() || "";
+        const keyword = searchKeyword ? searchKeyword.value.trim() : "";
 
-        if (!orderId) {
-            showMessage("Không tìm thấy đơn hàng cần đánh giá.");
+        if (!keyword) {
+            alert("Vui lòng nhập từ khóa tìm kiếm.");
             return;
         }
 
-        if (rating <= 0) {
-            showMessage("Vui lòng chọn số sao đánh giá.");
+        window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
+    }
+
+
+    // 29. Xử lý click bảng đơn hàng
+    function handleOrderTableClick(event) {
+        const detailButton = event.target.closest("[data-action='view-detail'], .orderActionBtn");
+
+        if (detailButton) {
             return;
         }
 
-        if (!content) {
-            showMessage("Vui lòng nhập nội dung đánh giá.");
+        const row = event.target.closest("tr");
+
+        if (!row || !row.dataset.orderId) {
             return;
         }
 
-        const reviewData = {
-            orderId: orderId,
-            userKey: getCurrentUserKey(),
-            rating: rating,
-            content: content,
-            createdAt: new Date().toISOString()
-        };
+        window.location.href = "../html/order-detail.html?id=" + encodeURIComponent(row.dataset.orderId);
+    }
 
-        saveReview(reviewData);
 
-        updateOrderById(orderId, function (order) {
-            return {
-                ...order,
-                reviewed: true,
-                review: reviewData
-            };
+    // 30. Gắn sự kiện
+    function bindEvents() {
+        if (searchForm) {
+            searchForm.addEventListener("submit", handleSearchSubmit);
+        }
+
+        orderStatusTabs.forEach(function (tab) {
+            tab.addEventListener("click", function () {
+                setActiveStatusFilter(tab.dataset.orderStatus || "all");
+            });
         });
 
-        const addedPoints = addReviewRewardPoints(orderId);
-
-        if (addedPoints) {
-            showMessage("Cảm ơn bạn đã đánh giá. Bạn được cộng " + REVIEW_REWARD_POINTS + " điểm.");
-        } else {
-            showMessage("Cảm ơn bạn đã đánh giá đơn hàng.");
+        if (orderStatusFilter) {
+            orderStatusFilter.addEventListener("change", function () {
+                setActiveStatusFilter(orderStatusFilter.value);
+            });
         }
 
-        closeReviewPopupAndRefresh();
-    }
-
-    // 24. Gắn sự kiện danh sách đơn hàng
-
-    myOrderList?.addEventListener("click", function (event) {
-        const productToggleBtn = event.target.closest('[data-role="toggle-products-btn"]');
-        const totalToggleBtn = event.target.closest('[data-role="toggle-total-btn"]');
-        const receivedOrderBtn = event.target.closest('[data-role="received-order-btn"]');
-
-        if (productToggleBtn) {
-            handleToggleProducts(productToggleBtn);
-            return;
-        }
-
-        if (totalToggleBtn) {
-            handleToggleTotal(totalToggleBtn);
-            return;
-        }
-
-        if (receivedOrderBtn) {
-            const orderId = receivedOrderBtn.dataset.orderId;
-
-            if (!orderId) {
-                return;
-            }
-
-            markOrderAsReceived(orderId);
-        }
-    });
-
-    // 25. Gắn sự kiện popup nhận hàng
-
-    closeRewardPopupBtn?.addEventListener("click", closeRewardPopupAndRefresh);
-    rewardPopupOverlay?.addEventListener("click", closeRewardPopupAndRefresh);
-    rewardLaterBtn?.addEventListener("click", closeRewardPopupAndRefresh);
-
-    rewardReviewNowBtn?.addEventListener("click", function () {
-        if (rewardPopup) {
-            rewardPopup.hidden = true;
-        }
-
-        openReviewPopup(selectedReceivedOrderId);
-    });
-
-    // 26. Gắn sự kiện popup đánh giá
-
-    closeReviewPopupBtn?.addEventListener("click", closeReviewPopupAndRefresh);
-    reviewPopupOverlay?.addEventListener("click", closeReviewPopupAndRefresh);
-    cancelReviewBtn?.addEventListener("click", closeReviewPopupAndRefresh);
-
-    reviewStars?.addEventListener("click", function (event) {
-        const starButton = event.target.closest(".reviewStarBtn");
-
-        if (!starButton) {
-            return;
-        }
-
-        selectReviewRating(starButton.dataset.value);
-    });
-
-    reviewForm?.addEventListener("submit", handleSubmitReview);
-
-    // 27. Đăng xuất
-
-    logoutBtn?.addEventListener("click", function () {
-        localStorage.setItem(IS_LOGIN_STORAGE_KEY, "false");
-        localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
-
-        window.location.href = "../html/login.html";
-    });
-
-    // 28. Xử lý phím ESC
-
-    document.addEventListener("keydown", function (event) {
-        if (event.key !== "Escape") {
-            return;
-        }
-
-        if (rewardPopup && !rewardPopup.hidden) {
-            closeRewardPopupAndRefresh();
-        }
-
-        if (reviewPopup && !reviewPopup.hidden) {
-            closeReviewPopupAndRefresh();
-        }
-    });
-
-    // 29. Render trang my-order
-
-    function renderMyOrderPage() {
-        try {
-            renderSidebarUser();
-            updateEmptyMessageForGuest();
-
-            if (!isUserLoggedIn()) {
-                currentOrders = [];
-                showPageState("empty");
-                return;
-            }
-
-            currentOrders = getCurrentOrders();
-
-            if (currentOrders.length === 0) {
-                showPageState("empty");
-                return;
-            }
-
-            renderMyOrderList(currentOrders);
-            showPageState("content");
-        } catch (error) {
-            console.error("Lỗi my-order:", error);
-            showPageState("error");
+        if (orderTableBody) {
+            orderTableBody.addEventListener("click", handleOrderTableClick);
         }
     }
 
-    // 30. Khởi tạo trang
 
-    function initMyOrderPage() {
-        showPageState("loading");
+    // 31. Khởi tạo trang đơn hàng của tôi
+    async function initMyOrderPage() {
+        const isLogin = await requireLogin();
 
-        setTimeout(function () {
-            renderMyOrderPage();
-        }, 250);
+        if (!isLogin) {
+            return;
+        }
+
+        renderCurrentUserInfo();
+        bindEvents();
+
+        await loadOrders();
     }
 
     initMyOrderPage();

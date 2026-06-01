@@ -1,25 +1,32 @@
-// 1. Khởi tạo Auth UI
+// =========================================================
+// File: Frontend/js/auth-ui.js
+// Mục đích: Đồng bộ giao diện tài khoản khách hàng trên topbar
+// =========================================================
 
 (function () {
-    // 2. Key localStorage
-
+    // 1. Key localStorage
     const AUTH_CURRENT_USER_STORAGE_KEY = "current_user";
     const AUTH_IS_LOGIN_STORAGE_KEY = "is_login";
 
-    // 3. Biến DOM
 
+    // 2. Biến DOM
     let topbarAccountLink;
     let topbarAccountText;
+    let logoutButtons;
 
-    // 4. Lấy phần tử DOM
 
+    // 3. Lấy phần tử DOM
     function getAuthElements() {
         topbarAccountLink = document.getElementById("topbarAccountLink");
         topbarAccountText = document.getElementById("topbarAccountText");
+
+        logoutButtons = document.querySelectorAll(
+            "#logoutBtn, #profileLogoutBtn, [data-action='logout'], [data-action='logout-customer']"
+        );
     }
 
-    // 5. Đọc localStorage
 
+    // 4. Đọc localStorage
     function getDataFromStorage(key, fallbackValue) {
         const rawData = localStorage.getItem(key);
 
@@ -35,8 +42,15 @@
         }
     }
 
-    // 6. Lấy thông tin người dùng đang đăng nhập
 
+    // 5. Xóa đăng nhập local
+    function clearLocalAuth() {
+        localStorage.removeItem(AUTH_CURRENT_USER_STORAGE_KEY);
+        localStorage.removeItem(AUTH_IS_LOGIN_STORAGE_KEY);
+    }
+
+
+    // 6. Lấy thông tin người dùng đang đăng nhập
     function getCurrentUser() {
         const isLogin = localStorage.getItem(AUTH_IS_LOGIN_STORAGE_KEY) === "true";
 
@@ -53,19 +67,22 @@
         if (typeof currentUser === "string") {
             return {
                 id: currentUser,
-                fullName: currentUser
+                fullName: currentUser,
+                name: currentUser
             };
         }
 
         return currentUser;
     }
 
+
+    // 7. Kiểm tra đã đăng nhập chưa
     function isUserLoggedIn() {
         return Boolean(getCurrentUser());
     }
 
-    // 7. Lấy key người dùng
 
+    // 8. Lấy key người dùng
     function getCurrentUserKey() {
         const currentUser = getCurrentUser();
 
@@ -85,8 +102,8 @@
         );
     }
 
-    // 8. Lấy tên hiển thị
 
+    // 9. Lấy tên hiển thị
     function getDisplayName(user) {
         if (!user) {
             return "Tài khoản";
@@ -94,6 +111,7 @@
 
         return (
             user.fullName ||
+            user.full_name ||
             user.name ||
             user.username ||
             user.email ||
@@ -101,8 +119,8 @@
         );
     }
 
-    // 9. Tạo link đăng nhập có redirect
 
+    // 10. Kiểm tra trang đăng nhập / đăng ký
     function isAuthPage() {
         const currentPath = window.location.pathname;
 
@@ -112,6 +130,8 @@
         );
     }
 
+
+    // 11. Lấy URL hiện tại để redirect sau đăng nhập
     function getCurrentPageRedirectUrl() {
         const currentPath = window.location.pathname;
         const currentFileName = currentPath.split("/").pop() || "home.html";
@@ -120,6 +140,8 @@
         return "../html/" + currentFileName + currentSearch;
     }
 
+
+    // 12. Tạo link đăng nhập có redirect
     function getLoginUrlWithRedirect() {
         if (isAuthPage()) {
             return "../html/login.html";
@@ -130,8 +152,14 @@
         return "../html/login.html?redirect=" + encodeURIComponent(redirectUrl);
     }
 
-    // 10. Render topbar tài khoản
 
+    // 13. Lấy link tài khoản sau khi đăng nhập
+    function getAccountUrl() {
+        return "../html/profile.html";
+    }
+
+
+    // 14. Render topbar tài khoản
     function renderTopbarAccount() {
         getAuthElements();
 
@@ -139,30 +167,110 @@
             return;
         }
 
-        if (!isUserLoggedIn()) {
+        const currentUser = getCurrentUser();
+
+        if (!currentUser) {
             topbarAccountLink.href = getLoginUrlWithRedirect();
             topbarAccountText.textContent = "Tài khoản";
+            topbarAccountLink.title = "Đăng nhập tài khoản";
             return;
         }
 
-        const currentUser = getCurrentUser();
         const displayName = getDisplayName(currentUser);
 
-        topbarAccountLink.href = "../html/profile.html";
+        topbarAccountLink.href = getAccountUrl();
         topbarAccountText.textContent = displayName;
+        topbarAccountLink.title = "Thông tin tài khoản";
     }
 
-    // 11. Cho file khác dùng lại nếu cần
 
+    // 15. Đồng bộ session PHP nếu có CustomerApi
+    async function syncCustomerSession() {
+        if (!window.CustomerApi) {
+            renderTopbarAccount();
+            return;
+        }
+
+        const localUser = getCurrentUser();
+
+        if (!localUser) {
+            renderTopbarAccount();
+            return;
+        }
+
+        try {
+            await window.CustomerApi.getCurrentCustomerFromSession();
+        } catch (error) {
+            clearLocalAuth();
+        }
+
+        renderTopbarAccount();
+    }
+
+
+    // 16. Xử lý đăng xuất
+    async function logoutCurrentUser() {
+        if (window.CustomerApi && typeof window.CustomerApi.logoutCustomer === "function") {
+            await window.CustomerApi.logoutCustomer();
+            return;
+        }
+
+        clearLocalAuth();
+        renderTopbarAccount();
+
+        window.location.href = "../html/login.html";
+    }
+
+
+    // 17. Gắn sự kiện đăng xuất
+    function bindLogoutEvents() {
+        getAuthElements();
+
+        if (!logoutButtons || logoutButtons.length === 0) {
+            return;
+        }
+
+        logoutButtons.forEach(function (button) {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                const isConfirm = confirm("Bạn có chắc muốn đăng xuất không?");
+
+                if (!isConfirm) {
+                    return;
+                }
+
+                logoutCurrentUser();
+            });
+        });
+    }
+
+
+    // 18. Khởi tạo Auth UI
+    function initAuthUI() {
+        renderTopbarAccount();
+        bindLogoutEvents();
+
+        setTimeout(function () {
+            syncCustomerSession();
+        }, 100);
+    }
+
+
+    // 19. Cho file khác dùng lại
     window.authUI = {
         getCurrentUser: getCurrentUser,
         isUserLoggedIn: isUserLoggedIn,
         getCurrentUserKey: getCurrentUserKey,
         getDisplayName: getDisplayName,
-        renderTopbarAccount: renderTopbarAccount
+
+        renderTopbarAccount: renderTopbarAccount,
+        syncCustomerSession: syncCustomerSession,
+        logoutCurrentUser: logoutCurrentUser,
+        clearLocalAuth: clearLocalAuth
     };
 
-    // 12. Khởi tạo Auth UI
 
-    document.addEventListener("DOMContentLoaded", renderTopbarAccount);
+    // 20. Chạy khi DOM sẵn sàng
+    document.addEventListener("DOMContentLoaded", initAuthUI);
 })();

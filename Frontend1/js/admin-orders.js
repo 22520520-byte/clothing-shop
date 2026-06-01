@@ -1,127 +1,25 @@
-// 1. Khai báo key localStorage
-const ADMIN_CURRENT_USER_KEY = "admin_current_user";
-const ADMIN_IS_LOGIN_KEY = "admin_is_login";
-const ADMIN_ORDERS_KEY = "admin_orders";
+// =========================================================
+// File: Frontend1/js/admin-orders.js
+// Mục đích: Gắn trang quản lý đơn hàng admin với API backend thật
+// =========================================================
 
-// 2. Dữ liệu đơn hàng mẫu
-const demoAdminOrders = [
-    {
-        id: "DH001",
-        customerName: "Nguyễn Minh Anh",
-        phone: "0901234567",
-        address: "12 Nguyễn Huệ, Quận 1, TP.HCM",
-        orderDate: "2026-05-18",
-        status: "pending",
-        note: "Giao hàng giờ hành chính.",
-        shippingFee: 30000,
-        discount: 50000,
-        items: [
-            {
-                name: "Áo thun basic nam",
-                color: "Trắng",
-                size: "L",
-                quantity: 2,
-                price: 199000
-            },
-            {
-                name: "Quần jean xanh đậm",
-                color: "Xanh",
-                size: "32",
-                quantity: 1,
-                price: 459000
-            }
-        ]
-    },
-    {
-        id: "DH002",
-        customerName: "Trần Hoàng Nam",
-        phone: "0912345678",
-        address: "45 Võ Văn Ngân, TP Thủ Đức, TP.HCM",
-        orderDate: "2026-05-18",
-        status: "shipping",
-        note: "Gọi trước khi giao.",
-        shippingFee: 30000,
-        discount: 0,
-        items: [
-            {
-                name: "Áo hoodie form rộng",
-                color: "Đen",
-                size: "XL",
-                quantity: 1,
-                price: 399000
-            },
-            {
-                name: "Mũ lưỡi trai basic",
-                color: "Đen",
-                size: "Freesize",
-                quantity: 1,
-                price: 129000
-            }
-        ]
-    },
-    {
-        id: "DH003",
-        customerName: "Lê Phương Thảo",
-        phone: "0987654321",
-        address: "88 Lê Văn Sỹ, Quận 3, TP.HCM",
-        orderDate: "2026-05-17",
-        status: "completed",
-        note: "",
-        shippingFee: 0,
-        discount: 100000,
-        items: [
-            {
-                name: "Áo khoác kaki nữ",
-                color: "Be",
-                size: "M",
-                quantity: 1,
-                price: 520000
-            },
-            {
-                name: "Chân váy ngắn basic",
-                color: "Đen",
-                size: "M",
-                quantity: 2,
-                price: 299000
-            }
-        ]
-    },
-    {
-        id: "DH004",
-        customerName: "Phạm Quốc Huy",
-        phone: "0934567890",
-        address: "25 Cách Mạng Tháng 8, Quận 10, TP.HCM",
-        orderDate: "2026-05-17",
-        status: "cancelled",
-        note: "Khách hủy vì đặt nhầm size.",
-        shippingFee: 30000,
-        discount: 0,
-        items: [
-            {
-                name: "Áo sơ mi trắng basic",
-                color: "Trắng",
-                size: "L",
-                quantity: 1,
-                price: 350000
-            }
-        ]
-    }
-];
 
-// 3. Lấy element thông tin admin
+// 1. Lấy element thông tin admin
 const adminAvatar = document.getElementById("adminAvatar");
 const adminName = document.getElementById("adminName");
 const adminRole = document.getElementById("adminRole");
 const adminCurrentDate = document.getElementById("adminCurrentDate");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
 
-// 4. Lấy element thống kê
+
+// 2. Lấy element thống kê đơn hàng
 const totalOrderCount = document.getElementById("totalOrderCount");
 const pendingOrderCount = document.getElementById("pendingOrderCount");
 const shippingOrderCount = document.getElementById("shippingOrderCount");
 const completedOrderCount = document.getElementById("completedOrderCount");
 
-// 5. Lấy element bộ lọc và bảng
+
+// 3. Lấy element bộ lọc và bảng
 const orderSearchInput = document.getElementById("orderSearchInput");
 const orderStatusFilter = document.getElementById("orderStatusFilter");
 const orderSortFilter = document.getElementById("orderSortFilter");
@@ -129,23 +27,44 @@ const orderTableBody = document.getElementById("orderTableBody");
 const emptyOrderText = document.getElementById("emptyOrderText");
 const orderRowTemplate = document.getElementById("orderRowTemplate");
 
-// 6. Format tiền Việt Nam
+
+// 4. Biến lưu dữ liệu đơn hàng
+let currentAdminUser = null;
+let adminOrders = [];
+let orderSummary = null;
+
+
+// 5. Format tiền Việt Nam
 function formatPrice(price) {
+    if (window.AdminApi && window.AdminApi.formatPrice) {
+        return window.AdminApi.formatPrice(price);
+    }
+
     return Number(price || 0).toLocaleString("vi-VN") + "đ";
 }
 
-// 7. Format ngày Việt Nam
+
+// 6. Format ngày Việt Nam
 function formatDate(dateString) {
-    if (!dateString) return "";
+    if (!dateString) {
+        return "";
+    }
 
     const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+        return dateString;
+    }
 
     return date.toLocaleDateString("vi-VN");
 }
 
-// 8. Render ngày hiện tại
+
+// 7. Render ngày hiện tại
 function renderCurrentDate() {
-    if (!adminCurrentDate) return;
+    if (!adminCurrentDate) {
+        return;
+    }
 
     const today = new Date();
 
@@ -157,215 +76,271 @@ function renderCurrentDate() {
     });
 }
 
-// 9. Kiểm tra đăng nhập admin
-function checkAdminLogin() {
-    const isLogin = localStorage.getItem(ADMIN_IS_LOGIN_KEY) === "true";
-    const currentAdmin = localStorage.getItem(ADMIN_CURRENT_USER_KEY);
 
-    if (!isLogin || !currentAdmin) {
-        window.location.href = "../html/admin-login.html";
-        return null;
+// 8. Lấy chữ đại diện
+function getFirstLetter(text) {
+    if (!text) {
+        return "A";
     }
 
-    try {
-        return JSON.parse(currentAdmin);
-    } catch (error) {
-        localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-        localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
-
-        window.location.href = "../html/admin-login.html";
-        return null;
-    }
+    return text.trim().charAt(0).toUpperCase();
 }
+
+
+// 9. Lấy nhãn vai trò admin
+function getAdminRoleLabel(roleCode, roleName) {
+    if (roleCode === "owner") {
+        return "Chủ cửa hàng";
+    }
+
+    if (roleCode === "admin") {
+        return "Quản trị viên";
+    }
+
+    if (roleCode === "staff") {
+        return "Nhân viên";
+    }
+
+    return roleName || "Quản trị viên";
+}
+
 
 // 10. Hiển thị thông tin admin
 function renderAdminInfo(adminUser) {
-    if (!adminUser) return;
+    if (!adminUser) {
+        return;
+    }
 
-    const fullName = adminUser.fullName || "Quản trị viên";
-    const roleText = adminUser.role === "owner" ? "Chủ cửa hàng" : "Nhân viên";
+    const fullName = adminUser.fullName || adminUser.full_name || "Quản trị viên";
+    const roleCode = adminUser.role || "";
+    const roleName = adminUser.roleName || "";
 
     if (adminName) {
         adminName.textContent = fullName;
     }
 
     if (adminRole) {
-        adminRole.textContent = roleText;
+        adminRole.textContent = getAdminRoleLabel(roleCode, roleName);
     }
 
     if (adminAvatar) {
-        adminAvatar.textContent = fullName.charAt(0).toUpperCase();
+        adminAvatar.textContent = getFirstLetter(fullName);
     }
 
     const ownerOnlyLinks = document.querySelectorAll("[data-owner-only='true']");
 
-    ownerOnlyLinks.forEach(function(link) {
-        if (adminUser.role !== "owner") {
-            link.style.display = "none";
-        }
+    ownerOnlyLinks.forEach(function (link) {
+        link.style.display = roleCode === "owner" ? "" : "none";
     });
 }
 
-// 11. Đăng xuất admin
-function handleAdminLogout() {
-    localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-    localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
 
-    window.location.href = "../html/admin-login.html";
+// 11. Lấy tên khách hàng từ đơn hàng API
+function getOrderCustomerName(order) {
+    if (order.customer && order.customer.name) {
+        return order.customer.name;
+    }
+
+    if (order.receiver && order.receiver.name) {
+        return order.receiver.name;
+    }
+
+    if (order.receiver_name) {
+        return order.receiver_name;
+    }
+
+    return "Khách hàng";
 }
 
-// 12. Tính tổng tiền hàng
-function calculateSubtotal(items) {
-    return (items || []).reduce(function(total, item) {
-        return total + Number(item.price || 0) * Number(item.quantity || 0);
-    }, 0);
+
+// 12. Lấy số điện thoại từ đơn hàng API
+function getOrderCustomerPhone(order) {
+    if (order.receiver && order.receiver.phone) {
+        return order.receiver.phone;
+    }
+
+    if (order.customer && order.customer.phone) {
+        return order.customer.phone;
+    }
+
+    if (order.receiver_phone) {
+        return order.receiver_phone;
+    }
+
+    return "Chưa cập nhật";
 }
 
-// 13. Tính tổng thanh toán
-function calculateOrderTotal(order) {
-    const subtotal = calculateSubtotal(order.items || []);
-    const shippingFee = Number(order.shippingFee || 0);
-    const discount = Number(order.discount || 0);
 
-    return subtotal + shippingFee - discount;
+// 13. Lấy tổng tiền từ đơn hàng API
+function getOrderFinalTotal(order) {
+    if (order.money && order.money.final_total !== undefined) {
+        return Number(order.money.final_total || 0);
+    }
+
+    if (order.final_total !== undefined) {
+        return Number(order.final_total || 0);
+    }
+
+    return 0;
 }
 
-// 14. Tạo link trang chi tiết đơn hàng
-function getAdminOrderDetailUrl(orderId) {
-    return "../html/admin-order-detail.html?id=" + encodeURIComponent(orderId);
+
+// 14. Lấy số sản phẩm trong đơn hàng
+function getOrderItemCount(order) {
+    if (order.summary && order.summary.total_items !== undefined) {
+        return Number(order.summary.total_items || 0);
+    }
+
+    if (Array.isArray(order.items)) {
+        return order.items.length;
+    }
+
+    return 0;
 }
 
-// 15. Chuẩn hóa dữ liệu đơn hàng
-function normalizeOrder(order, index) {
-    const defaultOrder = demoAdminOrders[index] || demoAdminOrders[0];
 
-    const items = Array.isArray(order.items) && order.items.length > 0
-        ? order.items
-        : defaultOrder.items;
+// 15. Lấy trạng thái đơn hàng
+function getOrderStatusCode(order) {
+    if (order.status && order.status.code) {
+        return order.status.code;
+    }
+
+    if (order.order_status) {
+        return order.order_status;
+    }
+
+    return "pending";
+}
+
+
+// 16. Lấy nhãn trạng thái đơn hàng
+function getOrderStatusLabel(order) {
+    if (order.status && order.status.label) {
+        return order.status.label;
+    }
+
+    const status = getOrderStatusCode(order);
+
+    const labels = {
+        pending: "Chờ xác nhận",
+        confirmed: "Đã xác nhận",
+        shipping: "Đang giao",
+        completed: "Hoàn thành",
+        cancelled: "Đã hủy"
+    };
+
+    return labels[status] || "Không xác định";
+}
+
+
+// 17. Lấy class trạng thái đơn hàng
+function getOrderStatusClass(status) {
+    if (status === "pending") {
+        return "statusPending";
+    }
+
+    if (status === "confirmed") {
+        return "statusShipping";
+    }
+
+    if (status === "shipping") {
+        return "statusShipping";
+    }
+
+    if (status === "completed") {
+        return "statusCompleted";
+    }
+
+    if (status === "cancelled") {
+        return "statusCancelled";
+    }
+
+    return "statusPending";
+}
+
+
+// 18. Chuẩn hóa đơn hàng từ API
+function normalizeOrder(order) {
+    const statusCode = getOrderStatusCode(order);
 
     return {
-        id: order.id || "DH" + String(index + 1).padStart(3, "0"),
-        customerName: order.customerName || defaultOrder.customerName || "Khách hàng",
-        phone: order.phone || defaultOrder.phone || "Chưa cập nhật",
-        address: order.address || defaultOrder.address || "Chưa cập nhật",
-        orderDate: order.orderDate || defaultOrder.orderDate || new Date().toISOString().slice(0, 10),
-        status: order.status || "pending",
-        note: order.note || "",
-        shippingFee: Number(order.shippingFee || defaultOrder.shippingFee || 0),
-        discount: Number(order.discount || defaultOrder.discount || 0),
-        items: items
+        id: order.id,
+        orderCode: order.order_code || order.code || "DH" + String(order.id).padStart(6, "0"),
+        customerName: getOrderCustomerName(order),
+        phone: getOrderCustomerPhone(order),
+        orderDate: order.created_at || order.order_date || "",
+        itemCount: getOrderItemCount(order),
+        finalTotal: getOrderFinalTotal(order),
+        status: statusCode,
+        statusLabel: getOrderStatusLabel(order),
+        raw: order
     };
 }
 
-// 16. Lấy danh sách đơn hàng
-function getOrders() {
-    const savedOrders = localStorage.getItem(ADMIN_ORDERS_KEY);
-
-    if (!savedOrders) {
-        localStorage.setItem(ADMIN_ORDERS_KEY, JSON.stringify(demoAdminOrders));
-        return demoAdminOrders;
-    }
-
-    try {
-        const orders = JSON.parse(savedOrders);
-
-        const normalizedOrders = orders.map(function(order, index) {
-            return normalizeOrder(order, index);
-        });
-
-        localStorage.setItem(ADMIN_ORDERS_KEY, JSON.stringify(normalizedOrders));
-
-        return normalizedOrders;
-    } catch (error) {
-        localStorage.setItem(ADMIN_ORDERS_KEY, JSON.stringify(demoAdminOrders));
-        return demoAdminOrders;
-    }
-}
-
-// 17. Lưu danh sách đơn hàng
-function saveOrders(orders) {
-    localStorage.setItem(ADMIN_ORDERS_KEY, JSON.stringify(orders));
-}
-
-// 18. Lấy thông tin trạng thái đơn hàng
-function getOrderStatusInfo(status) {
-    switch (status) {
-        case "pending":
-            return {
-                text: "Chờ xác nhận",
-                className: "statusPending"
-            };
-
-        case "shipping":
-            return {
-                text: "Đang giao",
-                className: "statusShipping"
-            };
-
-        case "completed":
-            return {
-                text: "Hoàn thành",
-                className: "statusCompleted"
-            };
-
-        case "cancelled":
-            return {
-                text: "Đã hủy",
-                className: "statusCancelled"
-            };
-
-        default:
-            return {
-                text: "Chờ xác nhận",
-                className: "statusPending"
-            };
-    }
-}
 
 // 19. Render thống kê đơn hàng
-function renderOrderStats(orders) {
-    const pendingOrders = orders.filter(function(order) {
-        return order.status === "pending";
-    });
+function renderOrderStats() {
+    const totalOrders = orderSummary && orderSummary.total_orders !== undefined
+        ? Number(orderSummary.total_orders || 0)
+        : adminOrders.length;
 
-    const shippingOrders = orders.filter(function(order) {
-        return order.status === "shipping";
-    });
+    const pendingOrders = orderSummary && orderSummary.pending_orders !== undefined
+        ? Number(orderSummary.pending_orders || 0)
+        : adminOrders.filter(function (order) {
+            return order.status === "pending";
+        }).length;
 
-    const completedOrders = orders.filter(function(order) {
-        return order.status === "completed";
-    });
+    const shippingOrders = orderSummary && orderSummary.shipping_orders !== undefined
+        ? Number(orderSummary.shipping_orders || 0)
+        : adminOrders.filter(function (order) {
+            return order.status === "shipping";
+        }).length;
+
+    const completedOrders = orderSummary && orderSummary.completed_orders !== undefined
+        ? Number(orderSummary.completed_orders || 0)
+        : adminOrders.filter(function (order) {
+            return order.status === "completed";
+        }).length;
 
     if (totalOrderCount) {
-        totalOrderCount.textContent = orders.length;
+        totalOrderCount.textContent = totalOrders;
     }
 
     if (pendingOrderCount) {
-        pendingOrderCount.textContent = pendingOrders.length;
+        pendingOrderCount.textContent = pendingOrders;
     }
 
     if (shippingOrderCount) {
-        shippingOrderCount.textContent = shippingOrders.length;
+        shippingOrderCount.textContent = shippingOrders;
     }
 
     if (completedOrderCount) {
-        completedOrderCount.textContent = completedOrders.length;
+        completedOrderCount.textContent = completedOrders;
     }
 }
 
-// 20. Lọc đơn hàng
-function getFilteredOrders(orders) {
-    const searchValue = orderSearchInput ? orderSearchInput.value.trim().toLowerCase() : "";
-    const statusValue = orderStatusFilter ? orderStatusFilter.value : "all";
-    const sortValue = orderSortFilter ? orderSortFilter.value : "newest";
 
-    const filteredOrders = orders.filter(function(order) {
-        const orderId = order.id.toLowerCase();
-        const customerName = order.customerName.toLowerCase();
-        const phone = order.phone.toLowerCase();
+// 20. Lọc đơn hàng trên frontend
+function getFilteredOrders() {
+    const searchValue = orderSearchInput
+        ? orderSearchInput.value.trim().toLowerCase()
+        : "";
+
+    const statusValue = orderStatusFilter
+        ? orderStatusFilter.value
+        : "all";
+
+    const sortValue = orderSortFilter
+        ? orderSortFilter.value
+        : "newest";
+
+    const filteredOrders = adminOrders.filter(function (order) {
+        const orderCode = String(order.orderCode || "").toLowerCase();
+        const customerName = String(order.customerName || "").toLowerCase();
+        const phone = String(order.phone || "").toLowerCase();
 
         const matchSearch =
-            orderId.includes(searchValue) ||
+            orderCode.includes(searchValue) ||
             customerName.includes(searchValue) ||
             phone.includes(searchValue);
 
@@ -376,17 +351,17 @@ function getFilteredOrders(orders) {
         return matchSearch && matchStatus;
     });
 
-    filteredOrders.sort(function(a, b) {
+    filteredOrders.sort(function (a, b) {
         if (sortValue === "oldest") {
             return new Date(a.orderDate) - new Date(b.orderDate);
         }
 
         if (sortValue === "highest") {
-            return calculateOrderTotal(b) - calculateOrderTotal(a);
+            return b.finalTotal - a.finalTotal;
         }
 
         if (sortValue === "lowest") {
-            return calculateOrderTotal(a) - calculateOrderTotal(b);
+            return a.finalTotal - b.finalTotal;
         }
 
         return new Date(b.orderDate) - new Date(a.orderDate);
@@ -395,12 +370,81 @@ function getFilteredOrders(orders) {
     return filteredOrders;
 }
 
-// 21. Render bảng đơn hàng
-function renderOrderTable() {
-    if (!orderTableBody || !orderRowTemplate) return;
 
-    const orders = getOrders();
-    const filteredOrders = getFilteredOrders(orders);
+// 21. Tạo link trang chi tiết đơn hàng
+function getAdminOrderDetailUrl(orderId) {
+    return "../html/admin-order-detail.html?id=" + encodeURIComponent(orderId);
+}
+
+
+// 22. Render một dòng đơn hàng
+function renderOrderRow(order) {
+    const rowFragment = orderRowTemplate.content.cloneNode(true);
+    const row = rowFragment.querySelector("tr");
+
+    const orderCodeText = rowFragment.querySelector(".orderCodeText");
+    const orderCustomerNameText = rowFragment.querySelector(".orderCustomerNameText");
+    const orderCustomerPhoneText = rowFragment.querySelector(".orderCustomerPhoneText");
+    const orderDateText = rowFragment.querySelector(".orderDateText");
+    const orderItemCountText = rowFragment.querySelector(".orderItemCountText");
+    const orderTotalText = rowFragment.querySelector(".orderTotalText");
+    const orderStatusText = rowFragment.querySelector(".orderStatusText");
+    const actionButton = rowFragment.querySelector("[data-action]");
+
+    if (row) {
+        row.dataset.orderId = order.id;
+        row.dataset.orderCode = order.orderCode;
+        row.classList.add("clickableOrderRow");
+        row.title = "Nhấn để xem chi tiết đơn hàng";
+    }
+
+    if (orderCodeText) {
+        orderCodeText.textContent = order.orderCode;
+    }
+
+    if (orderCustomerNameText) {
+        orderCustomerNameText.textContent = order.customerName;
+    }
+
+    if (orderCustomerPhoneText) {
+        orderCustomerPhoneText.textContent = order.phone;
+    }
+
+    if (orderDateText) {
+        orderDateText.textContent = formatDate(order.orderDate);
+    }
+
+    if (orderItemCountText) {
+        orderItemCountText.textContent = order.itemCount + " sản phẩm";
+    }
+
+    if (orderTotalText) {
+        orderTotalText.textContent = formatPrice(order.finalTotal);
+    }
+
+    if (orderStatusText) {
+        orderStatusText.textContent = order.statusLabel;
+        orderStatusText.className = "statusBadge orderStatusText";
+        orderStatusText.classList.add(getOrderStatusClass(order.status));
+    }
+
+    if (actionButton) {
+        actionButton.textContent = "Chi tiết";
+        actionButton.dataset.action = "view";
+        actionButton.title = "Xem chi tiết đơn hàng";
+    }
+
+    return rowFragment;
+}
+
+
+// 23. Render bảng đơn hàng
+function renderOrderTable() {
+    if (!orderTableBody || !orderRowTemplate) {
+        return;
+    }
+
+    const filteredOrders = getFilteredOrders();
 
     orderTableBody.innerHTML = "";
 
@@ -408,67 +452,89 @@ function renderOrderTable() {
         emptyOrderText.classList.toggle("show", filteredOrders.length === 0);
     }
 
-    filteredOrders.forEach(function(order) {
-        const rowFragment = orderRowTemplate.content.cloneNode(true);
-        const row = rowFragment.querySelector("tr");
-
-        const statusInfo = getOrderStatusInfo(order.status);
-
-        row.dataset.orderId = order.id;
-
-        rowFragment.querySelector(".orderCodeText").textContent = order.id;
-        rowFragment.querySelector(".orderCustomerNameText").textContent = order.customerName;
-        rowFragment.querySelector(".orderCustomerPhoneText").textContent = order.phone;
-        rowFragment.querySelector(".orderDateText").textContent = formatDate(order.orderDate);
-        rowFragment.querySelector(".orderItemCountText").textContent = (order.items || []).length + " sản phẩm";
-        rowFragment.querySelector(".orderTotalText").textContent = formatPrice(calculateOrderTotal(order));
-
-        const statusBadge = rowFragment.querySelector(".orderStatusText");
-
-        statusBadge.textContent = statusInfo.text;
-        statusBadge.classList.add(statusInfo.className);
-
-        orderTableBody.appendChild(rowFragment);
+    filteredOrders.forEach(function (order) {
+        const row = renderOrderRow(order);
+        orderTableBody.appendChild(row);
     });
 
-    renderOrderStats(orders);
+    renderOrderStats();
 }
 
-// 22. Xóa đơn hàng
-function deleteOrder(orderId) {
-    const orders = getOrders();
 
-    const order = orders.find(function(item) {
-        return item.id === orderId;
+// 24. Hiển thị loading
+function setOrderLoading(isLoading) {
+    if (!orderTableBody) {
+        return;
+    }
+
+    if (isLoading) {
+        orderTableBody.innerHTML = `
+            <tr>
+                <td colspan="7">Đang tải danh sách đơn hàng...</td>
+            </tr>
+        `;
+    }
+}
+
+
+// 25. Hiển thị lỗi
+function renderOrderError(error) {
+    console.error(error);
+
+    if (orderTableBody) {
+        orderTableBody.innerHTML = "";
+    }
+
+    if (emptyOrderText) {
+        emptyOrderText.classList.add("show");
+        emptyOrderText.textContent = "Không tải được danh sách đơn hàng.";
+    }
+
+    adminOrders = [];
+    orderSummary = null;
+    renderOrderStats();
+}
+
+
+// 26. Load danh sách đơn hàng từ API
+async function loadOrdersFromApi() {
+    setOrderLoading(true);
+
+    const response = await window.AdminApi.get(
+        "admin/orders/get-orders.php?page=1&limit=100&sort=latest"
+    );
+
+    const data = response.data || {};
+    const orders = Array.isArray(data.orders) ? data.orders : [];
+
+    orderSummary = data.summary || null;
+
+    adminOrders = orders.map(function (order) {
+        return normalizeOrder(order);
     });
 
-    if (!order) return;
-
-    const isConfirm = confirm("Bạn có chắc muốn xóa đơn hàng " + order.id + "?");
-
-    if (!isConfirm) return;
-
-    const updatedOrders = orders.filter(function(item) {
-        return item.id !== orderId;
-    });
-
-    saveOrders(updatedOrders);
     renderOrderTable();
 }
 
-// 23. Chuyển sang trang chi tiết đơn hàng
+
+// 27. Chuyển sang trang chi tiết đơn hàng
 function goToOrderDetail(orderId) {
-    if (!orderId) return;
+    if (!orderId) {
+        return;
+    }
 
     window.location.href = getAdminOrderDetailUrl(orderId);
 }
 
-// 24. Xử lý thao tác bảng đơn hàng
+
+// 28. Xử lý thao tác bảng đơn hàng
 function handleOrderTableAction(event) {
     const actionButton = event.target.closest("[data-action]");
     const row = event.target.closest("tr");
 
-    if (!row) return;
+    if (!row) {
+        return;
+    }
 
     const orderId = row.dataset.orderId;
 
@@ -477,8 +543,8 @@ function handleOrderTableAction(event) {
 
         const action = actionButton.dataset.action;
 
-        if (action === "delete") {
-            deleteOrder(orderId);
+        if (action === "view") {
+            goToOrderDetail(orderId);
         }
 
         return;
@@ -487,7 +553,21 @@ function handleOrderTableAction(event) {
     goToOrderDetail(orderId);
 }
 
-// 25. Gắn sự kiện trang đơn hàng
+
+// 29. Xử lý đăng xuất
+function handleAdminLogout() {
+    if (window.AdminApi && window.AdminApi.logoutAdmin) {
+        window.AdminApi.logoutAdmin();
+        return;
+    }
+
+    localStorage.removeItem("admin_current_user");
+    localStorage.removeItem("admin_is_login");
+    window.location.href = "../html/admin-login.html";
+}
+
+
+// 30. Gắn sự kiện trang đơn hàng
 function bindOrderEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -510,16 +590,48 @@ function bindOrderEvents() {
     }
 }
 
-// 26. Khởi tạo trang quản lý đơn hàng
-function initAdminOrdersPage() {
-    const adminUser = checkAdminLogin();
 
-    if (!adminUser) return;
+// 31. Kiểm tra đăng nhập local
+function checkAdminLoginLocal() {
+    if (!window.AdminApi) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
 
-    renderAdminInfo(adminUser);
+    const adminUser = window.AdminApi.getCurrentAdminFromLocal();
+
+    if (!adminUser) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    return adminUser;
+}
+
+
+// 32. Khởi tạo trang quản lý đơn hàng
+async function initAdminOrdersPage() {
+    currentAdminUser = checkAdminLoginLocal();
+
+    if (!currentAdminUser) {
+        return;
+    }
+
+    renderAdminInfo(currentAdminUser);
     renderCurrentDate();
-    renderOrderTable();
     bindOrderEvents();
+
+    try {
+        await loadOrdersFromApi();
+    } catch (error) {
+        if (error && error.status === 401) {
+            window.AdminApi.clearAdminLocalAuth();
+            window.location.href = "../html/admin-login.html";
+            return;
+        }
+
+        renderOrderError(error);
+    }
 }
 
 initAdminOrdersPage();

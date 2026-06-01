@@ -1,124 +1,25 @@
-// 1. Khai báo key localStorage
-const ADMIN_CURRENT_USER_KEY = "admin_current_user";
-const ADMIN_IS_LOGIN_KEY = "admin_is_login";
-const ADMIN_VOUCHERS_KEY = "admin_vouchers";
+// =========================================================
+// File: Frontend1/js/admin-vouchers.js
+// Mục đích: Gắn trang quản lý voucher admin với API backend thật
+// =========================================================
 
-// 2. Dữ liệu voucher mẫu
-const demoAdminVouchers = [
-    {
-        id: "VC001",
-        code: "SALE10",
-        name: "Giảm 10% cho đơn đầu tiên",
-        type: "percent",
-        value: 10,
-        pointCost: 0,
-        minOrder: 300000,
-        quantity: 100,
-        startDate: "2026-05-01",
-        endDate: "2026-06-30",
-        status: "enabled",
-        description: "Áp dụng cho khách hàng mới hoặc đơn hàng đầu tiên."
-    },
-    {
-        id: "VC002",
-        code: "GIAM50K",
-        name: "Giảm 50.000đ",
-        type: "fixed",
-        value: 50000,
-        pointCost: 0,
-        minOrder: 500000,
-        quantity: 45,
-        startDate: "2026-05-10",
-        endDate: "2026-06-10",
-        status: "enabled",
-        description: "Giảm trực tiếp 50.000đ cho đơn từ 500.000đ."
-    },
-    {
-        id: "VC003",
-        code: "FREESHIP",
-        name: "Miễn phí vận chuyển",
-        type: "free-ship",
-        value: 30000,
-        pointCost: 0,
-        minOrder: 250000,
-        quantity: 0,
-        startDate: "2026-05-01",
-        endDate: "2026-06-15",
-        status: "enabled",
-        description: "Hỗ trợ phí vận chuyển tối đa 30.000đ."
-    },
-    {
-        id: "VC004",
-        code: "POINT20",
-        name: "Voucher giảm 20.000đ",
-        type: "point",
-        value: 20000,
-        pointCost: 500,
-        minOrder: 200000,
-        quantity: 80,
-        startDate: "2026-05-01",
-        endDate: "2026-07-01",
-        status: "enabled",
-        description: "Khách hàng dùng 500 điểm để đổi voucher giảm 20.000đ."
-    },
-    {
-        id: "VC005",
-        code: "POINT50",
-        name: "Voucher giảm 50.000đ",
-        type: "point",
-        value: 50000,
-        pointCost: 1000,
-        minOrder: 500000,
-        quantity: 50,
-        startDate: "2026-05-01",
-        endDate: "2026-07-01",
-        status: "enabled",
-        description: "Khách hàng dùng 1000 điểm để đổi voucher giảm 50.000đ."
-    },
-    {
-        id: "VC006",
-        code: "POINTSHIP",
-        name: "Freeship 30.000đ",
-        type: "point",
-        value: 30000,
-        pointCost: 400,
-        minOrder: 300000,
-        quantity: 60,
-        startDate: "2026-05-01",
-        endDate: "2026-07-01",
-        status: "enabled",
-        description: "Khách hàng dùng 400 điểm để đổi ưu đãi freeship 30.000đ."
-    },
-    {
-        id: "VC007",
-        code: "OLD20",
-        name: "Voucher cũ tháng trước",
-        type: "percent",
-        value: 20,
-        pointCost: 0,
-        minOrder: 400000,
-        quantity: 12,
-        startDate: "2026-04-01",
-        endDate: "2026-04-30",
-        status: "enabled",
-        description: "Voucher đã hết hạn."
-    }
-];
 
-// 3. Lấy element thông tin admin
+// 1. Lấy element thông tin admin
 const adminAvatar = document.getElementById("adminAvatar");
 const adminName = document.getElementById("adminName");
 const adminRole = document.getElementById("adminRole");
 const adminCurrentDate = document.getElementById("adminCurrentDate");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
 
-// 4. Lấy element thống kê
+
+// 2. Lấy element thống kê
 const totalVoucherCount = document.getElementById("totalVoucherCount");
 const activeVoucherCount = document.getElementById("activeVoucherCount");
 const pointVoucherCount = document.getElementById("pointVoucherCount");
 const outVoucherCount = document.getElementById("outVoucherCount");
 
-// 5. Lấy element bộ lọc và bảng
+
+// 3. Lấy element bộ lọc và bảng
 const voucherSearchInput = document.getElementById("voucherSearchInput");
 const voucherTypeFilter = document.getElementById("voucherTypeFilter");
 const voucherStatusFilter = document.getElementById("voucherStatusFilter");
@@ -126,34 +27,54 @@ const voucherTableBody = document.getElementById("voucherTableBody");
 const emptyVoucherText = document.getElementById("emptyVoucherText");
 const voucherRowTemplate = document.getElementById("voucherRowTemplate");
 
-// 6. Lấy element nút thêm voucher
+
+// 4. Lấy element nút thêm voucher
 const openAddVoucherBtn = document.getElementById("openAddVoucherBtn");
 
-// 7. Biến lưu admin hiện tại
-let currentAdminUser = null;
 
-// 8. Format tiền Việt Nam
+// 5. Biến lưu dữ liệu voucher
+let currentAdminUser = null;
+let adminVouchers = [];
+let voucherSummary = null;
+
+
+// 6. Format tiền Việt Nam
 function formatPrice(price) {
+    if (window.AdminApi && window.AdminApi.formatPrice) {
+        return window.AdminApi.formatPrice(price);
+    }
+
     return Number(price || 0).toLocaleString("vi-VN") + "đ";
 }
 
-// 9. Format số điểm
+
+// 7. Format số điểm
 function formatPoint(point) {
     return Number(point || 0).toLocaleString("vi-VN") + " điểm";
 }
 
-// 10. Format ngày Việt Nam
+
+// 8. Format ngày Việt Nam
 function formatDate(dateString) {
-    if (!dateString) return "";
+    if (!dateString) {
+        return "";
+    }
 
     const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+        return dateString;
+    }
 
     return date.toLocaleDateString("vi-VN");
 }
 
-// 11. Render ngày hiện tại
+
+// 9. Render ngày hiện tại
 function renderCurrentDate() {
-    if (!adminCurrentDate) return;
+    if (!adminCurrentDate) {
+        return;
+    }
 
     const today = new Date();
 
@@ -165,322 +86,444 @@ function renderCurrentDate() {
     });
 }
 
-// 12. Kiểm tra đăng nhập admin
-function checkAdminLogin() {
-    const isLogin = localStorage.getItem(ADMIN_IS_LOGIN_KEY) === "true";
-    const currentAdmin = localStorage.getItem(ADMIN_CURRENT_USER_KEY);
 
-    if (!isLogin || !currentAdmin) {
-        window.location.href = "../html/admin-login.html";
-        return null;
+// 10. Lấy chữ đại diện
+function getFirstLetter(text) {
+    if (!text) {
+        return "A";
     }
 
-    try {
-        return JSON.parse(currentAdmin);
-    } catch (error) {
-        localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-        localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
-
-        window.location.href = "../html/admin-login.html";
-        return null;
-    }
+    return String(text).trim().charAt(0).toUpperCase();
 }
 
-// 13. Hiển thị thông tin admin
-function renderAdminInfo(adminUser) {
-    if (!adminUser) return;
 
-    const fullName = adminUser.fullName || "Quản trị viên";
-    const roleText = adminUser.role === "owner" ? "Chủ cửa hàng" : "Nhân viên";
+// 11. Lấy nhãn vai trò admin
+function getAdminRoleLabel(roleCode, roleName) {
+    if (roleCode === "owner") {
+        return "Chủ cửa hàng";
+    }
+
+    if (roleCode === "admin") {
+        return "Quản trị viên";
+    }
+
+    if (roleCode === "staff") {
+        return "Nhân viên";
+    }
+
+    return roleName || "Quản trị viên";
+}
+
+
+// 12. Hiển thị thông tin admin
+function renderAdminInfo(adminUser) {
+    if (!adminUser) {
+        return;
+    }
+
+    const fullName = adminUser.fullName || adminUser.full_name || "Quản trị viên";
+    const roleCode = adminUser.role || "";
+    const roleName = adminUser.roleName || "";
 
     if (adminName) {
         adminName.textContent = fullName;
     }
 
     if (adminRole) {
-        adminRole.textContent = roleText;
+        adminRole.textContent = getAdminRoleLabel(roleCode, roleName);
     }
 
     if (adminAvatar) {
-        adminAvatar.textContent = fullName.charAt(0).toUpperCase();
+        adminAvatar.textContent = getFirstLetter(fullName);
     }
 
     const ownerOnlyLinks = document.querySelectorAll("[data-owner-only='true']");
 
-    ownerOnlyLinks.forEach(function(link) {
-        if (adminUser.role !== "owner") {
-            link.style.display = "none";
-        }
-    });
-
-    if (adminUser.role !== "owner" && openAddVoucherBtn) {
-        openAddVoucherBtn.style.display = "none";
-    }
-}
-
-// 14. Đăng xuất admin
-function handleAdminLogout() {
-    localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-    localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
-
-    window.location.href = "../html/admin-login.html";
-}
-
-// 15. Lấy ngày hôm nay dạng YYYY-MM-DD
-function getTodayString() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-// 16. Chuẩn hóa voucher
-function normalizeVoucher(voucher, index) {
-    const defaultVoucher = demoAdminVouchers[index] || demoAdminVouchers[0];
-
-    return {
-        id: voucher.id || "VC" + String(index + 1).padStart(3, "0"),
-        code: voucher.code || defaultVoucher.code || "",
-        name: voucher.name || defaultVoucher.name || "",
-        type: voucher.type || defaultVoucher.type || "fixed",
-        value: Number(voucher.value || 0),
-        pointCost: Number(voucher.pointCost || 0),
-        minOrder: Number(voucher.minOrder || 0),
-        quantity: Number(voucher.quantity || 0),
-        startDate: voucher.startDate || defaultVoucher.startDate || getTodayString(),
-        endDate: voucher.endDate || defaultVoucher.endDate || getTodayString(),
-        status: voucher.status || "enabled",
-        description: voucher.description || ""
-    };
-}
-
-// 17. Lấy danh sách voucher
-function getVouchers() {
-    const savedVouchers = localStorage.getItem(ADMIN_VOUCHERS_KEY);
-
-    if (!savedVouchers) {
-        const normalizedDemoVouchers = demoAdminVouchers.map(function(voucher, index) {
-            return normalizeVoucher(voucher, index);
-        });
-
-        localStorage.setItem(ADMIN_VOUCHERS_KEY, JSON.stringify(normalizedDemoVouchers));
-
-        return normalizedDemoVouchers;
-    }
-
-    try {
-        const vouchers = JSON.parse(savedVouchers);
-
-        const normalizedVouchers = vouchers.map(function(voucher, index) {
-            return normalizeVoucher(voucher, index);
-        });
-
-        localStorage.setItem(ADMIN_VOUCHERS_KEY, JSON.stringify(normalizedVouchers));
-
-        return normalizedVouchers;
-    } catch (error) {
-        const normalizedDemoVouchers = demoAdminVouchers.map(function(voucher, index) {
-            return normalizeVoucher(voucher, index);
-        });
-
-        localStorage.setItem(ADMIN_VOUCHERS_KEY, JSON.stringify(normalizedDemoVouchers));
-
-        return normalizedDemoVouchers;
-    }
-}
-
-// 18. Lưu danh sách voucher
-function saveVouchers(vouchers) {
-    localStorage.setItem(ADMIN_VOUCHERS_KEY, JSON.stringify(vouchers));
-}
-
-// 19. Tìm voucher theo id
-function getVoucherById(id) {
-    const vouchers = getVouchers();
-
-    return vouchers.find(function(voucher) {
-        return voucher.id === id;
+    ownerOnlyLinks.forEach(function (link) {
+        link.style.display = roleCode === "owner" ? "" : "none";
     });
 }
 
-// 20. Lấy trạng thái tính toán của voucher
+
+// 13. Lấy loại voucher chuẩn từ API
+function getVoucherTypeCode(voucher) {
+    if (voucher.discount_type === "freeship") {
+        return "free-ship";
+    }
+
+    return voucher.discount_type || "fixed";
+}
+
+
+// 14. Lấy trạng thái tính toán của voucher
 function getVoucherComputedStatus(voucher) {
-    const today = getTodayString();
+    if (voucher.state && voucher.state.code) {
+        if (voucher.state.code === "available") {
+            return "active";
+        }
 
-    if (voucher.status === "disabled") {
+        if (voucher.state.code === "not_started") {
+            return "scheduled";
+        }
+
+        if (voucher.state.code === "out_of_quantity") {
+            return "out";
+        }
+
+        if (voucher.state.code === "expired") {
+            return "expired";
+        }
+
+        if (voucher.state.code === "inactive") {
+            return "disabled";
+        }
+    }
+
+    if (voucher.status === "inactive") {
         return "disabled";
     }
 
-    if (voucher.quantity <= 0) {
+    const now = new Date();
+    const startDate = new Date(voucher.start_date);
+    const endDate = new Date(voucher.end_date);
+    const remainingQuantity = Number(voucher.remaining_quantity || 0);
+
+    if (remainingQuantity <= 0) {
         return "out";
     }
 
-    if (voucher.startDate > today) {
+    if (!Number.isNaN(startDate.getTime()) && now < startDate) {
         return "scheduled";
     }
 
-    if (voucher.endDate < today) {
+    if (!Number.isNaN(endDate.getTime()) && now > endDate) {
         return "expired";
     }
 
     return "active";
 }
 
-// 21. Lấy thông tin trạng thái voucher
+
+// 15. Lấy thông tin trạng thái voucher
 function getVoucherStatusInfo(voucher) {
     const computedStatus = getVoucherComputedStatus(voucher);
 
-    switch (computedStatus) {
-        case "active":
-            return {
-                text: "Đang hiệu lực",
-                className: "statusActive"
-            };
-
-        case "scheduled":
-            return {
-                text: "Sắp diễn ra",
-                className: "statusShipping"
-            };
-
-        case "expired":
-            return {
-                text: "Hết hạn",
-                className: "statusCancelled"
-            };
-
-        case "out":
-            return {
-                text: "Hết lượt",
-                className: "statusPending"
-            };
-
-        case "disabled":
-            return {
-                text: "Đã tắt",
-                className: "statusCancelled"
-            };
-
-        default:
-            return {
-                text: "Đang hiệu lực",
-                className: "statusActive"
-            };
+    if (computedStatus === "active") {
+        return {
+            text: "Đang hiệu lực",
+            className: "statusActive"
+        };
     }
+
+    if (computedStatus === "scheduled") {
+        return {
+            text: "Sắp diễn ra",
+            className: "statusShipping"
+        };
+    }
+
+    if (computedStatus === "expired") {
+        return {
+            text: "Hết hạn",
+            className: "statusCancelled"
+        };
+    }
+
+    if (computedStatus === "out") {
+        return {
+            text: "Hết lượt",
+            className: "statusPending"
+        };
+    }
+
+    if (computedStatus === "disabled") {
+        return {
+            text: "Đã tắt",
+            className: "statusCancelled"
+        };
+    }
+
+    return {
+        text: "Đang hiệu lực",
+        className: "statusActive"
+    };
 }
 
-// 22. Lấy thông tin loại voucher
+
+// 16. Lấy thông tin loại voucher
 function getVoucherTypeInfo(type) {
-    switch (type) {
-        case "percent":
-            return {
-                text: "Phần trăm",
-                className: "voucherTypePercent"
-            };
-
-        case "fixed":
-            return {
-                text: "Giảm tiền",
-                className: "voucherTypeFixed"
-            };
-
-        case "free-ship":
-            return {
-                text: "Freeship",
-                className: "voucherTypeFreeShip"
-            };
-
-        case "point":
-            return {
-                text: "Đổi điểm",
-                className: "voucherTypePoint"
-            };
-
-        default:
-            return {
-                text: "Giảm tiền",
-                className: "voucherTypeFixed"
-            };
+    if (type === "percent") {
+        return {
+            text: "Phần trăm",
+            className: "voucherTypePercent"
+        };
     }
+
+    if (type === "fixed") {
+        return {
+            text: "Giảm tiền",
+            className: "voucherTypeFixed"
+        };
+    }
+
+    if (type === "free-ship" || type === "freeship") {
+        return {
+            text: "Freeship",
+            className: "voucherTypeFreeShip"
+        };
+    }
+
+    if (type === "point") {
+        return {
+            text: "Đổi điểm",
+            className: "voucherTypePoint"
+        };
+    }
+
+    return {
+        text: "Giảm tiền",
+        className: "voucherTypeFixed"
+    };
 }
 
-// 23. Format giá trị voucher
+
+// 17. Format giá trị voucher
 function formatVoucherValue(voucher) {
     if (voucher.type === "percent") {
         return Number(voucher.value || 0) + "%";
     }
 
     if (voucher.type === "free-ship") {
-        return "Tối đa " + formatPrice(voucher.value);
+        if (voucher.maxDiscountAmount > 0) {
+            return "Tối đa " + formatPrice(voucher.maxDiscountAmount);
+        }
+
+        return "Miễn phí vận chuyển";
     }
 
     return formatPrice(voucher.value);
 }
 
-// 24. Render thống kê voucher
-function renderVoucherStats(vouchers) {
-    const activeVouchers = vouchers.filter(function(voucher) {
-        return getVoucherComputedStatus(voucher) === "active";
-    });
 
-    const pointVouchers = vouchers.filter(function(voucher) {
+// 18. Chuẩn hóa voucher từ API
+function normalizeVoucher(voucher) {
+    const type = getVoucherTypeCode(voucher);
+    const quantity = Number(voucher.quantity || 0);
+    const usedQuantity = Number(voucher.used_quantity || 0);
+    const remainingQuantity = voucher.remaining_quantity !== undefined
+        ? Number(voucher.remaining_quantity || 0)
+        : Math.max(quantity - usedQuantity, 0);
+
+    return {
+        id: Number(voucher.id || 0),
+        code: voucher.code || "",
+        name: voucher.name || "Voucher",
+        description: voucher.description || "Không có mô tả",
+
+        type: type,
+        value: Number(voucher.discount_value || 0),
+        discountLabel: voucher.discount_label || "",
+        maxDiscountAmount: voucher.max_discount_amount !== null && voucher.max_discount_amount !== undefined
+            ? Number(voucher.max_discount_amount || 0)
+            : 0,
+
+        pointCost: 0,
+        minOrder: Number(voucher.min_order_value || 0),
+
+        quantity: quantity,
+        usedQuantity: usedQuantity,
+        remainingQuantity: remainingQuantity,
+        usageLimitPerUser: Number(voucher.usage_limit_per_user || 1),
+
+        startDate: voucher.start_date || "",
+        endDate: voucher.end_date || "",
+        status: voucher.status || "active",
+        state: voucher.state || null,
+
+        raw: voucher
+    };
+}
+
+
+// 19. Render thống kê voucher
+function renderVoucherStats() {
+    const totalVouchers = voucherSummary && voucherSummary.total_vouchers !== undefined
+        ? Number(voucherSummary.total_vouchers || 0)
+        : adminVouchers.length;
+
+    const activeVouchers = voucherSummary && voucherSummary.available_vouchers !== undefined
+        ? Number(voucherSummary.available_vouchers || 0)
+        : adminVouchers.filter(function (voucher) {
+            return getVoucherComputedStatus(voucher) === "active";
+        }).length;
+
+    const pointVouchers = adminVouchers.filter(function (voucher) {
         return voucher.type === "point";
-    });
+    }).length;
 
-    const outVouchers = vouchers.filter(function(voucher) {
-        return getVoucherComputedStatus(voucher) === "out";
-    });
+    const outVouchers = voucherSummary && voucherSummary.out_of_quantity_vouchers !== undefined
+        ? Number(voucherSummary.out_of_quantity_vouchers || 0)
+        : adminVouchers.filter(function (voucher) {
+            return getVoucherComputedStatus(voucher) === "out";
+        }).length;
 
     if (totalVoucherCount) {
-        totalVoucherCount.textContent = vouchers.length;
+        totalVoucherCount.textContent = totalVouchers;
     }
 
     if (activeVoucherCount) {
-        activeVoucherCount.textContent = activeVouchers.length;
+        activeVoucherCount.textContent = activeVouchers;
     }
 
     if (pointVoucherCount) {
-        pointVoucherCount.textContent = pointVouchers.length;
+        pointVoucherCount.textContent = pointVouchers;
     }
 
     if (outVoucherCount) {
-        outVoucherCount.textContent = outVouchers.length;
+        outVoucherCount.textContent = outVouchers;
     }
 }
 
-// 25. Lọc voucher
-function getFilteredVouchers(vouchers) {
-    const searchValue = voucherSearchInput ? voucherSearchInput.value.trim().toLowerCase() : "";
-    const typeValue = voucherTypeFilter ? voucherTypeFilter.value : "all";
-    const statusValue = voucherStatusFilter ? voucherStatusFilter.value : "all";
 
-    return vouchers.filter(function(voucher) {
-        const code = voucher.code.toLowerCase();
-        const name = voucher.name.toLowerCase();
-        const description = voucher.description.toLowerCase();
+// 20. Lọc voucher trên frontend
+function getFilteredVouchers() {
+    const searchValue = voucherSearchInput
+        ? voucherSearchInput.value.trim().toLowerCase()
+        : "";
+
+    const typeValue = voucherTypeFilter
+        ? voucherTypeFilter.value
+        : "all";
+
+    const statusValue = voucherStatusFilter
+        ? voucherStatusFilter.value
+        : "all";
+
+    return adminVouchers.filter(function (voucher) {
+        const code = String(voucher.code || "").toLowerCase();
+        const name = String(voucher.name || "").toLowerCase();
+        const description = String(voucher.description || "").toLowerCase();
 
         const matchSearch =
             code.includes(searchValue) ||
             name.includes(searchValue) ||
             description.includes(searchValue);
 
-        const matchType =
-            typeValue === "all" ||
-            voucher.type === typeValue;
+        let matchType = true;
 
-        const computedStatus = getVoucherComputedStatus(voucher);
+        if (typeValue !== "all") {
+            matchType = voucher.type === typeValue;
+        }
 
-        const matchStatus =
-            statusValue === "all" ||
-            computedStatus === statusValue;
+        let matchStatus = true;
+
+        if (statusValue !== "all") {
+            matchStatus = getVoucherComputedStatus(voucher) === statusValue;
+        }
 
         return matchSearch && matchType && matchStatus;
     });
 }
 
-// 26. Render bảng voucher
-function renderVoucherTable() {
-    if (!voucherTableBody || !voucherRowTemplate) return;
 
-    const vouchers = getVouchers();
-    const filteredVouchers = getFilteredVouchers(vouchers);
+// 21. Render một dòng voucher
+function renderVoucherRow(voucher) {
+    const rowFragment = voucherRowTemplate.content.cloneNode(true);
+    const row = rowFragment.querySelector("tr");
+
+    const typeInfo = getVoucherTypeInfo(voucher.type);
+    const statusInfo = getVoucherStatusInfo(voucher);
+
+    const voucherCodeText = rowFragment.querySelector(".voucherCodeText");
+    const voucherIdText = rowFragment.querySelector(".voucherIdText");
+    const voucherNameText = rowFragment.querySelector(".voucherNameText");
+    const voucherDescriptionText = rowFragment.querySelector(".voucherDescriptionText");
+    const voucherTypeText = rowFragment.querySelector(".voucherTypeText");
+    const voucherValueText = rowFragment.querySelector(".voucherValueText");
+    const voucherPointCostText = rowFragment.querySelector(".voucherPointCostText");
+    const voucherMinOrderText = rowFragment.querySelector(".voucherMinOrderText");
+    const voucherQuantityText = rowFragment.querySelector(".voucherQuantityText");
+    const voucherDateText = rowFragment.querySelector(".voucherDateText");
+    const voucherStatusText = rowFragment.querySelector(".voucherStatusText");
+    const actionButton = rowFragment.querySelector("[data-action]");
+
+    if (row) {
+        row.dataset.voucherId = voucher.id;
+        row.classList.add("clickableVoucherRow");
+        row.title = "Nhấn để xem và chỉnh sửa voucher";
+    }
+
+    if (voucherCodeText) {
+        voucherCodeText.textContent = voucher.code;
+    }
+
+    if (voucherIdText) {
+        voucherIdText.textContent = "VC" + String(voucher.id).padStart(3, "0");
+    }
+
+    if (voucherNameText) {
+        voucherNameText.textContent = voucher.name;
+    }
+
+    if (voucherDescriptionText) {
+        voucherDescriptionText.textContent = voucher.description || "Không có mô tả";
+    }
+
+    if (voucherTypeText) {
+        voucherTypeText.textContent = typeInfo.text;
+        voucherTypeText.className = "voucherTypeBadge voucherTypeText";
+        voucherTypeText.classList.add(typeInfo.className);
+    }
+
+    if (voucherValueText) {
+        voucherValueText.textContent = formatVoucherValue(voucher);
+    }
+
+    if (voucherPointCostText) {
+        voucherPointCostText.textContent = voucher.type === "point"
+            ? formatPoint(voucher.pointCost)
+            : "-";
+    }
+
+    if (voucherMinOrderText) {
+        voucherMinOrderText.textContent = formatPrice(voucher.minOrder);
+    }
+
+    if (voucherQuantityText) {
+        voucherQuantityText.textContent =
+            voucher.remainingQuantity + "/" + voucher.quantity + " lượt";
+    }
+
+    if (voucherDateText) {
+        voucherDateText.textContent =
+            formatDate(voucher.startDate) + " - " + formatDate(voucher.endDate);
+    }
+
+    if (voucherStatusText) {
+        voucherStatusText.textContent = statusInfo.text;
+        voucherStatusText.className = "statusBadge voucherStatusText";
+        voucherStatusText.classList.add(statusInfo.className);
+    }
+
+    if (actionButton) {
+        actionButton.textContent = voucher.status === "active" ? "Tắt" : "Bật";
+        actionButton.dataset.action = "toggle-status";
+        actionButton.title = voucher.status === "active"
+            ? "Tắt voucher"
+            : "Bật voucher";
+    }
+
+    return rowFragment;
+}
+
+
+// 22. Render bảng voucher
+function renderVoucherTable() {
+    if (!voucherTableBody || !voucherRowTemplate) {
+        return;
+    }
+
+    const filteredVouchers = getFilteredVouchers();
 
     voucherTableBody.innerHTML = "";
 
@@ -488,105 +531,167 @@ function renderVoucherTable() {
         emptyVoucherText.classList.toggle("show", filteredVouchers.length === 0);
     }
 
-    filteredVouchers.forEach(function(voucher) {
-        const rowFragment = voucherRowTemplate.content.cloneNode(true);
-        const row = rowFragment.querySelector("tr");
-        const typeInfo = getVoucherTypeInfo(voucher.type);
-        const statusInfo = getVoucherStatusInfo(voucher);
-        const typeBadge = rowFragment.querySelector(".voucherTypeText");
-        const statusBadge = rowFragment.querySelector(".voucherStatusText");
-        const deleteButton = rowFragment.querySelector("[data-action='delete']");
-
-        row.dataset.voucherId = voucher.id;
-
-        if (currentAdminUser && currentAdminUser.role === "owner") {
-            row.classList.add("clickableVoucherRow");
-            row.title = "Nhấn để xem và chỉnh sửa voucher";
-        }
-
-        rowFragment.querySelector(".voucherCodeText").textContent = voucher.code;
-        rowFragment.querySelector(".voucherIdText").textContent = voucher.id;
-        rowFragment.querySelector(".voucherNameText").textContent = voucher.name;
-        rowFragment.querySelector(".voucherDescriptionText").textContent = voucher.description || "Không có mô tả";
-        rowFragment.querySelector(".voucherValueText").textContent = formatVoucherValue(voucher);
-        rowFragment.querySelector(".voucherPointCostText").textContent = voucher.type === "point" ? formatPoint(voucher.pointCost) : "-";
-        rowFragment.querySelector(".voucherMinOrderText").textContent = formatPrice(voucher.minOrder);
-        rowFragment.querySelector(".voucherQuantityText").textContent = voucher.quantity + " lượt";
-        rowFragment.querySelector(".voucherDateText").textContent = formatDate(voucher.startDate) + " - " + formatDate(voucher.endDate);
-
-        typeBadge.textContent = typeInfo.text;
-        typeBadge.classList.add(typeInfo.className);
-
-        statusBadge.textContent = statusInfo.text;
-        statusBadge.classList.add(statusInfo.className);
-
-        if (currentAdminUser && currentAdminUser.role !== "owner") {
-            if (deleteButton) {
-                deleteButton.style.display = "none";
-            }
-        }
-
-        voucherTableBody.appendChild(rowFragment);
+    filteredVouchers.forEach(function (voucher) {
+        const row = renderVoucherRow(voucher);
+        voucherTableBody.appendChild(row);
     });
 
-    renderVoucherStats(vouchers);
+    renderVoucherStats();
 }
+
+
+// 23. Hiển thị loading
+function setVoucherLoading(isLoading) {
+    if (!voucherTableBody) {
+        return;
+    }
+
+    if (isLoading) {
+        voucherTableBody.innerHTML = `
+            <tr>
+                <td colspan="10">Đang tải danh sách voucher...</td>
+            </tr>
+        `;
+    }
+}
+
+
+// 24. Hiển thị lỗi
+function renderVoucherError(error) {
+    console.error(error);
+
+    if (voucherTableBody) {
+        voucherTableBody.innerHTML = "";
+    }
+
+    if (emptyVoucherText) {
+        emptyVoucherText.classList.add("show");
+        emptyVoucherText.textContent = "Không tải được danh sách voucher.";
+    }
+
+    adminVouchers = [];
+    voucherSummary = null;
+    renderVoucherStats();
+}
+
+
+// 25. Load danh sách voucher từ API
+async function loadVouchersFromApi() {
+    setVoucherLoading(true);
+
+    const response = await window.AdminApi.get(
+        "admin/vouchers/get-vouchers.php?page=1&limit=100&discount_type=all&status=all&state=all&sort=latest"
+    );
+
+    const data = response.data || {};
+    const vouchers = Array.isArray(data.vouchers) ? data.vouchers : [];
+
+    voucherSummary = data.summary || null;
+
+    adminVouchers = vouchers.map(function (voucher) {
+        return normalizeVoucher(voucher);
+    });
+
+    renderVoucherTable();
+}
+
+
+// 26. Tìm voucher theo id
+function getVoucherById(voucherId) {
+    return adminVouchers.find(function (voucher) {
+        return String(voucher.id) === String(voucherId);
+    });
+}
+
 
 // 27. Chuyển sang trang chi tiết voucher
 function goToVoucherDetail(voucherId) {
-    if (!voucherId) return;
-
-    if (!currentAdminUser || currentAdminUser.role !== "owner") {
+    if (!voucherId) {
         return;
     }
 
     window.location.href = "../html/admin-voucher-detail.html?id=" + encodeURIComponent(voucherId);
 }
 
-// 28. Xóa voucher
-function deleteVoucher(id) {
-    const vouchers = getVouchers();
-    const voucher = getVoucherById(id);
 
-    if (!voucher) return;
+// 28. Cập nhật trạng thái voucher
+async function toggleVoucherStatus(voucherId) {
+    const voucher = getVoucherById(voucherId);
 
-    const isConfirm = confirm("Bạn có chắc muốn xóa voucher " + voucher.code + "?");
+    if (!voucher) {
+        return;
+    }
 
-    if (!isConfirm) return;
+    const newStatus = voucher.status === "active" ? "inactive" : "active";
+    const actionText = newStatus === "inactive" ? "tắt" : "bật";
 
-    const updatedVouchers = vouchers.filter(function(item) {
-        return item.id !== id;
-    });
+    const isConfirm = confirm(
+        "Bạn có chắc muốn " + actionText + " voucher " + voucher.code + " không?"
+    );
 
-    saveVouchers(updatedVouchers);
-    renderVoucherTable();
+    if (!isConfirm) {
+        return;
+    }
+
+    try {
+        await window.AdminApi.post("admin/vouchers/update-voucher-status.php", {
+            voucher_id: Number(voucherId),
+            status: newStatus
+        });
+
+        await loadVouchersFromApi();
+    } catch (error) {
+        alert(
+            window.AdminApi.getApiErrorMessage(
+                error,
+                "Cập nhật trạng thái voucher thất bại."
+            )
+        );
+    }
 }
+
 
 // 29. Xử lý thao tác bảng voucher
 function handleVoucherTableAction(event) {
     const actionButton = event.target.closest("[data-action]");
     const row = event.target.closest("tr");
 
-    if (!row) return;
+    if (!row) {
+        return;
+    }
 
-    const id = row.dataset.voucherId;
+    const voucherId = row.dataset.voucherId;
 
     if (actionButton) {
         event.stopPropagation();
 
         const action = actionButton.dataset.action;
 
-        if (action === "delete") {
-            deleteVoucher(id);
+        if (action === "toggle-status") {
+            toggleVoucherStatus(voucherId);
         }
 
         return;
     }
 
-    goToVoucherDetail(id);
+    goToVoucherDetail(voucherId);
 }
 
-// 30. Gắn sự kiện trang voucher
+
+// 30. Xử lý đăng xuất
+function handleAdminLogout() {
+    if (window.AdminApi && window.AdminApi.logoutAdmin) {
+        window.AdminApi.logoutAdmin();
+        return;
+    }
+
+    localStorage.removeItem("admin_current_user");
+    localStorage.removeItem("admin_is_login");
+    window.location.href = "../html/admin-login.html";
+}
+
+
+// 31. Gắn sự kiện trang voucher
 function bindVoucherEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -609,16 +714,48 @@ function bindVoucherEvents() {
     }
 }
 
-// 31. Khởi tạo trang quản lý voucher
-function initAdminVouchersPage() {
-    currentAdminUser = checkAdminLogin();
 
-    if (!currentAdminUser) return;
+// 32. Kiểm tra đăng nhập local
+function checkAdminLoginLocal() {
+    if (!window.AdminApi) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    const adminUser = window.AdminApi.getCurrentAdminFromLocal();
+
+    if (!adminUser) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    return adminUser;
+}
+
+
+// 33. Khởi tạo trang quản lý voucher
+async function initAdminVouchersPage() {
+    currentAdminUser = checkAdminLoginLocal();
+
+    if (!currentAdminUser) {
+        return;
+    }
 
     renderAdminInfo(currentAdminUser);
     renderCurrentDate();
-    renderVoucherTable();
     bindVoucherEvents();
+
+    try {
+        await loadVouchersFromApi();
+    } catch (error) {
+        if (error && error.status === 401) {
+            window.AdminApi.clearAdminLocalAuth();
+            window.location.href = "../html/admin-login.html";
+            return;
+        }
+
+        renderVoucherError(error);
+    }
 }
 
 initAdminVouchersPage();

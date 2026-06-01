@@ -1,195 +1,27 @@
-// 1. Khai báo key localStorage
-const ADMIN_CURRENT_USER_KEY = "admin_current_user";
-const ADMIN_IS_LOGIN_KEY = "admin_is_login";
-const ADMIN_STAFF_KEY = "admin_staff";
+// =========================================================
+// File: Frontend1/js/admin-staff-detail.js
+// Mục đích: Thêm / xem / cập nhật trạng thái nhân viên bằng API thật
+// =========================================================
 
-// 2. Dữ liệu nhân viên mẫu
-const demoAdminStaff = [
-    {
-        id: "NV001",
-        fullName: "Chủ cửa hàng",
-        username: "owner",
-        password: "123456",
-        role: "owner",
-        email: "owner@gmail.com",
-        phone: "0900000001",
-        status: "active",
-        createdAt: "2026-05-01",
-        note: "Tài khoản chủ cửa hàng mặc định."
-    },
-    {
-        id: "NV002",
-        fullName: "Nhân viên bán hàng",
-        username: "staff",
-        password: "123456",
-        role: "staff",
-        email: "staff@gmail.com",
-        phone: "0900000002",
-        status: "active",
-        createdAt: "2026-05-02",
-        note: "Nhân viên xử lý đơn hàng và sản phẩm."
-    },
-    {
-        id: "NV003",
-        fullName: "Nhân viên kho",
-        username: "khohang",
-        password: "123456",
-        role: "staff",
-        email: "khohang@gmail.com",
-        phone: "0900000003",
-        status: "active",
-        createdAt: "2026-05-05",
-        note: "Theo dõi tồn kho sản phẩm."
-    },
-    {
-        id: "NV004",
-        fullName: "Nhân viên cũ",
-        username: "nhanviencu",
-        password: "123456",
-        role: "staff",
-        email: "nhanviencu@gmail.com",
-        phone: "0900000004",
-        status: "locked",
-        createdAt: "2026-04-20",
-        note: "Tài khoản đã tạm khóa."
-    }
-];
 
-// 3. Dữ liệu lịch sử hoạt động mẫu
-const demoStaffActivitiesByStaff = {
-    NV001: [
-        {
-            id: "ACT001",
-            type: "login",
-            title: "Đăng nhập hệ thống",
-            detail: "Chủ cửa hàng đã đăng nhập vào trang quản trị.",
-            targetType: "Hệ thống",
-            targetId: "ADMIN",
-            createdAt: "2026-05-25T08:15:00"
-        },
-        {
-            id: "ACT002",
-            type: "voucher",
-            title: "Tạo voucher đổi điểm",
-            detail: "Tạo ưu đãi POINT50 - Voucher giảm 50.000đ cần 1000 điểm để đổi.",
-            targetType: "Voucher",
-            targetId: "POINT50",
-            createdAt: "2026-05-25T09:20:00"
-        },
-        {
-            id: "ACT003",
-            type: "staff",
-            title: "Cập nhật tài khoản nhân viên",
-            detail: "Cập nhật trạng thái tài khoản NV002 sang đang hoạt động.",
-            targetType: "Nhân viên",
-            targetId: "NV002",
-            createdAt: "2026-05-24T16:40:00"
-        }
-    ],
-    NV002: [
-        {
-            id: "ACT004",
-            type: "login",
-            title: "Đăng nhập hệ thống",
-            detail: "Nhân viên bán hàng đã đăng nhập vào trang quản trị.",
-            targetType: "Hệ thống",
-            targetId: "ADMIN",
-            createdAt: "2026-05-25T08:45:00"
-        },
-        {
-            id: "ACT005",
-            type: "order",
-            title: "Cập nhật trạng thái đơn hàng",
-            detail: "Cập nhật đơn DH001 từ Chờ xác nhận sang Đang giao.",
-            targetType: "Đơn hàng",
-            targetId: "DH001",
-            createdAt: "2026-05-25T09:10:00"
-        },
-        {
-            id: "ACT006",
-            type: "product",
-            title: "Chỉnh sửa sản phẩm",
-            detail: "Cập nhật tồn kho và kích thước cho sản phẩm Áo hoodie form rộng.",
-            targetType: "Sản phẩm",
-            targetId: "SP002",
-            createdAt: "2026-05-24T20:30:00"
-        },
-        {
-            id: "ACT007",
-            type: "customer",
-            title: "Xem thông tin khách hàng",
-            detail: "Xem dashboard chi tiết của khách hàng Nguyễn Minh Anh.",
-            targetType: "Khách hàng",
-            targetId: "KH001",
-            createdAt: "2026-05-24T18:05:00"
-        }
-    ],
-    NV003: [
-        {
-            id: "ACT008",
-            type: "login",
-            title: "Đăng nhập hệ thống",
-            detail: "Nhân viên kho đã đăng nhập vào trang quản trị.",
-            targetType: "Hệ thống",
-            targetId: "ADMIN",
-            createdAt: "2026-05-25T07:55:00"
-        },
-        {
-            id: "ACT009",
-            type: "product",
-            title: "Cập nhật tồn kho sản phẩm",
-            detail: "Cập nhật số lượng size cho sản phẩm Quần jean xanh đậm.",
-            targetType: "Sản phẩm",
-            targetId: "SP003",
-            createdAt: "2026-05-25T10:05:00"
-        },
-        {
-            id: "ACT010",
-            type: "product",
-            title: "Ẩn sản phẩm hết hàng",
-            detail: "Chuyển trạng thái sản phẩm Áo khoác kaki nữ sang Đang ẩn.",
-            targetType: "Sản phẩm",
-            targetId: "SP005",
-            createdAt: "2026-05-23T15:30:00"
-        }
-    ],
-    NV004: [
-        {
-            id: "ACT011",
-            type: "login",
-            title: "Đăng nhập hệ thống",
-            detail: "Nhân viên cũ đã đăng nhập vào trang quản trị.",
-            targetType: "Hệ thống",
-            targetId: "ADMIN",
-            createdAt: "2026-04-20T08:30:00"
-        },
-        {
-            id: "ACT012",
-            type: "staff",
-            title: "Tài khoản bị khóa",
-            detail: "Tài khoản nhân viên đã được chuyển sang trạng thái Đã khóa.",
-            targetType: "Nhân viên",
-            targetId: "NV004",
-            createdAt: "2026-04-20T17:00:00"
-        }
-    ]
-};
-
-// 4. Lấy element thông tin admin
+// 1. Lấy element thông tin admin
 const adminAvatar = document.getElementById("adminAvatar");
 const adminName = document.getElementById("adminName");
 const adminRole = document.getElementById("adminRole");
 const adminCurrentDate = document.getElementById("adminCurrentDate");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
 
-// 5. Lấy element tiêu đề trang
+
+// 2. Lấy element tiêu đề trang
 const staffDetailTitle = document.getElementById("staffDetailTitle");
 const staffDetailSubtitle = document.getElementById("staffDetailSubtitle");
 const staffFormTitle = document.getElementById("staffFormTitle");
 
-// 6. Lấy element form nhân viên
+
+// 3. Lấy element form nhân viên
 const staffDetailForm = document.getElementById("staffDetailForm");
 const staffFormMessage = document.getElementById("staffFormMessage");
+
 const staffId = document.getElementById("staffId");
 const staffFullName = document.getElementById("staffFullName");
 const staffUsername = document.getElementById("staffUsername");
@@ -201,35 +33,37 @@ const staffCreatedAt = document.getElementById("staffCreatedAt");
 const staffStatusInput = document.getElementById("staffStatusInput");
 const staffNote = document.getElementById("staffNote");
 
-// 7. Lấy element lịch sử hoạt động
+
+// 4. Lấy element lịch sử hoạt động
 const staffActivityCard = document.getElementById("staffActivityCard");
 const staffActivitySummaryCard = document.querySelector(".staffActivitySummaryCard");
 const staffActivityList = document.getElementById("staffActivityList");
 const emptyStaffActivityText = document.getElementById("emptyStaffActivityText");
 const staffActivityItemTemplate = document.getElementById("staffActivityItemTemplate");
+
 const staffActivityTotalCount = document.getElementById("staffActivityTotalCount");
 const staffActivityLastLogin = document.getElementById("staffActivityLastLogin");
 const staffActivityMainAction = document.getElementById("staffActivityMainAction");
 const staffActivityLastAction = document.getElementById("staffActivityLastAction");
 
-// 8. Lấy element trạng thái trang
+
+// 5. Lấy element trạng thái trang
 const staffDetailLayout = document.getElementById("staffDetailLayout");
 const staffNotFoundBox = document.getElementById("staffNotFoundBox");
 
-// 9. Biến lưu trạng thái trang
+
+// 6. Biến lưu trạng thái trang
 let currentAdminUser = null;
 let currentStaffId = null;
 let currentStaffData = null;
 let isEditMode = false;
 
-// 10. Lấy ngày hôm nay dạng YYYY-MM-DD
-function getTodayString() {
-    return new Date().toISOString().slice(0, 10);
-}
 
-// 11. Render ngày hiện tại
+// 7. Render ngày hiện tại
 function renderCurrentDate() {
-    if (!adminCurrentDate) return;
+    if (!adminCurrentDate) {
+        return;
+    }
 
     const today = new Date();
 
@@ -241,34 +75,51 @@ function renderCurrentDate() {
     });
 }
 
-// 12. Lấy id nhân viên từ URL
+
+// 8. Lấy id nhân viên từ URL
 function getStaffIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
-
-    return params.get("id");
+    return params.get("id") || params.get("staff_id") || "";
 }
 
-// 13. Lấy chữ đại diện
+
+// 9. Lấy chữ đại diện
 function getFirstLetter(text) {
-    if (!text) return "A";
+    if (!text) {
+        return "A";
+    }
 
-    return text.trim().charAt(0).toUpperCase();
+    return String(text).trim().charAt(0).toUpperCase();
 }
 
-// 14. Format ngày Việt Nam
+
+// 10. Format ngày Việt Nam
 function formatDate(dateString) {
-    if (!dateString) return "Chưa có";
+    if (!dateString) {
+        return "Chưa có";
+    }
 
     const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+        return dateString;
+    }
 
     return date.toLocaleDateString("vi-VN");
 }
 
-// 15. Format ngày giờ Việt Nam
+
+// 11. Format ngày giờ Việt Nam
 function formatDateTime(dateTimeString) {
-    if (!dateTimeString) return "Chưa có";
+    if (!dateTimeString) {
+        return "Chưa có";
+    }
 
     const date = new Date(dateTimeString);
+
+    if (Number.isNaN(date.getTime())) {
+        return dateTimeString;
+    }
 
     return date.toLocaleString("vi-VN", {
         hour: "2-digit",
@@ -279,53 +130,53 @@ function formatDateTime(dateTimeString) {
     });
 }
 
-// 16. Kiểm tra đăng nhập admin
-function checkAdminLogin() {
-    const isLogin = localStorage.getItem(ADMIN_IS_LOGIN_KEY) === "true";
-    const currentAdmin = localStorage.getItem(ADMIN_CURRENT_USER_KEY);
 
-    if (!isLogin || !currentAdmin) {
-        window.location.href = "../html/admin-login.html";
-        return null;
-    }
-
-    try {
-        return JSON.parse(currentAdmin);
-    } catch (error) {
-        localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-        localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
-
-        window.location.href = "../html/admin-login.html";
-        return null;
-    }
+// 12. Lấy ngày hôm nay dạng YYYY-MM-DD
+function getTodayString() {
+    return new Date().toISOString().slice(0, 10);
 }
 
-// 17. Kiểm tra quyền quản lý nhân viên
-function checkStaffPermission(adminUser) {
-    if (!adminUser) return false;
 
-    if (adminUser.role !== "owner") {
-        alert("Bạn không có quyền thêm hoặc chỉnh sửa nhân viên.");
-        window.location.href = "../html/admin-dashboard.html";
-        return false;
+// 13. Lấy nhãn vai trò admin
+function getAdminRoleLabel(roleCode, roleName) {
+    if (roleCode === "owner") {
+        return "Chủ cửa hàng";
     }
 
-    return true;
+    if (roleCode === "admin") {
+        return "Quản trị viên";
+    }
+
+    if (roleCode === "staff") {
+        return "Nhân viên";
+    }
+
+    return roleName || "Quản trị viên";
 }
 
-// 18. Hiển thị thông tin admin
+
+// 14. Kiểm tra quyền quản lý nhân viên
+function canManageStaff(adminUser) {
+    return adminUser && adminUser.role === "owner";
+}
+
+
+// 15. Hiển thị thông tin admin
 function renderAdminInfo(adminUser) {
-    if (!adminUser) return;
+    if (!adminUser) {
+        return;
+    }
 
-    const fullName = adminUser.fullName || "Quản trị viên";
-    const roleText = adminUser.role === "owner" ? "Chủ cửa hàng" : "Nhân viên";
+    const fullName = adminUser.fullName || adminUser.full_name || "Quản trị viên";
+    const roleCode = adminUser.role || "";
+    const roleName = adminUser.roleName || "";
 
     if (adminName) {
         adminName.textContent = fullName;
     }
 
     if (adminRole) {
-        adminRole.textContent = roleText;
+        adminRole.textContent = getAdminRoleLabel(roleCode, roleName);
     }
 
     if (adminAvatar) {
@@ -334,123 +185,133 @@ function renderAdminInfo(adminUser) {
 
     const ownerOnlyLinks = document.querySelectorAll("[data-owner-only='true']");
 
-    ownerOnlyLinks.forEach(function(link) {
-        if (adminUser.role !== "owner") {
-            link.style.display = "none";
-        }
+    ownerOnlyLinks.forEach(function (link) {
+        link.style.display = roleCode === "owner" ? "" : "none";
     });
 }
 
-// 19. Đăng xuất admin
-function handleAdminLogout() {
-    localStorage.removeItem(ADMIN_CURRENT_USER_KEY);
-    localStorage.removeItem(ADMIN_IS_LOGIN_KEY);
 
+// 16. Xử lý đăng xuất
+function handleAdminLogout() {
+    if (window.AdminApi && window.AdminApi.logoutAdmin) {
+        window.AdminApi.logoutAdmin();
+        return;
+    }
+
+    localStorage.removeItem("admin_current_user");
+    localStorage.removeItem("admin_is_login");
     window.location.href = "../html/admin-login.html";
 }
 
-// 20. Chuẩn hóa nhân viên
-function normalizeStaff(staff, index) {
-    const defaultStaff = demoAdminStaff[index] || demoAdminStaff[0];
 
-    return {
-        id: staff.id || "NV" + String(index + 1).padStart(3, "0"),
-        fullName: staff.fullName || defaultStaff.fullName || "Nhân viên",
-        username: staff.username || defaultStaff.username || "",
-        password: staff.password || defaultStaff.password || "123456",
-        role: staff.role || defaultStaff.role || "staff",
-        email: staff.email || defaultStaff.email || "Chưa cập nhật",
-        phone: staff.phone || defaultStaff.phone || "Chưa cập nhật",
-        status: staff.status || defaultStaff.status || "active",
-        createdAt: staff.createdAt || defaultStaff.createdAt || getTodayString(),
-        note: staff.note || ""
-    };
-}
-
-// 21. Lấy danh sách nhân viên
-function getStaffList() {
-    const savedStaff = localStorage.getItem(ADMIN_STAFF_KEY);
-
-    if (!savedStaff) {
-        const normalizedDemoStaff = demoAdminStaff.map(function(staff, index) {
-            return normalizeStaff(staff, index);
-        });
-
-        localStorage.setItem(ADMIN_STAFF_KEY, JSON.stringify(normalizedDemoStaff));
-
-        return normalizedDemoStaff;
+// 17. Thêm option nếu select chưa có
+function addSelectOptionIfMissing(selectElement, value, text) {
+    if (!selectElement) {
+        return;
     }
 
-    try {
-        const staffList = JSON.parse(savedStaff);
-
-        const normalizedStaffList = staffList.map(function(staff, index) {
-            return normalizeStaff(staff, index);
-        });
-
-        localStorage.setItem(ADMIN_STAFF_KEY, JSON.stringify(normalizedStaffList));
-
-        return normalizedStaffList;
-    } catch (error) {
-        const normalizedDemoStaff = demoAdminStaff.map(function(staff, index) {
-            return normalizeStaff(staff, index);
-        });
-
-        localStorage.setItem(ADMIN_STAFF_KEY, JSON.stringify(normalizedDemoStaff));
-
-        return normalizedDemoStaff;
-    }
-}
-
-// 22. Lưu danh sách nhân viên
-function saveStaffList(staffList) {
-    localStorage.setItem(ADMIN_STAFF_KEY, JSON.stringify(staffList));
-}
-
-// 23. Tạo mã nhân viên mới
-function createStaffId() {
-    const staffList = getStaffList();
-
-    if (staffList.length === 0) {
-        return "NV001";
-    }
-
-    const maxNumber = staffList.reduce(function(max, staff) {
-        const number = Number(String(staff.id).replace("NV", ""));
-
-        return number > max ? number : max;
-    }, 0);
-
-    return "NV" + String(maxNumber + 1).padStart(3, "0");
-}
-
-// 24. Tìm nhân viên theo id
-function getStaffById(id) {
-    const staffList = getStaffList();
-
-    return staffList.find(function(staff) {
-        return staff.id === id;
+    const isExist = Array.from(selectElement.options).some(function (option) {
+        return option.value === value;
     });
+
+    if (isExist) {
+        return;
+    }
+
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = text;
+
+    selectElement.appendChild(option);
 }
 
-// 25. Kiểm tra có phải tài khoản đang đăng nhập không
-function isCurrentLoginStaff(staff) {
-    if (!staff || !currentAdminUser) return false;
 
-    const sameUsername = staff.username && currentAdminUser.username && staff.username === currentAdminUser.username;
-    const sameId = staff.id && currentAdminUser.id && staff.id === currentAdminUser.id;
+// 18. Chuẩn bị option role/status cho đồng bộ API
+function prepareStaffSelectOptions() {
+    addSelectOptionIfMissing(staffRoleInput, "staff", "Nhân viên");
+    addSelectOptionIfMissing(staffRoleInput, "admin", "Quản trị viên");
+    addSelectOptionIfMissing(staffRoleInput, "owner", "Chủ cửa hàng");
 
-    return sameUsername || sameId;
+    addSelectOptionIfMissing(staffStatusInput, "active", "Đang hoạt động");
+    addSelectOptionIfMissing(staffStatusInput, "inactive", "Đã khóa");
+    addSelectOptionIfMissing(staffStatusInput, "blocked", "Bị chặn");
 }
 
-// 26. Đếm số tài khoản chủ cửa hàng
-function countOwnerStaff(staffList) {
-    return staffList.filter(function(staff) {
-        return staff.role === "owner";
-    }).length;
+
+// 19. Map status API sang UI
+function mapApiStatusToUiStatus(status) {
+    if (status === "active") {
+        return "active";
+    }
+
+    if (status === "blocked") {
+        return "blocked";
+    }
+
+    if (status === "inactive") {
+        return "inactive";
+    }
+
+    if (status === "locked") {
+        return "inactive";
+    }
+
+    return "active";
 }
 
-// 27. Hiển thị không tìm thấy nhân viên
+
+// 20. Map status UI sang API
+function mapUiStatusToApiStatus(status) {
+    if (status === "locked") {
+        return "inactive";
+    }
+
+    return status || "active";
+}
+
+
+// 21. Lấy work status mặc định theo status tài khoản
+function getWorkStatusForApi(status) {
+    if (currentStaffData && currentStaffData.workStatus) {
+        return currentStaffData.workStatus;
+    }
+
+    if (status === "active") {
+        return "working";
+    }
+
+    return "on_leave";
+}
+
+
+// 22. Hiển thị thông báo form
+function showStaffFormMessage(message, type = "error") {
+    if (!staffFormMessage) {
+        return;
+    }
+
+    staffFormMessage.textContent = message;
+
+    if (type === "success") {
+        staffFormMessage.classList.add("success");
+    } else {
+        staffFormMessage.classList.remove("success");
+    }
+}
+
+
+// 23. Xóa thông báo form
+function clearStaffFormMessage() {
+    if (!staffFormMessage) {
+        return;
+    }
+
+    staffFormMessage.textContent = "";
+    staffFormMessage.classList.remove("success");
+}
+
+
+// 24. Hiển thị không tìm thấy nhân viên
 function showStaffNotFound() {
     if (staffDetailLayout) {
         staffDetailLayout.style.display = "none";
@@ -461,7 +322,32 @@ function showStaffNotFound() {
     }
 }
 
-// 28. Render tiêu đề trang
+
+// 25. Hiển thị layout nhân viên
+function showStaffDetailLayout() {
+    if (staffDetailLayout) {
+        staffDetailLayout.style.display = "grid";
+    }
+
+    if (staffNotFoundBox) {
+        staffNotFoundBox.style.display = "none";
+    }
+}
+
+
+// 26. Ẩn/hiện khu vực lịch sử hoạt động
+function toggleStaffActivityArea(isShow) {
+    if (staffActivityCard) {
+        staffActivityCard.style.display = isShow ? "block" : "none";
+    }
+
+    if (staffActivitySummaryCard) {
+        staffActivitySummaryCard.style.display = isShow ? "block" : "none";
+    }
+}
+
+
+// 27. Render tiêu đề trang
 function renderPageTitle() {
     if (isEditMode) {
         if (staffDetailTitle) {
@@ -469,7 +355,7 @@ function renderPageTitle() {
         }
 
         if (staffDetailSubtitle) {
-            staffDetailSubtitle.textContent = "Chỉnh sửa thông tin tài khoản nhân viên";
+            staffDetailSubtitle.textContent = "Xem thông tin, lịch sử hoạt động và cập nhật trạng thái nhân viên";
         }
 
         if (staffFormTitle) {
@@ -495,98 +381,221 @@ function renderPageTitle() {
     document.title = "Thêm nhân viên";
 }
 
-// 29. Hiển thị lỗi form
-function showStaffFormMessage(message, type = "error") {
-    if (!staffFormMessage) return;
 
-    staffFormMessage.textContent = message;
+// 28. Set trạng thái khóa/mở field theo mode
+function setEditModeFieldState() {
+    const readOnlyFieldsWhenEdit = [
+        staffFullName,
+        staffUsername,
+        staffPassword,
+        staffRoleInput,
+        staffEmail,
+        staffPhone,
+        staffCreatedAt
+    ];
 
-    if (type === "success") {
-        staffFormMessage.classList.add("success");
-    } else {
-        staffFormMessage.classList.remove("success");
+    readOnlyFieldsWhenEdit.forEach(function (field) {
+        if (!field) {
+            return;
+        }
+
+        if (field.tagName === "SELECT") {
+            field.disabled = isEditMode;
+        } else {
+            field.readOnly = isEditMode;
+        }
+    });
+
+    if (staffPassword && isEditMode) {
+        staffPassword.placeholder = "Mật khẩu đã được mã hóa";
     }
 }
 
-// 30. Xóa lỗi form
-function clearStaffFormMessage() {
-    if (!staffFormMessage) return;
 
-    staffFormMessage.textContent = "";
-    staffFormMessage.classList.remove("success");
-}
-
-// 31. Ẩn/hiện khu vực hoạt động nhân viên
-function toggleStaffActivityArea(isShow) {
-    if (staffActivityCard) {
-        staffActivityCard.style.display = isShow ? "block" : "none";
+// 29. Chuẩn hóa staff từ API
+function normalizeStaff(staff) {
+    if (!staff) {
+        return null;
     }
 
-    if (staffActivitySummaryCard) {
-        staffActivitySummaryCard.style.display = isShow ? "block" : "none";
-    }
+    const roleCode = staff.role && staff.role.code
+        ? staff.role.code
+        : staff.role_code || "staff";
+
+    const roleName = staff.role && staff.role.name
+        ? staff.role.name
+        : "";
+
+    const profile = staff.staff_profile || {};
+    const summary = staff.activity_summary || {};
+
+    return {
+        id: Number(staff.id || 0),
+        fullName: staff.full_name || "Nhân viên",
+        email: staff.email || "",
+        phone: staff.phone || "",
+        status: staff.status || "active",
+
+        role: roleCode,
+        roleName: roleName,
+
+        staffCode: profile.staff_code || "NV" + String(staff.id || 0).padStart(3, "0"),
+        positionName: profile.position_name || "",
+        department: profile.department || "",
+        workStatus: profile.work_status || "working",
+
+        createdAt: staff.created_at || "",
+        updatedAt: staff.updated_at || "",
+
+        activitySummary: {
+            totalActivities: Number(summary.total_activities || 0),
+            createActivities: Number(summary.create_activities || 0),
+            updateActivities: Number(summary.update_activities || 0),
+            updateStatusActivities: Number(summary.update_status_activities || 0),
+            updatePaymentActivities: Number(summary.update_payment_activities || 0),
+            firstActivityAt: summary.first_activity_at || null,
+            lastActivityAt: summary.last_activity_at || null
+        },
+
+        activities: Array.isArray(staff.activities) ? staff.activities : [],
+        raw: staff
+    };
 }
 
-// 32. Đổ dữ liệu nhân viên vào form
+
+// 30. Đổ dữ liệu nhân viên vào form
 function fillStaffForm(staff) {
-    if (!staff) return;
+    const normalizedStaff = normalizeStaff(staff);
 
-    if (staffId) staffId.value = staff.id;
-    if (staffFullName) staffFullName.value = staff.fullName;
-    if (staffUsername) staffUsername.value = staff.username;
-    if (staffPassword) staffPassword.value = staff.password;
-    if (staffRoleInput) staffRoleInput.value = staff.role;
-    if (staffEmail) staffEmail.value = staff.email;
-    if (staffPhone) staffPhone.value = staff.phone;
-    if (staffCreatedAt) staffCreatedAt.value = staff.createdAt;
-    if (staffStatusInput) staffStatusInput.value = staff.status;
-    if (staffNote) staffNote.value = staff.note;
+    if (!normalizedStaff) {
+        return;
+    }
+
+    currentStaffData = normalizedStaff;
+
+    if (staffId) {
+        staffId.value = normalizedStaff.id;
+    }
+
+    if (staffFullName) {
+        staffFullName.value = normalizedStaff.fullName;
+    }
+
+    if (staffUsername) {
+        staffUsername.value = normalizedStaff.staffCode;
+    }
+
+    if (staffPassword) {
+        staffPassword.value = "";
+    }
+
+    if (staffRoleInput) {
+        staffRoleInput.value = normalizedStaff.role;
+    }
+
+    if (staffEmail) {
+        staffEmail.value = normalizedStaff.email;
+    }
+
+    if (staffPhone) {
+        staffPhone.value = normalizedStaff.phone;
+    }
+
+    if (staffCreatedAt) {
+        staffCreatedAt.value = normalizedStaff.createdAt
+            ? String(normalizedStaff.createdAt).slice(0, 10)
+            : "";
+    }
+
+    if (staffStatusInput) {
+        staffStatusInput.value = mapApiStatusToUiStatus(normalizedStaff.status);
+    }
+
+    if (staffNote) {
+        const noteParts = [
+            normalizedStaff.department,
+            normalizedStaff.positionName
+        ].filter(Boolean);
+
+        staffNote.value = noteParts.join(" - ");
+    }
+
+    setEditModeFieldState();
 }
 
-// 33. Set form mặc định khi thêm mới
-function setDefaultStaffForm() {
-    if (staffId) staffId.value = "";
-    if (staffFullName) staffFullName.value = "";
-    if (staffUsername) staffUsername.value = "";
-    if (staffPassword) staffPassword.value = "";
-    if (staffRoleInput) staffRoleInput.value = "staff";
-    if (staffEmail) staffEmail.value = "";
-    if (staffPhone) staffPhone.value = "";
-    if (staffStatusInput) staffStatusInput.value = "active";
-    if (staffCreatedAt) staffCreatedAt.value = getTodayString();
-    if (staffNote) staffNote.value = "";
 
+// 31. Set form mặc định khi thêm mới
+function setDefaultStaffForm() {
+    currentStaffData = null;
+
+    if (staffId) {
+        staffId.value = "";
+    }
+
+    if (staffFullName) {
+        staffFullName.value = "";
+    }
+
+    if (staffUsername) {
+        staffUsername.value = "";
+    }
+
+    if (staffPassword) {
+        staffPassword.value = "";
+        staffPassword.placeholder = "";
+    }
+
+    if (staffRoleInput) {
+        staffRoleInput.value = "staff";
+    }
+
+    if (staffEmail) {
+        staffEmail.value = "";
+    }
+
+    if (staffPhone) {
+        staffPhone.value = "";
+    }
+
+    if (staffCreatedAt) {
+        staffCreatedAt.value = getTodayString();
+    }
+
+    if (staffStatusInput) {
+        staffStatusInput.value = "active";
+    }
+
+    if (staffNote) {
+        staffNote.value = "";
+    }
+
+    setEditModeFieldState();
     toggleStaffActivityArea(false);
 }
 
-// 34. Kiểm tra email đơn giản
+
+// 32. Kiểm tra email
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// 35. Kiểm tra form nhân viên
-function validateStaffForm() {
-    const fullName = staffFullName.value.trim();
-    const username = staffUsername.value.trim();
-    const password = staffPassword.value.trim();
-    const role = staffRoleInput.value;
-    const email = staffEmail.value.trim();
-    const phone = staffPhone.value.trim();
-    const createdAt = staffCreatedAt.value;
-    const status = staffStatusInput.value;
+
+// 33. Validate form thêm nhân viên
+function validateCreateStaffForm() {
+    const fullName = staffFullName ? staffFullName.value.trim() : "";
+    const staffCode = staffUsername ? staffUsername.value.trim() : "";
+    const password = staffPassword ? staffPassword.value.trim() : "";
+    const role = staffRoleInput ? staffRoleInput.value : "";
+    const email = staffEmail ? staffEmail.value.trim() : "";
+    const phone = staffPhone ? staffPhone.value.trim() : "";
 
     if (!fullName) {
         showStaffFormMessage("Vui lòng nhập họ tên nhân viên.");
         return false;
     }
 
-    if (!username) {
-        showStaffFormMessage("Vui lòng nhập tên đăng nhập.");
-        return false;
-    }
-
-    if (username.length < 4) {
-        showStaffFormMessage("Tên đăng nhập nên có ít nhất 4 ký tự.");
+    if (!staffCode) {
+        showStaffFormMessage("Vui lòng nhập mã/tên đăng nhập nhân viên.");
         return false;
     }
 
@@ -596,7 +605,7 @@ function validateStaffForm() {
     }
 
     if (password.length < 6) {
-        showStaffFormMessage("Mật khẩu nên có ít nhất 6 ký tự.");
+        showStaffFormMessage("Mật khẩu phải có ít nhất 6 ký tự.");
         return false;
     }
 
@@ -620,193 +629,250 @@ function validateStaffForm() {
         return false;
     }
 
-    if (!createdAt) {
-        showStaffFormMessage("Vui lòng chọn ngày tạo tài khoản.");
-        return false;
-    }
+    return true;
+}
+
+
+// 34. Validate form cập nhật trạng thái nhân viên
+function validateUpdateStaffStatusForm() {
+    const status = staffStatusInput ? staffStatusInput.value : "";
 
     if (!status) {
         showStaffFormMessage("Vui lòng chọn trạng thái tài khoản.");
         return false;
     }
 
-    return true;
-}
-
-// 36. Lấy dữ liệu từ form nhân viên
-function getStaffFormData() {
-    return {
-        id: staffId.value || createStaffId(),
-        fullName: staffFullName.value.trim(),
-        username: staffUsername.value.trim(),
-        password: staffPassword.value.trim(),
-        role: staffRoleInput.value,
-        email: staffEmail.value.trim(),
-        phone: staffPhone.value.trim(),
-        status: staffStatusInput.value,
-        createdAt: staffCreatedAt.value,
-        note: staffNote.value.trim()
-    };
-}
-
-// 37. Kiểm tra trùng username
-function isDuplicateUsername(staffList, formData) {
-    return staffList.some(function(staff) {
-        return staff.username.toLowerCase() === formData.username.toLowerCase() &&
-            staff.id !== formData.id;
-    });
-}
-
-// 38. Kiểm tra trùng email
-function isDuplicateEmail(staffList, formData) {
-    return staffList.some(function(staff) {
-        return staff.email.toLowerCase() === formData.email.toLowerCase() &&
-            staff.id !== formData.id;
-    });
-}
-
-// 39. Kiểm tra trùng số điện thoại
-function isDuplicatePhone(staffList, formData) {
-    return staffList.some(function(staff) {
-        return staff.phone === formData.phone &&
-            staff.id !== formData.id;
-    });
-}
-
-// 40. Kiểm tra chỉnh sửa tài khoản chủ cửa hàng
-function validateOwnerSafety(staffList, formData) {
-    if (!isEditMode || !currentStaffData) {
-        return true;
-    }
-
-    const currentIsOwner = currentStaffData.role === "owner";
-    const formIsOwner = formData.role === "owner";
-
-    if (currentIsOwner && !formIsOwner && countOwnerStaff(staffList) <= 1) {
-        showStaffFormMessage("Hệ thống phải có ít nhất 1 tài khoản chủ cửa hàng.");
+    if (!currentStaffData) {
+        showStaffFormMessage("Không tìm thấy dữ liệu nhân viên cần cập nhật.");
         return false;
     }
 
-    if (currentIsOwner && formData.status === "locked" && countOwnerStaff(staffList) <= 1) {
-        showStaffFormMessage("Không thể khóa tài khoản chủ cửa hàng duy nhất.");
-        return false;
-    }
-
-    if (isCurrentLoginStaff(currentStaffData) && formData.status === "locked") {
+    if (String(currentStaffData.id) === String(currentAdminUser.id) && status !== "active") {
         showStaffFormMessage("Không thể khóa tài khoản đang đăng nhập.");
         return false;
     }
 
-    if (isCurrentLoginStaff(currentStaffData) && formData.role !== "owner") {
-        showStaffFormMessage("Không thể hạ quyền tài khoản đang đăng nhập.");
+    if (currentStaffData.role === "owner" && status !== "active") {
+        showStaffFormMessage("Không thể khóa tài khoản chủ cửa hàng.");
         return false;
     }
 
     return true;
 }
 
-// 41. Cập nhật lại current admin nếu đang sửa chính tài khoản đăng nhập
-function updateCurrentAdminIfNeeded(formData) {
-    if (!currentAdminUser || !currentStaffData) return;
 
-    const sameUsername = currentAdminUser.username && currentAdminUser.username === currentStaffData.username;
-    const sameId = currentAdminUser.id && currentAdminUser.id === currentStaffData.id;
+// 35. Lấy dữ liệu thêm nhân viên
+function getCreateStaffData() {
+    const roleCode = staffRoleInput ? staffRoleInput.value : "staff";
+    const status = staffStatusInput ? mapUiStatusToApiStatus(staffStatusInput.value) : "active";
 
-    if (!sameUsername && !sameId) return;
+    return {
+        full_name: staffFullName.value.trim(),
+        email: staffEmail.value.trim(),
+        phone: staffPhone.value.trim(),
+        password: staffPassword.value.trim(),
 
-    const updatedAdminUser = {
-        ...currentAdminUser,
-        id: formData.id,
-        fullName: formData.fullName,
-        username: formData.username,
-        password: formData.password,
-        role: formData.role,
-        email: formData.email,
-        phone: formData.phone,
-        status: formData.status
+        gender: "other",
+        date_of_birth: "",
+
+        role_code: roleCode,
+
+        staff_code: staffUsername.value.trim().toUpperCase(),
+        position_name: roleCode === "owner" ? "Chủ cửa hàng" : "Nhân viên",
+        department: staffNote ? staffNote.value.trim() : "",
+        work_status: status === "active" ? "working" : "on_leave",
+
+        status: status
+    };
+}
+
+
+// 36. Lấy dữ liệu cập nhật trạng thái
+function getUpdateStaffStatusData() {
+    const status = staffStatusInput ? mapUiStatusToApiStatus(staffStatusInput.value) : "active";
+    const note = staffNote ? staffNote.value.trim() : "";
+
+    return {
+        staff_id: Number(currentStaffId),
+        status: status,
+        work_status: getWorkStatusForApi(status),
+        note: note || "Owner cập nhật trạng thái nhân viên từ giao diện quản trị."
+    };
+}
+
+
+// 37. Set loading nút lưu
+function setSaveStaffLoading(isLoading) {
+    const submitButton = staffDetailForm
+        ? staffDetailForm.querySelector("button[type='submit']")
+        : null;
+
+    if (!submitButton) {
+        return;
+    }
+
+    submitButton.disabled = isLoading;
+    submitButton.textContent = isLoading ? "Đang lưu..." : "Lưu nhân viên";
+}
+
+
+// 38. Tạo nhân viên bằng API
+async function createStaff() {
+    if (!validateCreateStaffForm()) {
+        return;
+    }
+
+    const formData = getCreateStaffData();
+
+    try {
+        setSaveStaffLoading(true);
+
+        await window.AdminApi.post("admin/staff/create-staff.php", formData);
+
+        showStaffFormMessage("Thêm nhân viên thành công. Đang quay lại danh sách...", "success");
+
+        setTimeout(function () {
+            window.location.href = "../html/admin-staff.html";
+        }, 700);
+    } catch (error) {
+        showStaffFormMessage(
+            window.AdminApi.getApiErrorMessage(error, "Thêm nhân viên thất bại.")
+        );
+    } finally {
+        setSaveStaffLoading(false);
+    }
+}
+
+
+// 39. Cập nhật trạng thái nhân viên bằng API
+async function updateStaffStatus() {
+    if (!validateUpdateStaffStatusForm()) {
+        return;
+    }
+
+    const formData = getUpdateStaffStatusData();
+
+    try {
+        setSaveStaffLoading(true);
+
+        await window.AdminApi.post("admin/staff/update-staff-status.php", formData);
+
+        showStaffFormMessage("Cập nhật trạng thái nhân viên thành công.", "success");
+
+        await loadStaffDetail(currentStaffId);
+    } catch (error) {
+        showStaffFormMessage(
+            window.AdminApi.getApiErrorMessage(error, "Cập nhật trạng thái nhân viên thất bại.")
+        );
+    } finally {
+        setSaveStaffLoading(false);
+    }
+}
+
+
+// 40. Xử lý submit form
+function handleStaffFormSubmit(event) {
+    event.preventDefault();
+    clearStaffFormMessage();
+
+    if (isEditMode) {
+        updateStaffStatus();
+        return;
+    }
+
+    createStaff();
+}
+
+
+// 41. Lấy icon hoạt động
+function getActivityIcon(type) {
+    if (type === "login") {
+        return "↪";
+    }
+
+    if (type === "order" || type === "update_status" || type === "update_payment") {
+        return "□";
+    }
+
+    if (type === "product") {
+        return "▦";
+    }
+
+    if (type === "customer") {
+        return "♡";
+    }
+
+    if (type === "voucher") {
+        return "%";
+    }
+
+    if (type === "staff") {
+        return "☷";
+    }
+
+    if (type === "create") {
+        return "+";
+    }
+
+    if (type === "update") {
+        return "✎";
+    }
+
+    return "•";
+}
+
+
+// 42. Lấy tên hoạt động thường gặp
+function getActivityTypeText(activity) {
+    if (!activity) {
+        return "Hoạt động";
+    }
+
+    if (activity.action_type_label) {
+        return activity.action_type_label;
+    }
+
+    const type = activity.action_type || activity.type || "";
+
+    const labels = {
+        create: "Thêm mới",
+        update: "Cập nhật",
+        update_status: "Cập nhật trạng thái",
+        update_payment: "Cập nhật thanh toán",
+        delete: "Xóa",
+        login: "Đăng nhập",
+        logout: "Đăng xuất"
     };
 
-    localStorage.setItem(ADMIN_CURRENT_USER_KEY, JSON.stringify(updatedAdminUser));
+    return labels[type] || "Hoạt động";
 }
 
-// 42. Lấy icon theo loại hoạt động
-function getActivityIcon(type) {
-    switch (type) {
-        case "login":
-            return "↪";
 
-        case "order":
-            return "□";
-
-        case "product":
-            return "▦";
-
-        case "customer":
-            return "♡";
-
-        case "voucher":
-            return "%";
-
-        case "staff":
-            return "☷";
-
-        default:
-            return "•";
-    }
-}
-
-// 43. Lấy nhãn loại hoạt động
-function getActivityTypeText(type) {
-    switch (type) {
-        case "login":
-            return "Đăng nhập";
-
-        case "order":
-            return "Đơn hàng";
-
-        case "product":
-            return "Sản phẩm";
-
-        case "customer":
-            return "Khách hàng";
-
-        case "voucher":
-            return "Voucher";
-
-        case "staff":
-            return "Nhân viên";
-
-        default:
-            return "Hoạt động";
-    }
-}
-
-// 44. Lấy lịch sử hoạt động theo nhân viên
-function getStaffActivities(staffId) {
-    const activities = demoStaffActivitiesByStaff[staffId] || [];
-
-    return [...activities].sort(function(a, b) {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-}
-
-// 45. Tìm lần đăng nhập gần nhất
+// 43. Tìm hoạt động đăng nhập gần nhất
 function getLastLoginActivity(activities) {
-    return activities.find(function(activity) {
-        return activity.type === "login";
+    return activities.find(function (activity) {
+        const type = activity.action_type || activity.type || "";
+        return type === "login";
     });
 }
 
-// 46. Tìm loại thao tác thường gặp
+
+// 44. Tìm thao tác thường gặp
 function getMainActionType(activities) {
-    if (!activities || activities.length === 0) return "Chưa có";
+    if (!activities || activities.length === 0) {
+        return "Chưa có";
+    }
 
     const countMap = {};
 
-    activities.forEach(function(activity) {
-        if (activity.type === "login") return;
+    activities.forEach(function (activity) {
+        const type = activity.action_type || activity.type || "activity";
 
-        countMap[activity.type] = (countMap[activity.type] || 0) + 1;
+        if (type === "login") {
+            return;
+        }
+
+        countMap[type] = (countMap[type] || 0) + 1;
     });
 
     const actionTypes = Object.keys(countMap);
@@ -815,24 +881,33 @@ function getMainActionType(activities) {
         return "Đăng nhập";
     }
 
-    const mainType = actionTypes.reduce(function(maxType, currentType) {
+    const mainType = actionTypes.reduce(function (maxType, currentType) {
         return countMap[currentType] > countMap[maxType] ? currentType : maxType;
     }, actionTypes[0]);
 
-    return getActivityTypeText(mainType);
+    const sampleActivity = activities.find(function (activity) {
+        return (activity.action_type || activity.type) === mainType;
+    });
+
+    return getActivityTypeText(sampleActivity);
 }
 
-// 47. Render tổng quan hoạt động
-function renderStaffActivityOverview(activities) {
+
+// 45. Render tổng quan hoạt động
+function renderStaffActivityOverview(staff) {
+    const activities = staff.activities || [];
+    const summary = staff.activitySummary || {};
     const lastLogin = getLastLoginActivity(activities);
     const lastActivity = activities[0];
 
     if (staffActivityTotalCount) {
-        staffActivityTotalCount.textContent = activities.length;
+        staffActivityTotalCount.textContent = summary.totalActivities || activities.length;
     }
 
     if (staffActivityLastLogin) {
-        staffActivityLastLogin.textContent = lastLogin ? formatDateTime(lastLogin.createdAt) : "Chưa có";
+        staffActivityLastLogin.textContent = lastLogin
+            ? formatDateTime(lastLogin.created_at || lastLogin.createdAt)
+            : "Chưa có";
     }
 
     if (staffActivityMainAction) {
@@ -840,15 +915,20 @@ function renderStaffActivityOverview(activities) {
     }
 
     if (staffActivityLastAction) {
-        staffActivityLastAction.textContent = lastActivity ? lastActivity.title : "Chưa có";
+        staffActivityLastAction.textContent = lastActivity
+            ? (lastActivity.description || getActivityTypeText(lastActivity))
+            : "Chưa có";
     }
 }
 
-// 48. Render lịch sử hoạt động
-function renderStaffActivities(staffId) {
-    if (!staffActivityList || !staffActivityItemTemplate) return;
 
-    const activities = getStaffActivities(staffId);
+// 46. Render lịch sử hoạt động
+function renderStaffActivities(staff) {
+    if (!staffActivityList || !staffActivityItemTemplate) {
+        return;
+    }
+
+    const activities = staff.activities || [];
 
     staffActivityList.innerHTML = "";
 
@@ -856,81 +936,76 @@ function renderStaffActivities(staffId) {
         emptyStaffActivityText.classList.toggle("show", activities.length === 0);
     }
 
-    activities.forEach(function(activity) {
+    activities.forEach(function (activity) {
         const activityFragment = staffActivityItemTemplate.content.cloneNode(true);
 
-        activityFragment.querySelector(".staffActivityIconText").textContent = getActivityIcon(activity.type);
-        activityFragment.querySelector(".staffActivityTitleText").textContent = activity.title;
-        activityFragment.querySelector(".staffActivityTimeText").textContent = formatDateTime(activity.createdAt);
-        activityFragment.querySelector(".staffActivityDetailText").textContent = activity.detail;
-        activityFragment.querySelector(".staffActivityTypeText").textContent = getActivityTypeText(activity.type);
-        activityFragment.querySelector(".staffActivityTargetText").textContent = activity.targetType + " · " + activity.targetId;
+        const type = activity.action_type || activity.type || "activity";
+        const targetType = activity.target_type_label || activity.target_type || "Hệ thống";
+        const targetId = activity.target_id || "";
+
+        const iconElement = activityFragment.querySelector(".staffActivityIconText");
+        const titleElement = activityFragment.querySelector(".staffActivityTitleText");
+        const timeElement = activityFragment.querySelector(".staffActivityTimeText");
+        const detailElement = activityFragment.querySelector(".staffActivityDetailText");
+        const typeElement = activityFragment.querySelector(".staffActivityTypeText");
+        const targetElement = activityFragment.querySelector(".staffActivityTargetText");
+
+        if (iconElement) {
+            iconElement.textContent = getActivityIcon(type);
+        }
+
+        if (titleElement) {
+            titleElement.textContent = getActivityTypeText(activity);
+        }
+
+        if (timeElement) {
+            timeElement.textContent = formatDateTime(activity.created_at || activity.createdAt);
+        }
+
+        if (detailElement) {
+            detailElement.textContent = activity.description || "Hoạt động nhân viên";
+        }
+
+        if (typeElement) {
+            typeElement.textContent = getActivityTypeText(activity);
+        }
+
+        if (targetElement) {
+            targetElement.textContent = targetId
+                ? targetType + " · " + targetId
+                : targetType;
+        }
 
         staffActivityList.appendChild(activityFragment);
     });
 
-    renderStaffActivityOverview(activities);
+    renderStaffActivityOverview(staff);
 }
 
-// 49. Lưu nhân viên
-function saveStaff(formData) {
-    const staffList = getStaffList();
 
-    if (isDuplicateUsername(staffList, formData)) {
-        showStaffFormMessage("Tên đăng nhập đã tồn tại.");
+// 47. Load chi tiết nhân viên từ API
+async function loadStaffDetail(staffIdValue) {
+    const response = await window.AdminApi.get(
+        "admin/staff/get-staff-detail.php?id=" + encodeURIComponent(staffIdValue)
+    );
+
+    const staff = response.data && response.data.staff
+        ? response.data.staff
+        : null;
+
+    if (!staff) {
+        showStaffNotFound();
         return;
     }
 
-    if (isDuplicateEmail(staffList, formData)) {
-        showStaffFormMessage("Email đã tồn tại.");
-        return;
-    }
-
-    if (isDuplicatePhone(staffList, formData)) {
-        showStaffFormMessage("Số điện thoại đã tồn tại.");
-        return;
-    }
-
-    if (!validateOwnerSafety(staffList, formData)) {
-        return;
-    }
-
-    let updatedStaffList;
-
-    if (isEditMode) {
-        updatedStaffList = staffList.map(function(staff) {
-            if (staff.id === formData.id) {
-                return formData;
-            }
-
-            return staff;
-        });
-
-        updateCurrentAdminIfNeeded(formData);
-    } else {
-        updatedStaffList = [formData].concat(staffList);
-    }
-
-    saveStaffList(updatedStaffList);
-
-    alert("Lưu nhân viên thành công.");
-    window.location.href = "../html/admin-staff.html";
+    showStaffDetailLayout();
+    toggleStaffActivityArea(true);
+    fillStaffForm(staff);
+    renderStaffActivities(currentStaffData);
 }
 
-// 50. Xử lý submit form
-function handleStaffFormSubmit(event) {
-    event.preventDefault();
 
-    clearStaffFormMessage();
-
-    if (!validateStaffForm()) return;
-
-    const formData = getStaffFormData();
-
-    saveStaff(formData);
-}
-
-// 51. Gắn sự kiện trang chi tiết nhân viên
+// 48. Gắn sự kiện trang chi tiết nhân viên
 function bindStaffDetailEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -939,41 +1014,87 @@ function bindStaffDetailEvents() {
     if (staffDetailForm) {
         staffDetailForm.addEventListener("submit", handleStaffFormSubmit);
     }
+
+    const inputs = [
+        staffFullName,
+        staffUsername,
+        staffPassword,
+        staffRoleInput,
+        staffEmail,
+        staffPhone,
+        staffCreatedAt,
+        staffStatusInput,
+        staffNote
+    ];
+
+    inputs.forEach(function (input) {
+        if (!input) {
+            return;
+        }
+
+        input.addEventListener("input", clearStaffFormMessage);
+        input.addEventListener("change", clearStaffFormMessage);
+    });
 }
 
-// 52. Khởi tạo trang chi tiết nhân viên
-function initAdminStaffDetailPage() {
-    currentAdminUser = checkAdminLogin();
 
-    if (!currentAdminUser) return;
+// 49. Kiểm tra đăng nhập local
+function checkAdminLoginLocal() {
+    if (!window.AdminApi) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
 
-    const hasPermission = checkStaffPermission(currentAdminUser);
+    const adminUser = window.AdminApi.getCurrentAdminFromLocal();
 
-    if (!hasPermission) return;
+    if (!adminUser) {
+        window.location.href = "../html/admin-login.html";
+        return null;
+    }
+
+    return adminUser;
+}
+
+
+// 50. Khởi tạo trang chi tiết nhân viên
+async function initAdminStaffDetailPage() {
+    currentAdminUser = checkAdminLoginLocal();
+
+    if (!currentAdminUser) {
+        return;
+    }
+
+    if (!canManageStaff(currentAdminUser)) {
+        alert("Chỉ tài khoản chủ cửa hàng mới được quản lý nhân viên.");
+        window.location.href = "../html/admin-dashboard.html";
+        return;
+    }
 
     currentStaffId = getStaffIdFromUrl();
     isEditMode = Boolean(currentStaffId);
 
+    prepareStaffSelectOptions();
     renderAdminInfo(currentAdminUser);
     renderCurrentDate();
     renderPageTitle();
+    bindStaffDetailEvents();
 
-    if (isEditMode) {
-        currentStaffData = getStaffById(currentStaffId);
-
-        if (!currentStaffData) {
-            showStaffNotFound();
+    try {
+        if (isEditMode) {
+            await loadStaffDetail(currentStaffId);
+        } else {
+            showStaffDetailLayout();
+            setDefaultStaffForm();
+        }
+    } catch (error) {
+        if (error && error.status === 401) {
+            window.AdminApi.clearAdminLocalAuth();
+            window.location.href = "../html/admin-login.html";
             return;
         }
 
-        toggleStaffActivityArea(true);
-        fillStaffForm(currentStaffData);
-        renderStaffActivities(currentStaffData.id);
-    } else {
-        setDefaultStaffForm();
+        showStaffNotFound();
     }
-
-    bindStaffDetailEvents();
 }
 
 initAdminStaffDetailPage();
