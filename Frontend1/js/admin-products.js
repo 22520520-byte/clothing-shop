@@ -231,10 +231,8 @@ function getAdminProductGroupByCategorySlug(categorySlug, fallbackGroupName) {
 
 // 15. Lấy tổng tồn kho của sản phẩm
 function getProductStock(product) {
-    if (Array.isArray(product.variants)) {
-        return product.variants.reduce(function (total, variant) {
-            return total + Number(variant.stock_quantity || variant.stock || 0);
-        }, 0);
+    if (product.variant_summary && product.variant_summary.total_stock !== undefined) {
+        return Number(product.variant_summary.total_stock || 0);
     }
 
     if (product.summary && product.summary.total_stock !== undefined) {
@@ -243,6 +241,12 @@ function getProductStock(product) {
 
     if (product.total_stock !== undefined) {
         return Number(product.total_stock || 0);
+    }
+
+    if (Array.isArray(product.variants)) {
+        return product.variants.reduce(function (total, variant) {
+            return total + Number(variant.stock_quantity || variant.stock || 0);
+        }, 0);
     }
 
     if (product.stock_quantity !== undefined) {
@@ -259,6 +263,10 @@ function getProductStock(product) {
 
 // 16. Lấy ảnh sản phẩm
 function getProductImage(product) {
+    if (product.main_image) {
+        return product.main_image;
+    }
+
     if (product.image_url) {
         return product.image_url;
     }
@@ -602,20 +610,27 @@ function renderProductImage(imageElement, imageTextElement, product) {
 
     if (!product.image) {
         imageElement.src = "";
+        imageElement.alt = "";
         imageElement.classList.remove("show");
+        imageElement.style.display = "none";
+        imageTextElement.style.display = "flex";
         return;
     }
 
     imageElement.src = product.image;
     imageElement.alt = product.name;
     imageElement.classList.add("show");
+    imageElement.style.display = "block";
+    imageTextElement.style.display = "none";
 
-    imageElement.addEventListener("error", function () {
+    imageElement.onerror = function () {
         imageElement.src = "";
+        imageElement.alt = "";
         imageElement.classList.remove("show");
-    });
+        imageElement.style.display = "none";
+        imageTextElement.style.display = "flex";
+    };
 }
-
 
 // 32. Render một dòng sản phẩm
 function renderProductRow(product) {

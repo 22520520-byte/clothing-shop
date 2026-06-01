@@ -75,6 +75,7 @@ let currentAdminUser = null;
 let currentProductId = null;
 let currentProductData = null;
 let isEditMode = false;
+let isProductImageUploading = false;
 
 let adminProductOptions = {
     parentCategories: [],
@@ -827,8 +828,68 @@ function updateProductSizeQuantity(index, quantity) {
 }
 
 
-// 41. Xử lý upload ảnh sản phẩm
-function handleProductImageUpload(event) {
+// 41. Kiểm tra ảnh tạm không được lưu vào database
+function isTemporaryImageUrl(imageUrl) {
+    return String(imageUrl || "").startsWith("data:image") ||
+        String(imageUrl || "").startsWith("blob:");
+}
+
+
+// 42. Set trạng thái upload ảnh
+function setImageUploadLoading(isLoading) {
+    isProductImageUploading = isLoading;
+
+    const submitButtons = document.querySelectorAll("button[type='submit'], #saveProductHeaderBtn");
+
+    submitButtons.forEach(function (button) {
+        button.disabled = isLoading;
+    });
+
+    if (saveProductHeaderBtn) {
+        saveProductHeaderBtn.textContent = isLoading ? "Đang upload ảnh..." : "Lưu sản phẩm";
+    }
+
+    if (detailProductImageText && isLoading) {
+        detailProductImageText.textContent = "...";
+        detailProductImageText.style.display = "flex";
+    }
+}
+
+
+// 43. Upload ảnh sản phẩm lên server
+async function uploadProductImage(file) {
+    const formData = new FormData();
+
+    formData.append("image", file);
+
+    const response = await fetch("../../BackEnd/php/api/admin/products/upload-product-image.php", {
+        method: "POST",
+        credentials: "same-origin",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+        throw data;
+    }
+
+    const imageUrl = data.data && data.data.image
+        ? data.data.image.image_url
+        : "";
+
+    if (!imageUrl) {
+        throw {
+            message: "API upload ảnh không trả về image_url."
+        };
+    }
+
+    return imageUrl;
+}
+
+
+// 44. Xử lý upload ảnh sản phẩm
+async function handleProductImageUpload(event) {
     const file = event.target.files[0];
 
     if (!file) {
@@ -837,21 +898,43 @@ function handleProductImageUpload(event) {
 
     if (!file.type.startsWith("image/")) {
         showProductFormMessage("Vui lòng chọn đúng file hình ảnh.");
+        event.target.value = "";
         return;
     }
 
-    const reader = new FileReader();
+    const maxFileSize = 5 * 1024 * 1024;
 
-    reader.onload = function () {
-        selectedImage = reader.result;
+    if (file.size > maxFileSize) {
+        showProductFormMessage("Ảnh sản phẩm không được vượt quá 5MB.");
+        event.target.value = "";
+        return;
+    }
+
+    try {
+        clearProductFormMessage();
+        setImageUploadLoading(true);
+        showProductFormMessage("Đang upload ảnh sản phẩm...", "success");
+
+        const imageUrl = await uploadProductImage(file);
+
+        selectedImage = imageUrl;
+
         renderProductImagePreview(detailProductNameInput.value.trim());
-    };
+        showProductFormMessage("Upload ảnh sản phẩm thành công.", "success");
+    } catch (error) {
+        selectedImage = isEditMode && currentProductData ? currentProductData.image : "";
+        renderProductImagePreview(detailProductNameInput.value.trim());
 
-    reader.readAsDataURL(file);
+        showProductFormMessage(
+            window.AdminApi.getApiErrorMessage(error, "Upload ảnh sản phẩm thất bại.")
+        );
+    } finally {
+        setImageUploadLoading(false);
+    }
 }
 
 
-// 42. Set form mặc định khi thêm mới
+// 45. Set form mặc định khi thêm mới
 function setDefaultProductForm() {
     selectedColors = [];
     selectedSizes = [];
@@ -928,7 +1011,7 @@ function setDefaultProductForm() {
 }
 
 
-// 43. Chuẩn hóa dữ liệu sản phẩm từ API
+// 46. Chuẩn hóa dữ liệu sản phẩm từ API
 function normalizeProductDetail(product) {
     if (!product) {
         return null;
@@ -958,36 +1041,19 @@ function normalizeProductDetail(product) {
 }
 
 
-// 44. Tạo dữ liệu màu và size từ variants
+// 47. Tạo dữ liệu màu và size từ variants
 function prepareVariantData(product) {
     selectedColors = [];
     selectedSizes = [];
     existingVariantMap = {};
 
-    const colorMap = {};
-    const sizeMap = {};
-
     product.variants.forEach(function (variant) {
         if (variant.color && variant.color.id) {
-            colorMap[variant.color.id] = {
-                id: Number(variant.color.id),
-                name: variant.color.name,
-                code: variant.color.code,
-                hex_code: variant.color.hex_code
-            };
+            colorMapSet(variant.color);
         }
 
         if (variant.size && variant.size.id) {
-            if (!sizeMap[variant.size.id]) {
-                sizeMap[variant.size.id] = {
-                    id: Number(variant.size.id),
-                    name: variant.size.name,
-                    code: variant.size.code,
-                    quantity: 0
-                };
-            }
-
-            sizeMap[variant.size.id].quantity += Number(variant.stock_quantity || 0);
+            sizeMapSet(variant.size, variant.stock_quantity);
         }
 
         if (variant.color && variant.color.id && variant.size && variant.size.id) {
@@ -1002,12 +1068,44 @@ function prepareVariantData(product) {
         }
     });
 
-    selectedColors = Object.values(colorMap);
-    selectedSizes = Object.values(sizeMap);
+    function colorMapSet(color) {
+        const existed = selectedColors.some(function (item) {
+            return Number(item.id) === Number(color.id);
+        });
+
+        if (existed) {
+            return;
+        }
+
+        selectedColors.push({
+            id: Number(color.id),
+            name: color.name,
+            code: color.code,
+            hex_code: color.hex_code
+        });
+    }
+
+    function sizeMapSet(size, stockQuantity) {
+        const existedSize = selectedSizes.find(function (item) {
+            return Number(item.id) === Number(size.id);
+        });
+
+        if (existedSize) {
+            existedSize.quantity += Number(stockQuantity || 0);
+            return;
+        }
+
+        selectedSizes.push({
+            id: Number(size.id),
+            name: size.name,
+            code: size.code,
+            quantity: Number(stockQuantity || 0)
+        });
+    }
 }
 
 
-// 45. Đổ dữ liệu sản phẩm vào form
+// 48. Đổ dữ liệu sản phẩm vào form
 function fillProductForm(product) {
     const normalizedProduct = normalizeProductDetail(product);
 
@@ -1078,7 +1176,7 @@ function fillProductForm(product) {
 }
 
 
-// 46. Load chi tiết sản phẩm từ API
+// 49. Load chi tiết sản phẩm từ API
 async function loadProductDetail(productId) {
     const response = await window.AdminApi.get(
         "admin/products/get-product-detail.php?id=" + encodeURIComponent(productId)
@@ -1098,7 +1196,7 @@ async function loadProductDetail(productId) {
 }
 
 
-// 47. Kiểm tra form sản phẩm
+// 50. Kiểm tra form sản phẩm
 function validateProductForm() {
     const name = detailProductNameInput ? detailProductNameInput.value.trim() : "";
     const groupId = detailProductGroupInput ? detailProductGroupInput.value : "";
@@ -1108,6 +1206,16 @@ function validateProductForm() {
         ? Number(detailProductOldPriceInput.value)
         : 0;
     const material = detailProductMaterialInput ? detailProductMaterialInput.value.trim() : "";
+
+    if (isProductImageUploading) {
+        showProductFormMessage("Vui lòng chờ upload ảnh sản phẩm hoàn tất.");
+        return false;
+    }
+
+    if (selectedImage && isTemporaryImageUrl(selectedImage)) {
+        showProductFormMessage("Ảnh sản phẩm chưa được upload lên server. Vui lòng chọn lại ảnh.");
+        return false;
+    }
 
     if (!name) {
         showProductFormMessage("Vui lòng nhập tên sản phẩm.");
@@ -1153,7 +1261,7 @@ function validateProductForm() {
 }
 
 
-// 48. Tạo SKU cho biến thể
+// 51. Tạo SKU cho biến thể
 function createVariantSku(productIdOrName, color, size) {
     const base = isEditMode && currentProductId
         ? "SP" + String(currentProductId).padStart(3, "0")
@@ -1171,7 +1279,7 @@ function createVariantSku(productIdOrName, color, size) {
 }
 
 
-// 49. Chia tồn kho của size cho các màu
+// 52. Chia tồn kho của size cho các màu
 function distributeQuantity(totalQuantity, colorIndex, colorCount) {
     const quantity = Number(totalQuantity || 0);
     const baseQuantity = Math.floor(quantity / colorCount);
@@ -1181,7 +1289,7 @@ function distributeQuantity(totalQuantity, colorIndex, colorCount) {
 }
 
 
-// 50. Tạo danh sách biến thể gửi lên API
+// 53. Tạo danh sách biến thể gửi lên API
 function buildProductVariants(productName) {
     const variants = [];
     const colorCount = selectedColors.length;
@@ -1209,9 +1317,9 @@ function buildProductVariants(productName) {
 }
 
 
-// 51. Tạo danh sách ảnh gửi lên API
+// 54. Tạo danh sách ảnh gửi lên API
 function buildProductImages() {
-    if (!selectedImage) {
+    if (!selectedImage || isTemporaryImageUrl(selectedImage)) {
         return [];
     }
 
@@ -1224,7 +1332,7 @@ function buildProductImages() {
 }
 
 
-// 52. Lấy dữ liệu form sản phẩm để gửi API
+// 55. Lấy dữ liệu form sản phẩm để gửi API
 function getProductFormData() {
     const name = detailProductNameInput.value.trim();
 
@@ -1262,7 +1370,7 @@ function getProductFormData() {
 }
 
 
-// 53. Set trạng thái loading nút lưu
+// 56. Set trạng thái loading nút lưu
 function setSaveLoading(isLoading) {
     const submitButtons = document.querySelectorAll("button[type='submit'], #saveProductHeaderBtn");
 
@@ -1276,7 +1384,7 @@ function setSaveLoading(isLoading) {
 }
 
 
-// 54. Lưu sản phẩm bằng API
+// 57. Lưu sản phẩm bằng API
 async function saveProduct() {
     if (!validateProductForm()) {
         return;
@@ -1308,7 +1416,7 @@ async function saveProduct() {
 }
 
 
-// 55. Xử lý submit form sản phẩm
+// 58. Xử lý submit form sản phẩm
 function handleProductFormSubmit(event) {
     event.preventDefault();
     clearProductFormMessage();
@@ -1316,7 +1424,7 @@ function handleProductFormSubmit(event) {
 }
 
 
-// 56. Gắn sự kiện form màu / size / ảnh
+// 59. Gắn sự kiện form màu / size / ảnh
 function bindDynamicFormEvents() {
     if (addProductColorBtn) {
         addProductColorBtn.addEventListener("click", addProductColor);
@@ -1388,12 +1496,14 @@ function bindDynamicFormEvents() {
     }
 
     if (detailProductImageFile) {
-        detailProductImageFile.addEventListener("change", handleProductImageUpload);
+        detailProductImageFile.addEventListener("change", function (event) {
+            handleProductImageUpload(event);
+        });
     }
 }
 
 
-// 57. Gắn sự kiện cập nhật summary
+// 60. Gắn sự kiện cập nhật summary
 function bindSummaryEvents() {
     const summaryInputs = [
         detailProductNameInput,
@@ -1442,7 +1552,7 @@ function bindSummaryEvents() {
 }
 
 
-// 58. Gắn sự kiện trang chi tiết sản phẩm
+// 61. Gắn sự kiện trang chi tiết sản phẩm
 function bindProductDetailEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -1465,7 +1575,7 @@ function bindProductDetailEvents() {
 }
 
 
-// 59. Kiểm tra đăng nhập local
+// 62. Kiểm tra đăng nhập local
 function checkAdminLoginLocal() {
     if (!window.AdminApi) {
         window.location.href = "../html/admin-login.html";
@@ -1483,7 +1593,7 @@ function checkAdminLoginLocal() {
 }
 
 
-// 60. Khởi tạo trang chi tiết sản phẩm
+// 63. Khởi tạo trang chi tiết sản phẩm
 async function initAdminProductDetailPage() {
     currentAdminUser = checkAdminLoginLocal();
 
