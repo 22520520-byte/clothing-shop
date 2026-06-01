@@ -1067,3 +1067,742 @@
         font-size: 26px;
     }
 }
+.myOrderAutoList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.orderHistoryCard {
+    padding: 18px;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.orderHistoryHeader {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.orderHistoryHeader h3 {
+    margin: 4px 0 0;
+    font-size: 18px;
+}
+
+.orderHistoryMeta {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 14px;
+}
+
+.orderHistoryMeta p {
+    margin: 0;
+}
+
+.orderHistoryProducts {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+
+.orderProductMiniItem {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.orderProductMiniImage {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.orderProductMiniImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.orderProductMiniName {
+    color: #111;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.orderProductMiniInfo p {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 13px;
+}
+
+.orderHistoryTotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+
+.orderHistoryTotal p {
+    margin: 0;
+    color: #666;
+}
+
+.orderHistoryTotal strong {
+    color: #e60012;
+    font-size: 18px;
+}
+
+.orderHistoryActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.orderDetailLink,
+.orderReceivedBtn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    background: #111;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+/* =========================================================
+   My Order - Order Card Render From JS
+========================================================= */
+
+.myOrderAutoList {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 24px;
+}
+
+.myOrderAutoList .myOrderLoadingText {
+    padding: 18px;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    background-color: #fff;
+    color: #666;
+}
+
+.myOrderEmptyBox {
+    padding: 24px;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    background-color: #fff;
+    text-align: center;
+}
+
+.myOrderEmptyBox h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #111;
+}
+
+.myOrderEmptyBox p {
+    margin: 0 0 16px;
+    color: #666;
+    line-height: 1.6;
+}
+
+.myOrderEmptyBox a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 18px;
+    border-radius: 10px;
+    background-color: #111;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* Card đơn hàng */
+.myOrderAutoList .orderHistoryCard {
+    width: 100%;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    background-color: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.myOrderAutoList .orderHistoryHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.myOrderAutoList .orderHistoryHeader h3 {
+    margin: 4px 0 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #111;
+}
+
+.myOrderAutoList .mutedText {
+    display: block;
+    font-size: 13px;
+    color: #777;
+}
+
+/* Badge trạng thái */
+.myOrderAutoList .statusBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 110px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.myOrderAutoList .statusPending {
+    background-color: #fff4d8;
+    color: #a76800;
+}
+
+.myOrderAutoList .statusConfirmed {
+    background-color: #e8f1ff;
+    color: #1769d1;
+}
+
+.myOrderAutoList .statusShipping {
+    background-color: #e9f7ef;
+    color: #16834a;
+}
+
+.myOrderAutoList .statusCompleted {
+    background-color: #e8f8ee;
+    color: #0f8a42;
+}
+
+.myOrderAutoList .statusCancelled {
+    background-color: #ffecec;
+    color: #d93025;
+}
+
+/* Thông tin đơn */
+.myOrderAutoList .orderHistoryMeta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 24px;
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+.myOrderAutoList .orderHistoryMeta p {
+    margin: 0;
+    color: #444;
+    line-height: 1.5;
+}
+
+.myOrderAutoList .orderHistoryMeta strong {
+    color: #111;
+}
+
+/* Sản phẩm trong đơn */
+.myOrderAutoList .orderHistoryProducts {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #eee;
+}
+
+.myOrderAutoList .orderHistorySectionTitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.myOrderAutoList .orderHistorySectionTitle strong {
+    font-size: 15px;
+    color: #111;
+}
+
+.myOrderAutoList .orderHistorySectionTitle span {
+    font-size: 13px;
+    color: #777;
+}
+
+.myOrderAutoList .orderProductMiniItem {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    background-color: #fafafa;
+}
+
+.myOrderAutoList .orderProductMiniImage {
+    width: 76px;
+    height: 76px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f1f1f1;
+}
+
+.myOrderAutoList .orderProductMiniImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.myOrderAutoList .orderProductMiniInfo {
+    min-width: 0;
+}
+
+.myOrderAutoList .orderProductMiniName {
+    display: block;
+    color: #111;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.4;
+    text-decoration: none;
+}
+
+.myOrderAutoList .orderProductMiniName:hover {
+    text-decoration: underline;
+}
+
+.myOrderAutoList .orderProductMiniInfo p {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Tổng tiền */
+.myOrderAutoList .orderHistoryMoney {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 14px;
+    background-color: #fafafa;
+}
+
+.myOrderAutoList .orderHistoryMoney > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 14px;
+}
+
+.myOrderAutoList .orderHistoryMoney span {
+    color: #666;
+}
+
+.myOrderAutoList .orderHistoryMoney strong {
+    color: #111;
+    font-weight: 800;
+}
+
+.myOrderAutoList .orderHistoryFinalTotal {
+    padding-top: 12px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.myOrderAutoList .orderHistoryFinalTotal span {
+    color: #111;
+    font-weight: 800;
+}
+
+.myOrderAutoList .orderHistoryFinalTotal strong {
+    color: #e60012;
+    font-size: 18px;
+}
+
+/* Nút thao tác */
+.myOrderAutoList .orderHistoryActions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.myOrderAutoList .orderDetailLink,
+.myOrderAutoList .orderReceivedBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    height: 42px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: #111;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.myOrderAutoList .orderDetailLink:hover,
+.myOrderAutoList .orderReceivedBtn:hover {
+    background-color: #333;
+    transform: translateY(-1px);
+}
+
+.myOrderAutoList .orderReceivedBtn {
+    background-color: #e60012;
+}
+
+.myOrderAutoList .orderReceivedBtn:hover {
+    background-color: #c90010;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .myOrderAutoList .orderHistoryHeader {
+        flex-direction: column;
+    }
+
+    .myOrderAutoList .orderHistoryMeta {
+        grid-template-columns: 1fr;
+    }
+
+    .myOrderAutoList .orderHistoryActions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .myOrderAutoList .orderDetailLink,
+    .myOrderAutoList .orderReceivedBtn {
+        width: 100%;
+    }
+}
+/* =========================================================
+   Fix My Order Card Layout - Override mạnh
+========================================================= */
+
+.myOrderAutoList {
+    width: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    margin-top: 24px !important;
+}
+
+/* Ép card đơn hàng về layout dọc, không cho bị chia ngang */
+.myOrderAutoList .orderHistoryCard {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    padding: 22px !important;
+    border: 1px solid #eeeeee !important;
+    border-radius: 18px !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Header mã đơn + trạng thái */
+.myOrderAutoList .orderHistoryHeader {
+    width: 100% !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+    padding-bottom: 16px !important;
+    border-bottom: 1px solid #eeeeee !important;
+}
+
+.myOrderAutoList .orderHistoryHeader > div {
+    min-width: 0 !important;
+}
+
+.myOrderAutoList .orderHistoryHeader h3 {
+    margin: 4px 0 0 !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    line-height: 1.3 !important;
+    color: #111111 !important;
+    word-break: break-word !important;
+}
+
+.myOrderAutoList .mutedText {
+    display: block !important;
+    font-size: 13px !important;
+    color: #777777 !important;
+}
+
+/* Trạng thái */
+.myOrderAutoList .statusBadge {
+    width: auto !important;
+    min-width: 120px !important;
+    max-width: max-content !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 14px !important;
+    border-radius: 999px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+.myOrderAutoList .statusPending {
+    background-color: #fff4d8 !important;
+    color: #a76800 !important;
+}
+
+.myOrderAutoList .statusConfirmed {
+    background-color: #e8f1ff !important;
+    color: #1769d1 !important;
+}
+
+.myOrderAutoList .statusShipping {
+    background-color: #e9f7ef !important;
+    color: #16834a !important;
+}
+
+.myOrderAutoList .statusCompleted {
+    background-color: #e8f8ee !important;
+    color: #0f8a42 !important;
+}
+
+.myOrderAutoList .statusCancelled {
+    background-color: #ffecec !important;
+    color: #d93025 !important;
+}
+
+/* Thông tin nhận hàng */
+.myOrderAutoList .orderHistoryMeta {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px 28px !important;
+    margin-top: 18px !important;
+    padding-bottom: 18px !important;
+    border-bottom: 1px solid #eeeeee !important;
+}
+
+.myOrderAutoList .orderHistoryMeta p {
+    margin: 0 !important;
+    color: #444444 !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+    word-break: break-word !important;
+}
+
+.myOrderAutoList .orderHistoryMeta strong {
+    color: #111111 !important;
+    font-weight: 800 !important;
+}
+
+/* Sản phẩm */
+.myOrderAutoList .orderHistoryProducts {
+    width: 100% !important;
+    display: block !important;
+    margin-top: 18px !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+.myOrderAutoList .orderHistorySectionTitle {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+}
+
+.myOrderAutoList .orderHistorySectionTitle strong {
+    font-size: 15px !important;
+    color: #111111 !important;
+}
+
+.myOrderAutoList .orderHistorySectionTitle span {
+    color: #777777 !important;
+    font-size: 13px !important;
+}
+
+/* Item sản phẩm trong card */
+.myOrderAutoList .orderProductMiniItem {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 14px !important;
+    border-radius: 14px !important;
+    background-color: #fafafa !important;
+}
+
+.myOrderAutoList .orderProductMiniImage {
+    width: 82px !important;
+    height: 82px !important;
+    flex: 0 0 82px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background-color: #f1f1f1 !important;
+}
+
+.myOrderAutoList .orderProductMiniImage img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.myOrderAutoList .orderProductMiniInfo {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.myOrderAutoList .orderProductMiniName {
+    display: block !important;
+    color: #111111 !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    line-height: 1.4 !important;
+    text-decoration: none !important;
+}
+
+.myOrderAutoList .orderProductMiniInfo p {
+    margin: 4px 0 0 !important;
+    color: #666666 !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+/* Tổng tiền */
+.myOrderAutoList .orderHistoryMoney {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
+    background-color: #fafafa !important;
+}
+
+.myOrderAutoList .orderHistoryMoney > div {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    font-size: 14px !important;
+}
+
+.myOrderAutoList .orderHistoryMoney span {
+    color: #666666 !important;
+}
+
+.myOrderAutoList .orderHistoryMoney strong {
+    color: #111111 !important;
+    font-weight: 800 !important;
+}
+
+.myOrderAutoList .orderHistoryFinalTotal {
+    margin-top: 4px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e5e5e5 !important;
+}
+
+.myOrderAutoList .orderHistoryFinalTotal span {
+    color: #111111 !important;
+    font-weight: 800 !important;
+}
+
+.myOrderAutoList .orderHistoryFinalTotal strong {
+    color: #e60012 !important;
+    font-size: 19px !important;
+}
+
+/* Nút */
+.myOrderAutoList .orderHistoryActions {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
+}
+
+.myOrderAutoList .orderDetailLink,
+.myOrderAutoList .orderReceivedBtn {
+    width: auto !important;
+    min-width: 124px !important;
+    height: 42px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 18px !important;
+    border: none !important;
+    border-radius: 10px !important;
+    background-color: #111111 !important;
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.myOrderAutoList .orderDetailLink:hover,
+.myOrderAutoList .orderReceivedBtn:hover {
+    background-color: #333333 !important;
+    transform: translateY(-1px) !important;
+}
+
+.myOrderAutoList .orderReceivedBtn {
+    background-color: #e60012 !important;
+}
+
+.myOrderAutoList .orderReceivedBtn:hover {
+    background-color: #c90010 !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .myOrderAutoList .orderHistoryMeta {
+        grid-template-columns: 1fr !important;
+    }
+
+    .myOrderAutoList .orderHistoryHeader {
+        flex-direction: column !important;
+    }
+
+    .myOrderAutoList .orderHistoryActions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .myOrderAutoList .orderDetailLink,
+    .myOrderAutoList .orderReceivedBtn {
+        width: 100% !important;
+    }
+}

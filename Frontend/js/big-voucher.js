@@ -1,7 +1,8 @@
 // =========================================================
 // File: Frontend/js/big-voucher.js
-// Mục đích: Trang Big Voucher lấy voucher thật từ API,
+// Mục đích: Trang Big Voucher lấy voucher thật từ API/database,
 //           lưu voucher đã săn vào localStorage theo user
+// Cập nhật: Bỏ dữ liệu fallback tĩnh BIG50K/BIG100K...
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -12,13 +13,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-
     // 2. Key localStorage
     const CURRENT_USER_STORAGE_KEY = "current_user";
     const IS_LOGIN_STORAGE_KEY = "is_login";
     const BIG_VOUCHER_END_TIME_KEY = "big_voucher_end_time";
     const SAVED_VOUCHERS_STORAGE_KEY = "saved_vouchers";
-
 
     // 3. Biến trạng thái
     let bigVouchers = [];
@@ -26,7 +25,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentSort = "default";
     let currentKeyword = "";
     let countdownTimer = null;
-
 
     // 4. Lấy DOM chung
     const searchForm = document.getElementById("searchForm");
@@ -56,7 +54,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const voucherToastContainer = document.getElementById("voucherToastContainer");
 
-
     // 5. Gọi API GET
     async function getApi(endpoint) {
         if (window.CustomerApi && typeof window.CustomerApi.get === "function") {
@@ -77,7 +74,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return data;
     }
 
-
     // 6. Hàm tiện ích định dạng
     function formatPrice(price) {
         if (window.CustomerApi && typeof window.CustomerApi.formatPrice === "function") {
@@ -87,18 +83,40 @@ document.addEventListener("DOMContentLoaded", function () {
         return Number(price || 0).toLocaleString("vi-VN") + "đ";
     }
 
-    function formatDate(timestamp) {
-        if (!timestamp) {
+    function formatDate(value) {
+        if (!value) {
             return "--/--/----";
         }
 
-        const date = new Date(Number(timestamp));
+        const time = typeof value === "number"
+            ? value
+            : new Date(value).getTime();
+
+        const date = new Date(time);
 
         if (Number.isNaN(date.getTime())) {
             return "--/--/----";
         }
 
         return date.toLocaleDateString("vi-VN");
+    }
+
+    function parseDateTime(value, fallbackValue) {
+        if (!value) {
+            return fallbackValue || 0;
+        }
+
+        if (typeof value === "number") {
+            return value;
+        }
+
+        const time = new Date(value).getTime();
+
+        if (Number.isNaN(time)) {
+            return fallbackValue || 0;
+        }
+
+        return time;
     }
 
     function getStoredOrNewEndTime() {
@@ -217,7 +235,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 2600);
     }
 
-
     // 7. Đọc ghi localStorage
     function getDataFromStorage(key, fallbackValue) {
         const rawData = localStorage.getItem(key);
@@ -237,7 +254,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function saveDataToStorage(key, data) {
         localStorage.setItem(key, JSON.stringify(data));
     }
-
 
     // 8. Kiểm tra đăng nhập
     function getCurrentUser() {
@@ -292,10 +308,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return (
             currentUser.id ||
             currentUser.userId ||
+            currentUser.user_id ||
             currentUser.email ||
             currentUser.phone ||
             currentUser.username ||
             currentUser.fullName ||
+            currentUser.full_name ||
             currentUser.name ||
             "member"
         );
@@ -310,6 +328,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return (
             currentUser.fullName ||
+            currentUser.full_name ||
             currentUser.name ||
             currentUser.username ||
             currentUser.email ||
@@ -320,7 +339,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function getLoginRedirectUrl() {
         return "../html/login.html?redirect=" + encodeURIComponent("../html/big-voucher.html");
     }
-
 
     // 9. Lưu voucher theo từng tài khoản
     function getSavedVoucherMap() {
@@ -441,128 +459,95 @@ document.addEventListener("DOMContentLoaded", function () {
         updateMemberNotice();
     }
 
-
-    // 10. Dữ liệu fallback khi API chưa có voucher
-    function createFallbackBigVoucherData() {
-        const endTime = getStoredOrNewEndTime();
-        const now = Date.now();
-
-        return [
-            {
-                id: "big-50k",
-                code: "BIG50K",
-                type: "high-value",
-                badge: "Giá trị cao",
-                title: "Giảm 50.000đ",
-                description: "Áp dụng cho đơn hàng từ 499.000đ. Phù hợp khi mua áo, quần hoặc phụ kiện.",
-                discountType: "amount",
-                discountValue: 50000,
-                maxDiscount: 50000,
-                minOrderValue: 499000,
-                totalQuantity: 120,
-                claimedQuantity: 76,
-                createdAt: now - 5 * 24 * 60 * 60 * 1000,
-                expiresAt: endTime
-            },
-            {
-                id: "big-100k",
-                code: "BIG100K",
-                type: "high-value",
-                badge: "Hiếm",
-                title: "Giảm 100.000đ",
-                description: "Voucher giá trị lớn cho đơn hàng từ 899.000đ. Số lượng mở rất hạn chế.",
-                discountType: "amount",
-                discountValue: 100000,
-                maxDiscount: 100000,
-                minOrderValue: 899000,
-                totalQuantity: 60,
-                claimedQuantity: 48,
-                createdAt: now - 4 * 24 * 60 * 60 * 1000,
-                expiresAt: endTime
-            },
-            {
-                id: "big-150k",
-                code: "BIG150K",
-                type: "high-value",
-                badge: "Siêu hiếm",
-                title: "Giảm 150.000đ",
-                description: "Ưu đãi đặc biệt cho đơn hàng từ 1.299.000đ. Dành cho khách hàng săn voucher sớm.",
-                discountType: "amount",
-                discountValue: 150000,
-                maxDiscount: 150000,
-                minOrderValue: 1299000,
-                totalQuantity: 40,
-                claimedQuantity: 34,
-                createdAt: now - 3 * 24 * 60 * 60 * 1000,
-                expiresAt: endTime
-            },
-            {
-                id: "big-freeship",
-                code: "BIGFREESHIP",
-                type: "freeship",
-                badge: "Freeship",
-                title: "Miễn phí vận chuyển",
-                description: "Giảm phí vận chuyển tối đa 30.000đ cho đơn hàng từ 299.000đ.",
-                discountType: "shipping",
-                discountValue: 30000,
-                maxDiscount: 30000,
-                minOrderValue: 299000,
-                totalQuantity: 180,
-                claimedQuantity: 92,
-                createdAt: now - 2 * 24 * 60 * 60 * 1000,
-                expiresAt: endTime
-            },
-            {
-                id: "big-percent-10",
-                code: "BIG10",
-                type: "percent",
-                badge: "Giảm %",
-                title: "Giảm 10%",
-                description: "Giảm 10% tối đa 80.000đ cho đơn hàng từ 599.000đ.",
-                discountType: "percent",
-                discountValue: 10,
-                maxDiscount: 80000,
-                minOrderValue: 599000,
-                totalQuantity: 90,
-                claimedQuantity: 64,
-                createdAt: now - 1 * 24 * 60 * 60 * 1000,
-                expiresAt: endTime
-            },
-            {
-                id: "big-percent-15",
-                code: "BIG15",
-                type: "percent",
-                badge: "Hot",
-                title: "Giảm 15%",
-                description: "Giảm 15% tối đa 150.000đ cho đơn hàng từ 999.000đ.",
-                discountType: "percent",
-                discountValue: 15,
-                maxDiscount: 150000,
-                minOrderValue: 999000,
-                totalQuantity: 50,
-                claimedQuantity: 43,
-                createdAt: now,
-                expiresAt: endTime
-            }
-        ];
-    }
-
-
-    // 11. Chuẩn hóa voucher từ API
+    // 10. Chuẩn hóa voucher từ API
     function normalizeDiscountType(type) {
-        if (type === "fixed" || type === "amount") {
+        const value = String(type || "").trim().toLowerCase();
+
+        if (
+            value === "fixed" ||
+            value === "amount" ||
+            value === "fixed_amount" ||
+            value === "money"
+        ) {
             return "amount";
         }
 
-        if (type === "freeship" || type === "shipping") {
+        if (
+            value === "freeship" ||
+            value === "free_shipping" ||
+            value === "shipping"
+        ) {
             return "shipping";
         }
 
-        if (type === "percent") {
+        if (
+            value === "percent" ||
+            value === "percentage" ||
+            value === "%"
+        ) {
             return "percent";
         }
 
         return "amount";
+    }
+
+    function isApiVoucherActive(apiVoucher) {
+        if (apiVoucher.is_active !== undefined && apiVoucher.is_active !== null) {
+            return Number(apiVoucher.is_active) === 1 || apiVoucher.is_active === true;
+        }
+
+        if (apiVoucher.active !== undefined && apiVoucher.active !== null) {
+            return Number(apiVoucher.active) === 1 || apiVoucher.active === true;
+        }
+
+        const status = String(apiVoucher.status || apiVoucher.voucher_status || "").trim().toLowerCase();
+
+        if (!status) {
+            return true;
+        }
+
+        return [
+            "active",
+            "enabled",
+            "available",
+            "published",
+            "on",
+            "dang_hieu_luc",
+            "đang hiệu lực",
+            "bat",
+            "bật"
+        ].includes(status);
+    }
+
+    function isApiVoucherInTime(apiVoucher) {
+        const now = Date.now();
+
+        const startTime = parseDateTime(
+            apiVoucher.start_date ||
+            apiVoucher.startDate ||
+            apiVoucher.valid_from ||
+            apiVoucher.created_at,
+            0
+        );
+
+        const endTime = parseDateTime(
+            apiVoucher.end_date ||
+            apiVoucher.endDate ||
+            apiVoucher.valid_to ||
+            apiVoucher.expires_at ||
+            apiVoucher.expired_at,
+            0
+        );
+
+        if (startTime && startTime > now) {
+            return false;
+        }
+
+        if (endTime && endTime <= now) {
+            return false;
+        }
+
+        return true;
     }
 
     function getVoucherType(voucher) {
@@ -602,12 +587,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function normalizeVoucherFromApi(apiVoucher) {
-        const discountType = normalizeDiscountType(apiVoucher.discount_type || apiVoucher.discountType);
-        const discountValue = Number(apiVoucher.discount_value || apiVoucher.discountValue || 0);
+        const discountType = normalizeDiscountType(
+            apiVoucher.discount_type ||
+            apiVoucher.discountType ||
+            apiVoucher.type
+        );
+
+        const discountValue = Number(
+            apiVoucher.discount_value ||
+            apiVoucher.discountValue ||
+            apiVoucher.value ||
+            0
+        );
+
         const maxDiscount = Number(
             apiVoucher.max_discount_amount ||
             apiVoucher.maxDiscount ||
             apiVoucher.max_discount ||
+            apiVoucher.maximum_discount ||
             discountValue ||
             0
         );
@@ -616,13 +613,15 @@ document.addEventListener("DOMContentLoaded", function () {
             apiVoucher.usage_limit ||
             apiVoucher.total_quantity ||
             apiVoucher.totalQuantity ||
-            100
+            apiVoucher.quantity ||
+            0
         );
 
         let claimedQuantity = Number(
             apiVoucher.used_count ||
             apiVoucher.used_quantity ||
             apiVoucher.claimedQuantity ||
+            apiVoucher.claimed_quantity ||
             0
         );
 
@@ -630,13 +629,28 @@ document.addEventListener("DOMContentLoaded", function () {
             claimedQuantity = Math.max(totalQuantity - Number(apiVoucher.remaining_quantity || 0), 0);
         }
 
-        const endTime = apiVoucher.end_date
-            ? new Date(apiVoucher.end_date).getTime()
-            : getStoredOrNewEndTime();
+        if (apiVoucher.remainingQuantity !== undefined && apiVoucher.remainingQuantity !== null) {
+            claimedQuantity = Math.max(totalQuantity - Number(apiVoucher.remainingQuantity || 0), 0);
+        }
 
-        const startTime = apiVoucher.start_date
-            ? new Date(apiVoucher.start_date).getTime()
-            : Date.now();
+        const now = Date.now();
+
+        const endTime = parseDateTime(
+            apiVoucher.end_date ||
+            apiVoucher.endDate ||
+            apiVoucher.valid_to ||
+            apiVoucher.expires_at ||
+            apiVoucher.expired_at,
+            getStoredOrNewEndTime()
+        );
+
+        const startTime = parseDateTime(
+            apiVoucher.start_date ||
+            apiVoucher.startDate ||
+            apiVoucher.valid_from ||
+            apiVoucher.created_at,
+            now
+        );
 
         const voucher = {
             id: String(apiVoucher.id || apiVoucher.code || ""),
@@ -644,8 +658,17 @@ document.addEventListener("DOMContentLoaded", function () {
             type: "",
             badge: "",
 
-            title: apiVoucher.name || apiVoucher.title || apiVoucher.code || "Voucher",
-            description: apiVoucher.description || "Ưu đãi đặc biệt dành cho khách hàng.",
+            title:
+                apiVoucher.name ||
+                apiVoucher.title ||
+                apiVoucher.program_name ||
+                apiVoucher.code ||
+                "Voucher",
+
+            description:
+                apiVoucher.description ||
+                apiVoucher.note ||
+                "Ưu đãi đặc biệt dành cho khách hàng.",
 
             discountType: discountType,
             discountValue: discountValue,
@@ -655,6 +678,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 apiVoucher.min_order_value ||
                 apiVoucher.minOrderValue ||
                 apiVoucher.min_order ||
+                apiVoucher.minimum_order ||
                 0
             ),
 
@@ -673,8 +697,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return voucher;
     }
 
-
-    // 12. Load voucher từ API
+    // 11. Load voucher từ API/database
     async function loadBigVouchersFromApi() {
         try {
             const response = await getApi("vouchers/get-vouchers.php?page=1&limit=100&available_only=1&sort=end_soon");
@@ -682,25 +705,26 @@ document.addEventListener("DOMContentLoaded", function () {
             const apiVouchers = Array.isArray(data.vouchers) ? data.vouchers : [];
 
             const normalizedVouchers = apiVouchers
+                .filter(function (apiVoucher) {
+                    return isApiVoucherActive(apiVoucher) && isApiVoucherInTime(apiVoucher);
+                })
                 .map(normalizeVoucherFromApi)
                 .filter(function (voucher) {
-                    return voucher.code && getVoucherComparableValue(voucher) > 0;
+                    return (
+                        voucher.code &&
+                        getVoucherComparableValue(voucher) > 0 &&
+                        getVoucherRemaining(voucher) > 0
+                    );
                 });
 
-            if (normalizedVouchers.length > 0) {
-                bigVouchers = normalizedVouchers;
-                return;
-            }
-
-            bigVouchers = createFallbackBigVoucherData();
+            bigVouchers = normalizedVouchers;
         } catch (error) {
-            console.warn("Không tải được voucher từ API, dùng dữ liệu fallback:", error);
-            bigVouchers = createFallbackBigVoucherData();
+            console.warn("Không tải được voucher từ API:", error);
+            bigVouchers = [];
         }
     }
 
-
-    // 13. Countdown Big Voucher
+    // 12. Countdown Big Voucher
     function updateCountdown() {
         const endTime = getBigVoucherEndTime();
         const distance = Math.max(endTime - Date.now(), 0);
@@ -734,8 +758,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 1000);
     }
 
-
-    // 14. Cập nhật thông tin thành viên
+    // 13. Cập nhật thông tin thành viên
     function updateMemberNotice() {
         if (!memberNotice) {
             return;
@@ -779,8 +802,7 @@ document.addEventListener("DOMContentLoaded", function () {
         highlightVoucherSubtext.textContent = formatVoucherValue(bestVoucher);
     }
 
-
-    // 15. Lọc voucher
+    // 14. Lọc voucher
     function filterVouchersByTab(vouchers, filterValue) {
         if (filterValue === "all") {
             return vouchers;
@@ -821,8 +843,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-
-    // 16. Sắp xếp voucher
+    // 15. Sắp xếp voucher
     function sortVouchers(vouchers, sortValue) {
         const clonedVouchers = [...vouchers];
 
@@ -863,8 +884,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return vouchers;
     }
 
-
-    // 17. Hiển thị trạng thái
+    // 16. Hiển thị trạng thái
     function showState(type) {
         bigVoucherLoadingState?.classList.remove("show");
         bigVoucherEmptyState?.classList.remove("show");
@@ -902,8 +922,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 18. Tạo card voucher
+    // 17. Tạo card voucher
     function getVoucherButtonState(voucher) {
         if (isVoucherExpired(voucher)) {
             return {
@@ -1031,8 +1050,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return clone;
     }
 
-
-    // 19. Render voucher
+    // 18. Render voucher
     function renderVouchers(vouchers) {
         clearVoucherList();
         updateResultCount(vouchers.length);
@@ -1075,8 +1093,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 20. Xử lý filter
+    // 19. Xử lý filter
     function handleFilterClick(event) {
         const tab = event.target.closest(".voucherTab");
 
@@ -1095,16 +1112,14 @@ document.addEventListener("DOMContentLoaded", function () {
         renderPage();
     }
 
-
-    // 21. Xử lý sort
+    // 20. Xử lý sort
     function handleSortChange() {
         currentSort = bigVoucherSort.value || "default";
 
         renderPage();
     }
 
-
-    // 22. Xử lý tìm kiếm
+    // 21. Xử lý tìm kiếm
     function handleSearchSubmit(event) {
         event.preventDefault();
 
@@ -1118,8 +1133,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
     }
 
-
-    // 23. Xử lý săn voucher
+    // 22. Xử lý săn voucher
     function handleVoucherListClick(event) {
         const actionButton = event.target.closest('[data-role="voucher-action"]');
 
@@ -1145,8 +1159,7 @@ document.addEventListener("DOMContentLoaded", function () {
         saveVoucher(voucher);
     }
 
-
-    // 24. Gắn sự kiện
+    // 23. Gắn sự kiện
     function bindEvents() {
         if (bigVoucherFilterBar) {
             bigVoucherFilterBar.addEventListener("click", handleFilterClick);
@@ -1165,8 +1178,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 25. Khởi tạo trang
+    // 24. Khởi tạo trang
     async function initBigVoucherPage() {
         bindEvents();
 
@@ -1187,8 +1199,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     initBigVoucherPage();
 
-
-    // 26. Dọn interval khi rời trang
+    // 25. Dọn interval khi rời trang
     window.addEventListener("beforeunload", function () {
         if (countdownTimer) {
             clearInterval(countdownTimer);

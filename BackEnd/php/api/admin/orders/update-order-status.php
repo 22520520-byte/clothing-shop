@@ -1,8 +1,8 @@
 <?php
 // =========================================================
-// File: api/admin/orders/update-order-status.php
-// Mục đích: API admin cập nhật trạng thái đơn hàng
-// Method: POST
+// File: BackEnd/php/api/admin/orders/update-order-status.php
+// Muc dich: Admin cap nhat trang thai don hang
+// Cap nhat: Nhan linh hoat order_id/order_code/status/new_status/order_status
 // =========================================================
 
 session_start();
@@ -10,86 +10,79 @@ session_start();
 require_once __DIR__ . '/../../../config/db.php';
 require_once __DIR__ . '/../../../helpers/response.php';
 
-
-// 1. Cho phép gọi API từ frontend
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit;
-}
-
-
-// 2. Chỉ cho phép POST
+// 1. Chi cho phep POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendError('Phuong thuc khong hop le', 405);
 }
 
+// 2. Doc JSON body
+function getJsonBody()
+{
+    $rawBody = file_get_contents('php://input');
 
-// 3. Kiểm tra đăng nhập
-if (empty($_SESSION['user_id'])) {
-    sendError('Vui long dang nhap de cap nhat trang thai don hang', 401);
+    if (!$rawBody) {
+        return [];
+    }
+
+    $data = json_decode($rawBody, true);
+
+    if (!is_array($data)) {
+        sendError('Du lieu JSON khong hop le', 400);
+    }
+
+    return $data;
 }
 
-$userId = (int) $_SESSION['user_id'];
+// 3. Lay gia tri tu nhieu key
+function getValue($data, $keys, $default = null)
+{
+    foreach ($keys as $key) {
+        if (isset($data[$key]) && $data[$key] !== '') {
+            return $data[$key];
+        }
+    }
 
-
-// 4. Đọc dữ liệu gửi lên
-$input = json_decode(file_get_contents('php://input'), true);
-
-if (!is_array($input)) {
-    $input = $_POST;
+    return $default;
 }
 
+// 4. Lay id admin dang dang nhap
+function getCurrentAdminId()
+{
+    if (isset($_SESSION['user_id'])) {
+        return (int) $_SESSION['user_id'];
+    }
 
-// 5. Lấy dữ liệu request
-$orderId = isset($input['order_id']) ? (int) $input['order_id'] : 0;
-$orderCode = trim($input['order_code'] ?? '');
-$newStatus = trim($input['order_status'] ?? '');
-$note = trim($input['note'] ?? '');
+    if (isset($_SESSION['admin_id'])) {
+        return (int) $_SESSION['admin_id'];
+    }
 
+    if (isset($_SESSION['admin_user_id'])) {
+        return (int) $_SESSION['admin_user_id'];
+    }
 
-// 6. Validate dữ liệu
-$errors = [];
-
-if ($orderId <= 0 && $orderCode === '') {
-    $errors['order'] = 'Vui long truyen order_id hoac order_code';
+    return 0;
 }
 
-$allowedStatuses = [
-    'pending',
-    'confirmed',
-    'shipping',
-    'completed',
-    'cancelled'
-];
+// 5. Kiem tra quyen admin
+function getCurrentAdminUser($conn)
+{
+    $userId = getCurrentAdminId();
 
-if (!in_array($newStatus, $allowedStatuses)) {
-    $errors['order_status'] = 'Trang thai don hang khong hop le';
-}
+    if ($userId <= 0) {
+        sendError('Ban chua dang nhap admin', 401);
+    }
 
-if (!empty($errors)) {
-    sendError('Du lieu khong hop le', 422, $errors);
-}
-
-
-// 7. Kết nối database
-$conn = getDatabaseConnection();
-
-try {
-    // 8. Kiểm tra quyền admin/staff
     $sql = "
         SELECT
             u.id,
             u.full_name,
             u.email,
+            u.phone,
             u.status,
             r.code AS role_code,
             r.name AS role_name
         FROM users u
-        JOIN roles r
-            ON u.role_id = r.id
+        JOIN roles r ON u.role_id = r.id
         WHERE u.id = :user_id
         LIMIT 1
     ";
@@ -115,132 +108,161 @@ try {
         sendError('Ban khong co quyen cap nhat trang thai don hang', 403);
     }
 
+    return $user;
+}
 
-    // 9. Tìm đơn hàng
+// 6. Lay thong tin don hang
+function getOrderByIdOrCode($conn, $orderId, $orderCode)
+{
     if ($orderId > 0) {
-        $whereSql = "id = :order_id";
-        $params = [
+        $sql = "
+            SELECT
+                id,
+                user_id,
+                order_code,
+                receiver_name,
+                receiver_phone,
+                final_total,
+                payment_method,
+                order_status,
+                note
+            FROM orders
+            WHERE id = :order_id
+            LIMIT 1
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
             ':order_id' => $orderId
-        ];
-    } else {
-        $whereSql = "order_code = :order_code";
-        $params = [
-            ':order_code' => $orderCode
-        ];
-    }
-
-    $sql = "
-        SELECT
-            id,
-            user_id,
-            order_code,
-            receiver_name,
-            receiver_phone,
-            final_total,
-            payment_method,
-            order_status,
-            note
-        FROM orders
-        WHERE $whereSql
-        LIMIT 1
-    ";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->execute($params);
-
-    $order = $stmt->fetch();
-
-    if (!$order) {
-        sendError('Khong tim thay don hang', 404);
-    }
-
-    $currentOrderId = (int) $order['id'];
-    $oldStatus = $order['order_status'];
-
-
-    // 10. Nếu trạng thái không đổi
-    if ($oldStatus === $newStatus) {
-        sendSuccess('Trang thai don hang khong thay doi', [
-            'order' => [
-                'id' => $currentOrderId,
-                'order_code' => $order['order_code'],
-                'old_status' => $oldStatus,
-                'new_status' => $newStatus
-            ]
         ]);
+
+        return $stmt->fetch();
     }
 
+    if ($orderCode !== '') {
+        $sql = "
+            SELECT
+                id,
+                user_id,
+                order_code,
+                receiver_name,
+                receiver_phone,
+                final_total,
+                payment_method,
+                order_status,
+                note
+            FROM orders
+            WHERE order_code = :order_code
+            LIMIT 1
+        ";
 
-    // 11. Kiểm tra luồng chuyển trạng thái hợp lệ
-    $allowedTransitions = [
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':order_code' => $orderCode
+        ]);
+
+        return $stmt->fetch();
+    }
+
+    return null;
+}
+
+// 7. Kiem tra trang thai hop le
+function isValidStatus($status)
+{
+    return in_array($status, [
+        'pending',
+        'confirmed',
+        'shipping',
+        'completed',
+        'cancelled'
+    ]);
+}
+
+// 8. Lay danh sach trang thai tiep theo
+function getAllowedTransitions()
+{
+    return [
         'pending' => ['confirmed', 'cancelled'],
         'confirmed' => ['shipping', 'cancelled'],
         'shipping' => ['completed'],
         'completed' => [],
         'cancelled' => []
     ];
+}
 
-    if (!in_array($newStatus, $allowedTransitions[$oldStatus] ?? [])) {
-        sendError('Khong the chuyen trang thai don hang tu ' . $oldStatus . ' sang ' . $newStatus, 422, [
-            'old_status' => $oldStatus,
-            'new_status' => $newStatus
-        ]);
-    }
+// 9. Lay nhan trang thai
+function getOrderStatusLabels()
+{
+    return [
+        'pending' => 'Chờ xác nhận',
+        'confirmed' => 'Đã xác nhận',
+        'shipping' => 'Đang giao hàng',
+        'completed' => 'Hoàn thành',
+        'cancelled' => 'Đã hủy'
+    ];
+}
 
+// 10. Lay nhan thanh toan
+function getPaymentStatusLabels()
+{
+    return [
+        'unpaid' => 'Chưa thanh toán',
+        'paid' => 'Đã thanh toán',
+        'failed' => 'Thanh toán thất bại',
+        'refunded' => 'Đã hoàn tiền'
+    ];
+}
 
-    // 12. Bắt đầu transaction
-    $conn->beginTransaction();
-
-
-    // 13. Nếu hủy đơn thì hoàn lại tồn kho
+// 11. Hoan kho khi huy don
+function restoreStockWhenCancel($conn, $orderId, $orderCode, $adminUserId)
+{
     $restoredItems = [];
 
-    if ($newStatus === 'cancelled') {
+    $sql = "
+        SELECT
+            oi.id,
+            oi.variant_id,
+            oi.quantity,
+            oi.product_name,
+            oi.sku,
+            pv.stock_quantity
+        FROM order_items oi
+        LEFT JOIN product_variants pv ON oi.variant_id = pv.id
+        WHERE oi.order_id = :order_id
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        ':order_id' => $orderId
+    ]);
+
+    $items = $stmt->fetchAll();
+
+    foreach ($items as $item) {
+        if (!$item['variant_id']) {
+            continue;
+        }
+
+        $variantId = (int) $item['variant_id'];
+        $quantity = (int) $item['quantity'];
+        $stockBefore = (int) $item['stock_quantity'];
+        $stockAfter = $stockBefore + $quantity;
+
         $sql = "
-            SELECT
-                oi.id,
-                oi.variant_id,
-                oi.quantity,
-                pv.sku,
-                pv.stock_quantity,
-                p.name AS product_name
-            FROM order_items oi
-            JOIN product_variants pv
-                ON oi.variant_id = pv.id
-            JOIN products p
-                ON pv.product_id = p.id
-            WHERE oi.order_id = :order_id_items
+            UPDATE product_variants
+            SET stock_quantity = :stock_after,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :variant_id
         ";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute([
-            ':order_id_items' => $currentOrderId
+            ':stock_after' => $stockAfter,
+            ':variant_id' => $variantId
         ]);
 
-        $orderItems = $stmt->fetchAll();
-
-        foreach ($orderItems as $item) {
-            $variantId = (int) $item['variant_id'];
-            $quantity = (int) $item['quantity'];
-            $stockBefore = (int) $item['stock_quantity'];
-            $stockAfter = $stockBefore + $quantity;
-
-            // Cập nhật tồn kho
-            $sql = "
-                UPDATE product_variants
-                SET
-                    stock_quantity = :stock_after,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE id = :variant_id
-            ";
-
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([
-                ':stock_after' => $stockAfter,
-                ':variant_id' => $variantId
-            ]);
-
-            // Ghi log kho
+        try {
             $sql = "
                 INSERT INTO product_stock_logs (
                     variant_id,
@@ -265,89 +287,34 @@ try {
             $stmt = $conn->prepare($sql);
             $stmt->execute([
                 ':variant_id' => $variantId,
-                ':user_id' => $userId,
+                ':user_id' => $adminUserId,
                 ':quantity_change' => $quantity,
                 ':quantity_before' => $stockBefore,
                 ':quantity_after' => $stockAfter,
-                ':note' => 'Hoan kho khi admin huy don hang ' . $order['order_code']
+                ':note' => 'Hoan kho khi admin huy don hang ' . $orderCode
             ]);
-
-            $restoredItems[] = [
-                'variant_id' => $variantId,
-                'sku' => $item['sku'],
-                'product_name' => $item['product_name'],
-                'quantity_restored' => $quantity,
-                'stock_before' => $stockBefore,
-                'stock_after' => $stockAfter
-            ];
+        } catch (PDOException $error) {
+            // Bo qua neu bang log khac cau truc
         }
+
+        $restoredItems[] = [
+            'variant_id' => $variantId,
+            'sku' => $item['sku'],
+            'product_name' => $item['product_name'],
+            'quantity_restored' => $quantity,
+            'stock_before' => $stockBefore,
+            'stock_after' => $stockAfter
+        ];
     }
 
+    return $restoredItems;
+}
 
-    // 14. Cập nhật trạng thái đơn hàng
-    $updatedNote = $order['note'];
-
-    if ($note !== '') {
-        $updatedNote = $note;
-    }
-
-    $sql = "
-        UPDATE orders
-        SET
-            order_status = :order_status,
-            note = :note,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = :order_id
-    ";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([
-        ':order_status' => $newStatus,
-        ':note' => $updatedNote,
-        ':order_id' => $currentOrderId
-    ]);
-
-
-    // 15. Nếu đơn bị hủy thì cập nhật thanh toán thất bại nếu đang chưa thanh toán
-    if ($newStatus === 'cancelled') {
-        $sql = "
-            UPDATE payments
-            SET
-                payment_status = CASE
-                    WHEN payment_status = 'unpaid' THEN 'failed'
-                    ELSE payment_status
-                END
-            WHERE order_id = :order_id_payment
-        ";
-
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([
-            ':order_id_payment' => $currentOrderId
-        ]);
-    }
-
-
-    // 16. Nếu đơn hoàn thành và thanh toán COD thì cập nhật đã thanh toán
-    if ($newStatus === 'completed' && $order['payment_method'] === 'cod') {
-        $sql = "
-            UPDATE payments
-            SET
-                payment_status = 'paid',
-                paid_at = CURRENT_TIMESTAMP
-            WHERE order_id = :order_id_payment
-            AND payment_status = 'unpaid'
-        ";
-
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([
-            ':order_id_payment' => $currentOrderId
-        ]);
-    }
-
-
-    // 17. Ghi log hoạt động nhân viên nếu có bảng staff_activity_logs
+// 12. Ghi log nhan vien
+function saveStaffActivityLog($conn, $adminUserId, $orderId, $orderCode, $oldStatus, $newStatus)
+{
     try {
-        $description = 'Cap nhat trang thai don hang ' . $order['order_code'] . ' tu ' . $oldStatus . ' sang ' . $newStatus;
+        $description = 'Cap nhat trang thai don hang ' . $orderCode . ' tu ' . $oldStatus . ' sang ' . $newStatus;
 
         $sql = "
             INSERT INTO staff_activity_logs (
@@ -368,16 +335,141 @@ try {
 
         $stmt = $conn->prepare($sql);
         $stmt->execute([
-            ':user_id' => $userId,
-            ':target_id' => $currentOrderId,
+            ':user_id' => $adminUserId,
+            ':target_id' => $orderId,
             ':description' => $description
         ]);
-    } catch (PDOException $logError) {
-        // Bỏ qua nếu bảng log khác cấu trúc
+    } catch (PDOException $error) {
+        // Bo qua neu bang log khac cau truc
+    }
+}
+
+// 13. Xu ly chinh
+$data = getJsonBody();
+$conn = getDatabaseConnection();
+
+try {
+    $adminUser = getCurrentAdminUser($conn);
+    $adminUserId = (int) $adminUser['id'];
+
+    $orderId = (int) getValue($data, ['order_id', 'orderId', 'id'], 0);
+    $orderCode = trim((string) getValue($data, ['order_code', 'orderCode', 'code'], ''));
+    $newStatus = trim((string) getValue($data, ['new_status', 'newStatus', 'order_status', 'orderStatus', 'status'], ''));
+    $note = trim((string) getValue($data, ['note', 'admin_note', 'adminNote'], ''));
+
+    if ($orderId <= 0 && $orderCode === '') {
+        sendError('Thieu ma don hang can cap nhat', 422);
     }
 
+    if ($newStatus === '') {
+        sendError('Thieu trang thai moi', 422);
+    }
 
-    // 18. Lấy lại payment mới nhất
+    if (!isValidStatus($newStatus)) {
+        sendError('Trang thai moi khong hop le', 422, [
+            'new_status' => $newStatus
+        ]);
+    }
+
+    $order = getOrderByIdOrCode($conn, $orderId, $orderCode);
+
+    if (!$order) {
+        sendError('Khong tim thay don hang', 404);
+    }
+
+    $currentOrderId = (int) $order['id'];
+    $oldStatus = $order['order_status'];
+
+    if (!isValidStatus($oldStatus)) {
+        sendError('Trang thai hien tai cua don hang khong hop le', 422, [
+            'old_status' => $oldStatus
+        ]);
+    }
+
+    if ($oldStatus === $newStatus) {
+        sendSuccess('Trang thai don hang khong thay doi', [
+            'order' => [
+                'id' => $currentOrderId,
+                'order_code' => $order['order_code'],
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus
+            ]
+        ]);
+    }
+
+    $allowedTransitions = getAllowedTransitions();
+    $nextStatuses = $allowedTransitions[$oldStatus] ?? [];
+
+    if (!in_array($newStatus, $nextStatuses)) {
+        sendError('Khong the chuyen trang thai don hang tu ' . $oldStatus . ' sang ' . $newStatus, 422, [
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+            'next_statuses' => $nextStatuses
+        ]);
+    }
+
+    $conn->beginTransaction();
+
+    $restoredItems = [];
+
+    if ($newStatus === 'cancelled') {
+        $restoredItems = restoreStockWhenCancel($conn, $currentOrderId, $order['order_code'], $adminUserId);
+    }
+
+    $updatedNote = $order['note'];
+
+    if ($note !== '') {
+        $updatedNote = $note;
+    }
+
+    $sql = "
+        UPDATE orders
+        SET order_status = :order_status,
+            note = :note,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = :order_id
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        ':order_status' => $newStatus,
+        ':note' => $updatedNote,
+        ':order_id' => $currentOrderId
+    ]);
+
+    if ($newStatus === 'cancelled') {
+        $sql = "
+            UPDATE payments
+            SET payment_status = CASE
+                WHEN payment_status = 'unpaid' THEN 'failed'
+                ELSE payment_status
+            END
+            WHERE order_id = :order_id
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':order_id' => $currentOrderId
+        ]);
+    }
+
+    if ($newStatus === 'completed' && $order['payment_method'] === 'cod') {
+        $sql = "
+            UPDATE payments
+            SET payment_status = 'paid',
+                paid_at = CURRENT_TIMESTAMP
+            WHERE order_id = :order_id
+              AND payment_status = 'unpaid'
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':order_id' => $currentOrderId
+        ]);
+    }
+
+    saveStaffActivityLog($conn, $adminUserId, $currentOrderId, $order['order_code'], $oldStatus, $newStatus);
+
     $sql = "
         SELECT
             id,
@@ -387,67 +479,44 @@ try {
             transaction_code,
             paid_at
         FROM payments
-        WHERE order_id = :order_id_payment_select
+        WHERE order_id = :order_id
         LIMIT 1
     ";
 
     $stmt = $conn->prepare($sql);
     $stmt->execute([
-        ':order_id_payment_select' => $currentOrderId
+        ':order_id' => $currentOrderId
     ]);
 
     $payment = $stmt->fetch();
 
-
-    // 19. Hoàn tất transaction
     $conn->commit();
 
+    $orderStatusLabels = getOrderStatusLabels();
+    $paymentStatusLabels = getPaymentStatusLabels();
 
-    // 20. Nhãn hiển thị
-    $orderStatusLabels = [
-        'pending' => 'Chờ xác nhận',
-        'confirmed' => 'Đã xác nhận',
-        'shipping' => 'Đang giao hàng',
-        'completed' => 'Hoàn thành',
-        'cancelled' => 'Đã hủy'
-    ];
-
-    $paymentStatusLabels = [
-        'unpaid' => 'Chưa thanh toán',
-        'paid' => 'Đã thanh toán',
-        'failed' => 'Thanh toán thất bại',
-        'refunded' => 'Đã hoàn tiền'
-    ];
-
-
-    // 21. Trả kết quả
-    sendSuccess('Admin cap nhat trang thai don hang thanh cong', [
+    sendSuccess('Cap nhat trang thai don hang thanh cong', [
         'current_user' => [
-            'id' => (int) $user['id'],
-            'full_name' => $user['full_name'],
-            'email' => $user['email'],
+            'id' => $adminUserId,
+            'full_name' => $adminUser['full_name'],
+            'email' => $adminUser['email'],
             'role' => [
-                'code' => $user['role_code'],
-                'name' => $user['role_name']
+                'code' => $adminUser['role_code'],
+                'name' => $adminUser['role_name']
             ]
         ],
-
         'order' => [
             'id' => $currentOrderId,
             'order_code' => $order['order_code'],
             'receiver_name' => $order['receiver_name'],
             'receiver_phone' => $order['receiver_phone'],
             'final_total' => (float) $order['final_total'],
-
             'old_status' => $oldStatus,
             'old_status_label' => $orderStatusLabels[$oldStatus] ?? $oldStatus,
-
             'new_status' => $newStatus,
             'new_status_label' => $orderStatusLabels[$newStatus] ?? $newStatus,
-
             'note' => $updatedNote
         ],
-
         'payment' => $payment ? [
             'id' => (int) $payment['id'],
             'method' => $payment['payment_method'],
@@ -457,18 +526,16 @@ try {
             'transaction_code' => $payment['transaction_code'],
             'paid_at' => $payment['paid_at']
         ] : null,
-
         'stock' => [
             'restored_items' => $restoredItems
         ]
     ]);
-
 } catch (Exception $e) {
     if ($conn->inTransaction()) {
         $conn->rollBack();
     }
 
-    sendError('Admin cap nhat trang thai don hang that bai', 500, [
+    sendError('Cap nhat trang thai don hang that bai', 500, [
         'error' => $e->getMessage()
     ]);
 }

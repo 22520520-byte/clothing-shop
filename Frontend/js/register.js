@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const registerForm = document.getElementById("registerForm");
     const registerFullName = document.getElementById("registerFullName");
     const registerEmail = document.getElementById("registerEmail");
-    const registerUsername = document.getElementById("registerUsername");
+    
     const registerPhone = document.getElementById("registerPhone");
     const registerPassword = document.getElementById("registerPassword");
     const confirmPassword = document.getElementById("confirmPassword");
@@ -46,13 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    // 5. Kiểm tra tên đăng nhập
-    function isValidUsername(username) {
-        const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
-
-        return usernameRegex.test(username);
-    }
-
+    
 
     // 6. Kiểm tra số điện thoại Việt Nam đơn giản
     function isValidPhone(phone) {
@@ -165,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function validateRegisterForm() {
         const fullName = registerFullName ? registerFullName.value.trim() : "";
         const email = registerEmail ? registerEmail.value.trim() : "";
-        const username = registerUsername ? registerUsername.value.trim() : "";
+        
         const phone = registerPhone ? registerPhone.value.trim() : "";
         const password = registerPassword ? registerPassword.value.trim() : "";
         const confirm = confirmPassword ? confirmPassword.value.trim() : "";
@@ -194,11 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return false;
         }
 
-        if (username && !isValidUsername(username)) {
-            showError("Tên đăng nhập phải từ 4-20 ký tự, chỉ gồm chữ, số hoặc dấu gạch dưới.");
-            registerUsername?.focus();
-            return false;
-        }
+        
 
         if (isEmpty(phone)) {
             showError("Vui lòng nhập số điện thoại.");
@@ -255,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
             email: registerEmail.value.trim(),
             phone: registerPhone.value.trim(),
 
-            username: registerUsername ? registerUsername.value.trim() : "",
+           
 
             password: registerPassword.value.trim(),
             confirm_password: confirmPassword ? confirmPassword.value.trim() : ""
@@ -393,7 +383,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const inputs = [
             registerFullName,
             registerEmail,
-            registerUsername,
+            
             registerPhone,
             registerPassword,
             confirmPassword,

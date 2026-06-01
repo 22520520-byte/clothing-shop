@@ -1,7 +1,8 @@
 // =========================================================
 // File: Frontend/js/points.js
-// Mục đích: Trang điểm tích lũy dùng API user thật,
-//           còn voucher đổi điểm/vòng xoay/lịch sử điểm lưu localStorage theo user
+// Mục đích: Trang điểm tích lũy
+// Cập nhật: Lấy điểm hiện tại + lịch sử điểm từ database,
+//           localStorage chỉ dùng phụ cho voucher/vòng xoay demo
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -12,7 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-
     // 2. Key localStorage
     const CURRENT_USER_STORAGE_KEY = "current_user";
     const IS_LOGIN_STORAGE_KEY = "is_login";
@@ -22,11 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const LUCKY_WHEEL_STORAGE_KEY = "lucky_wheel";
     const ORDERS_STORAGE_KEY = "orders";
 
-
     // 3. Quy tắc điểm
     const pointRules = {
         earnLabel: "Tích điểm",
-        earnValue: "Đánh giá đơn hàng = +100 điểm",
+        earnValue: "Hoàn thành đơn hàng sẽ được cộng điểm",
 
         voucher20Label: "Voucher 20K",
         voucher20Value: "500 điểm",
@@ -34,7 +33,6 @@ document.addEventListener("DOMContentLoaded", function () {
         voucher50Label: "Voucher 50K",
         voucher50Value: "1000 điểm"
     };
-
 
     // 4. Dữ liệu ưu đãi đổi điểm
     const rewards = [
@@ -75,7 +73,6 @@ document.addEventListener("DOMContentLoaded", function () {
             minOrderValue: 300000
         }
     ];
-
 
     // 5. Dữ liệu vòng xoay may mắn
     const luckyWheelRewards = [
@@ -141,13 +138,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     ];
 
-
     // 6. Biến trạng thái
     let currentUser = null;
     let userPoints = 0;
     let pointHistory = [];
+    let apiPointHistory = [];
     let isSpinning = false;
-
 
     // 7. Lấy DOM sidebar
     const profileUserName = document.getElementById("profileUserName");
@@ -155,7 +151,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const profileUserRank = document.getElementById("profileUserRank");
     const profileUserAvatar = document.getElementById("profileUserAvatar");
     const logoutBtn = document.getElementById("logoutBtn");
-
 
     // 8. Lấy DOM tổng quan điểm
     const pointsSummaryLoadingState = document.getElementById("pointsSummaryLoadingState");
@@ -172,7 +167,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const ruleVoucher50Label = document.getElementById("ruleVoucher50Label");
     const ruleVoucher50Value = document.getElementById("ruleVoucher50Value");
 
-
     // 9. Lấy DOM ưu đãi
     const openLuckyWheelBtn = document.getElementById("openLuckyWheelBtn");
 
@@ -182,7 +176,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const rewardList = document.getElementById("rewardList");
     const rewardItemTemplate = document.getElementById("rewardItemTemplate");
 
-
     // 10. Lấy DOM lịch sử điểm
     const pointsHistoryLoadingState = document.getElementById("pointsHistoryLoadingState");
     const pointsHistoryEmptyState = document.getElementById("pointsHistoryEmptyState");
@@ -190,7 +183,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const pointsHistoryContent = document.getElementById("pointsHistoryContent");
     const pointsHistoryList = document.getElementById("pointsHistoryList");
     const pointsHistoryRowTemplate = document.getElementById("pointsHistoryRowTemplate");
-
 
     // 11. Lấy DOM vòng xoay
     const luckyWheelPopup = document.getElementById("luckyWheelPopup");
@@ -201,11 +193,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const luckyWheelRuleText = document.getElementById("luckyWheelRuleText");
     const luckyWheelResultText = document.getElementById("luckyWheelResultText");
 
-
     // 12. Lấy DOM tìm kiếm
     const searchForm = document.getElementById("searchForm");
     const searchKeyword = document.getElementById("searchKeyword");
-
 
     // 13. Gọi API GET
     async function getApi(endpoint) {
@@ -226,7 +216,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return data;
     }
-
 
     // 14. Hàm tiện ích
     function formatPoint(point) {
@@ -269,6 +258,10 @@ document.addEventListener("DOMContentLoaded", function () {
             month: "2-digit",
             year: "numeric"
         });
+    }
+
+    function normalizePhone(value) {
+        return String(value || "").replace(/\D/g, "");
     }
 
     function getTodayKey() {
@@ -324,15 +317,16 @@ document.addEventListener("DOMContentLoaded", function () {
         return (
             user.id ||
             user.userId ||
+            user.user_id ||
             user.email ||
             user.phone ||
             user.username ||
             user.fullName ||
+            user.full_name ||
             user.name ||
             "member"
         );
     }
-
 
     // 15. Đọc ghi localStorage
     function getDataFromStorage(key, fallbackValue) {
@@ -374,7 +368,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return data;
     }
 
-
     // 16. Kiểm tra đăng nhập
     function getCurrentUserFromLocal() {
         if (window.CustomerApi && typeof window.CustomerApi.getCurrentCustomerFromLocal === "function") {
@@ -399,19 +392,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function requireLogin() {
-        if (!window.CustomerApi) {
-            currentUser = getCurrentUserFromLocal();
-
-            if (!currentUser) {
-                showMessage("Vui lòng đăng nhập để xem điểm tích lũy.");
-                window.location.href = "../html/login.html?redirect=" + encodeURIComponent("../html/points.html");
-                return false;
-            }
-
-            return true;
-        }
-
-        const localUser = window.CustomerApi.getCurrentCustomerFromLocal();
+        const localUser = getCurrentUserFromLocal();
 
         if (!localUser) {
             showMessage("Vui lòng đăng nhập để xem điểm tích lũy.");
@@ -419,19 +400,26 @@ document.addEventListener("DOMContentLoaded", function () {
             return false;
         }
 
-        try {
-            currentUser = await window.CustomerApi.getCurrentCustomerFromSession();
-            return true;
-        } catch (error) {
-            window.CustomerApi.clearCustomerLocalAuth();
+        currentUser = localUser;
 
-            showMessage("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-            window.location.href = "../html/login.html?redirect=" + encodeURIComponent("../html/points.html");
+        // Không ép session PHP phải đúng customer để tránh lỗi khi test admin/khách cùng localhost
+        if (window.CustomerApi && typeof window.CustomerApi.getCurrentCustomerFromSession === "function") {
+            try {
+                const sessionUser = await window.CustomerApi.getCurrentCustomerFromSession();
 
-            return false;
+                if (sessionUser && sessionUser.id) {
+                    currentUser = {
+                        ...localUser,
+                        ...sessionUser
+                    };
+                }
+            } catch (error) {
+                console.warn("Không lấy được session khách hàng, dùng localStorage:", error);
+            }
         }
-    }
 
+        return true;
+    }
 
     // 17. Chuẩn hóa user từ API profile
     function normalizeUserFromApi(user) {
@@ -445,8 +433,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return {
             id: user.id,
             userId: user.id,
+            user_id: user.id,
 
             fullName: user.full_name || user.fullName || user.name || "Khách hàng",
+            full_name: user.full_name || user.fullName || user.name || "Khách hàng",
             name: user.full_name || user.fullName || user.name || "Khách hàng",
 
             username: user.username || user.email || user.phone || "",
@@ -476,16 +466,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const normalizedUser = normalizeUserFromApi(apiUser);
 
-            const localPointMap = getUserPointMap();
-            const userKey = getUserKey(normalizedUser);
+            currentUser = {
+                ...currentUser,
+                ...normalizedUser
+            };
 
-            if (typeof localPointMap[userKey] === "number") {
-                normalizedUser.points = Number(localPointMap[userKey] || 0);
-            }
-
-            currentUser = normalizedUser;
-
-            saveDataToStorage(CURRENT_USER_STORAGE_KEY, normalizedUser);
+            saveDataToStorage(CURRENT_USER_STORAGE_KEY, currentUser);
             localStorage.setItem(IS_LOGIN_STORAGE_KEY, "true");
         } catch (error) {
             console.warn("Không lấy được profile từ API, dùng localStorage:", error);
@@ -497,7 +483,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
-
 
     // 18. Điểm người dùng
     function getUserPointMap() {
@@ -513,6 +498,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function getCurrentUserPoints() {
+        if (typeof currentUser?.points === "number") {
+            return Number(currentUser.points || 0);
+        }
+
         const userKey = getCurrentUserKey();
 
         if (!userKey) {
@@ -522,11 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const pointMap = getUserPointMap();
 
         if (typeof pointMap[userKey] === "number") {
-            return pointMap[userKey];
-        }
-
-        if (typeof currentUser?.points === "number") {
-            return currentUser.points;
+            return Number(pointMap[userKey] || 0);
         }
 
         return 0;
@@ -557,6 +542,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function syncCurrentUserPointsFromDatabase(points) {
+        const dbPoints = Math.max(Number(points || 0), 0);
+
+        userPoints = dbPoints;
+
+        if (currentUser && typeof currentUser === "object") {
+            currentUser.points = dbPoints;
+            saveDataToStorage(CURRENT_USER_STORAGE_KEY, currentUser);
+        }
+    }
+
     function getRankNameByPoints(points) {
         const currentPoints = Number(points || 0);
 
@@ -574,7 +570,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return "Thành viên";
     }
-
 
     // 19. Lịch sử điểm localStorage
     function getPointHistoryMap() {
@@ -632,7 +627,8 @@ document.addEventListener("DOMContentLoaded", function () {
             date: new Date().toISOString(),
             content: content,
             point: Number(point || 0),
-            status: status || "Thành công"
+            status: status || "Thành công",
+            source: "local"
         });
 
         saveCurrentUserStoredPointHistory(history);
@@ -640,8 +636,77 @@ document.addEventListener("DOMContentLoaded", function () {
         pointHistory = getMergedPointHistory();
     }
 
+    // 20. Lịch sử điểm từ database
+    function normalizePointHistoryFromApi(item) {
+        const pointValue = Number(item.point ?? item.points ?? 0);
 
-    // 20. Lịch sử điểm từ đơn hàng localStorage
+        return {
+            id: "api_point_" + (item.id || generateId("api")),
+            date: item.date || item.created_at || new Date().toISOString(),
+            content:
+                item.content ||
+                item.description ||
+                item.type_label ||
+                "Giao dịch điểm",
+            point: pointValue,
+            status: item.status || "Thành công",
+            source: "api",
+            raw: item
+        };
+    }
+
+    async function loadPointHistoryFromApi() {
+        const params = new URLSearchParams();
+        const phone = normalizePhone(currentUser?.phone || "");
+        const email = currentUser?.email || "";
+
+        params.set("page", "1");
+        params.set("limit", "100");
+
+        if (phone) {
+            params.set("phone", phone);
+        }
+
+        if (email) {
+            params.set("email", email);
+        }
+
+        const response = await getApi("points/get-point-history.php?" + params.toString());
+        const data = response.data || {};
+        const pointsData = data.points || {};
+        const histories = Array.isArray(data.histories)
+            ? data.histories
+            : Array.isArray(data.history)
+                ? data.history
+                : [];
+
+        if (typeof pointsData.points_balance !== "undefined") {
+            syncCurrentUserPointsFromDatabase(pointsData.points_balance);
+        } else if (typeof pointsData.balance !== "undefined") {
+            syncCurrentUserPointsFromDatabase(pointsData.balance);
+        }
+
+        if (data.customer) {
+            currentUser = {
+                ...currentUser,
+                id: data.customer.id || currentUser?.id,
+                userId: data.customer.id || currentUser?.userId,
+                user_id: data.customer.id || currentUser?.user_id,
+                fullName: data.customer.full_name || currentUser?.fullName,
+                full_name: data.customer.full_name || currentUser?.full_name,
+                name: data.customer.full_name || currentUser?.name,
+                email: data.customer.email || currentUser?.email,
+                phone: data.customer.phone || currentUser?.phone
+            };
+
+            saveDataToStorage(CURRENT_USER_STORAGE_KEY, currentUser);
+            localStorage.setItem(IS_LOGIN_STORAGE_KEY, "true");
+        }
+
+        return histories.map(normalizePointHistoryFromApi);
+    }
+
+    // 21. Lịch sử điểm từ đơn hàng localStorage
     function getOrdersFromStorage() {
         return getArrayFromStorage(ORDERS_STORAGE_KEY);
     }
@@ -689,7 +754,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     date: order.createdAt || order.orderDate || new Date().toISOString(),
                     content: "Đổi điểm khi thanh toán đơn " + orderId,
                     point: -Number(pointBenefit.points || 0),
-                    status: "Thành công"
+                    status: "Thành công",
+                    source: "local-order"
                 });
             }
 
@@ -699,7 +765,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     date: order.review?.createdAt || order.completedAt || new Date().toISOString(),
                     content: "Thưởng đánh giá đơn hàng " + orderId,
                     point: Number(order.reviewRewardPoints || 100),
-                    status: "Thành công"
+                    status: "Thành công",
+                    source: "local-order"
                 });
             }
         });
@@ -712,21 +779,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const orderHistory = getPointHistoryFromOrders();
         const historyMap = {};
 
-        storedHistory.concat(orderHistory).forEach(function (item) {
-            if (!item || !item.id) {
-                return;
-            }
+        apiPointHistory
+            .concat(storedHistory)
+            .concat(orderHistory)
+            .forEach(function (item) {
+                if (!item || !item.id) {
+                    return;
+                }
 
-            historyMap[item.id] = item;
-        });
+                historyMap[item.id] = item;
+            });
 
         return Object.values(historyMap).sort(function (a, b) {
             return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime();
         });
     }
 
-
-    // 21. Voucher đã lưu
+    // 22. Voucher đã lưu
     function getSavedVoucherMap() {
         const savedData = getDataFromStorage(SAVED_VOUCHERS_STORAGE_KEY, {});
 
@@ -815,8 +884,7 @@ document.addEventListener("DOMContentLoaded", function () {
         saveCurrentUserSavedVouchers(savedVouchers);
     }
 
-
-    // 22. Hiển thị trạng thái
+    // 23. Hiển thị trạng thái
     function hideSummaryStates() {
         if (pointsSummaryLoadingState) pointsSummaryLoadingState.hidden = true;
         if (pointsSummaryErrorState) pointsSummaryErrorState.hidden = true;
@@ -911,8 +979,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (pointsHistoryLoadingState) pointsHistoryLoadingState.hidden = false;
     }
 
-
-    // 23. Render sidebar
+    // 24. Render sidebar
     function renderUserBox() {
         const displayName = getDisplayName(currentUser);
 
@@ -933,8 +1000,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 24. Render tổng quan điểm
+    // 25. Render tổng quan điểm
     function renderPointRules() {
         if (ruleEarnLabel) ruleEarnLabel.textContent = pointRules.earnLabel;
         if (ruleEarnValue) ruleEarnValue.textContent = pointRules.earnValue;
@@ -955,7 +1021,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (userPoints >= 500) {
                 pointHintText.textContent = "Bạn đã đủ điểm để đổi một số ưu đãi.";
             } else {
-                pointHintText.textContent = "Tiếp tục mua sắm và đánh giá đơn hàng để tích thêm điểm thưởng.";
+                pointHintText.textContent = "Tiếp tục mua sắm và hoàn thành đơn hàng để tích thêm điểm thưởng.";
             }
         }
 
@@ -963,8 +1029,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showSummaryContent();
     }
 
-
-    // 25. Render ưu đãi
+    // 26. Render ưu đãi
     function createRewardElement(reward) {
         if (!rewardItemTemplate) {
             return null;
@@ -1039,8 +1104,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showRewardContent();
     }
 
-
-    // 26. Render lịch sử điểm
+    // 27. Render lịch sử điểm
     function getPointClass(point) {
         if (point > 0) {
             return "plus";
@@ -1150,8 +1214,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showHistoryContent();
     }
 
-
-    // 27. Đổi ưu đãi
+    // 28. Đổi ưu đãi
     function getRewardById(rewardId) {
         return rewards.find(function (reward) {
             return reward.id === rewardId;
@@ -1204,8 +1267,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showMessage("Đổi ưu đãi thành công.\nMã ưu đãi của bạn là: " + reward.code);
     }
 
-
-    // 28. Vòng xoay may mắn
+    // 29. Vòng xoay may mắn
     function getLuckyWheelMap() {
         return getObjectFromStorage(LUCKY_WHEEL_STORAGE_KEY);
     }
@@ -1387,8 +1449,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 2600);
     }
 
-
-    // 29. Load dữ liệu điểm
+    // 30. Load dữ liệu điểm
     async function loadPointsData() {
         await loadUserProfileFromApi();
 
@@ -1396,12 +1457,21 @@ document.addEventListener("DOMContentLoaded", function () {
             currentUser = getCurrentUserFromLocal();
         }
 
-        userPoints = getCurrentUserPoints();
+        try {
+            apiPointHistory = await loadPointHistoryFromApi();
+        } catch (error) {
+            console.warn("Không lấy được lịch sử điểm từ database, dùng localStorage:", error);
+            apiPointHistory = [];
+        }
+
+        if (!userPoints) {
+            userPoints = getCurrentUserPoints();
+        }
+
         pointHistory = getMergedPointHistory();
     }
 
-
-    // 30. Đăng xuất
+    // 31. Đăng xuất
     async function handleLogout(event) {
         if (event) {
             event.preventDefault();
@@ -1423,8 +1493,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/login.html";
     }
 
-
-    // 31. Tìm kiếm
+    // 32. Tìm kiếm
     function handleSearchSubmit(event) {
         event.preventDefault();
 
@@ -1438,8 +1507,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
     }
 
-
-    // 32. Gắn sự kiện
+    // 33. Gắn sự kiện
     function handleRewardListClick(event) {
         const rewardButton = event.target.closest('[data-role="reward-action-button"]');
 
@@ -1498,8 +1566,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.addEventListener("keydown", handleEscapeKey);
     }
 
-
-    // 33. Render toàn bộ trang
+    // 34. Render toàn bộ trang
     function renderPointsPage() {
         renderUserBox();
         renderPointsSummary();
@@ -1507,8 +1574,7 @@ document.addEventListener("DOMContentLoaded", function () {
         renderPointHistory();
     }
 
-
-    // 34. Khởi tạo trang điểm tích lũy
+    // 35. Khởi tạo trang điểm tích lũy
     async function initPointsPage() {
         const isLogin = await requireLogin();
 

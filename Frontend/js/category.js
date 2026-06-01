@@ -1,6 +1,7 @@
 // =========================================================
 // File: Frontend/js/category.js
 // Mục đích: Trang danh mục lấy sản phẩm thật từ API backend
+// Cập nhật: Gom sản phẩm theo nhóm và lọc loại sản phẩm
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -11,11 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-
     // 2. Key localStorage
     const CART_STORAGE_KEY = "cart_items";
     const CHECKOUT_STORAGE_KEY = "checkout_items";
-
 
     // 3. Biến trạng thái category
     let currentCategory = categoryPage.dataset.category || "";
@@ -23,7 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentLimit = 12;
     let currentView = "grid";
     let currentKeyword = "";
-
     let products = [];
     let productDetailCache = {};
     let paginationData = {
@@ -32,7 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
         total_products: 0,
         total_pages: 1
     };
-
 
     // 4. Biến trạng thái quick view
     let quickViewProduct = null;
@@ -43,42 +40,32 @@ document.addEventListener("DOMContentLoaded", function () {
     let quickViewSelectedSizeId = "";
     let quickViewQuantity = 1;
 
-
     // 5. Lấy phần tử DOM category
     const searchForm = document.getElementById("searchForm");
     const searchKeywordInput = document.getElementById("searchKeyword");
-
     const filterForm = document.getElementById("filterForm");
     const btnApplyFilter = document.getElementById("btnApplyFilter");
     const btnResetFilter = document.getElementById("btnResetFilter");
-
     const sortSelect = document.getElementById("sort");
-    const viewMode = document.getElementById("viewMode");
     const gridViewBtn = document.getElementById("gridViewBtn");
     const listViewBtn = document.getElementById("listViewBtn");
-
     const productCount = document.getElementById("productCount");
     const categoryGrid = document.getElementById("categoryGrid");
     const pagination = document.getElementById("pagination");
-
     const loadingState = document.getElementById("loadingState");
     const emptyState = document.getElementById("emptyState");
     const errorState = document.getElementById("errorState");
-
     const productCardTemplate = document.getElementById("productCardTemplate");
-
 
     // 6. Lấy phần tử DOM quick view
     const quickViewOverlay = document.getElementById("quickViewOverlay");
     const quickViewPopup = document.getElementById("quickViewPopup");
     const quickViewCloseBtn = document.getElementById("quickViewCloseBtn");
-
     const quickViewThumbs = document.getElementById("quickViewThumbs");
     const quickViewThumbTemplate = document.getElementById("quickViewThumbTemplate");
     const quickViewImage = document.getElementById("quickViewImage");
     const quickViewPrevImageBtn = document.getElementById("quickViewPrevImageBtn");
     const quickViewNextImageBtn = document.getElementById("quickViewNextImageBtn");
-
     const quickViewBrand = document.getElementById("quickViewBrand");
     const quickViewProductName = document.getElementById("quickViewProductName");
     const quickViewProductStatus = document.getElementById("quickViewProductStatus");
@@ -86,22 +73,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const quickViewOldPrice = document.getElementById("quickViewOldPrice");
     const quickViewDiscount = document.getElementById("quickViewDiscount");
     const quickViewSelectedColorText = document.getElementById("quickViewSelectedColor");
-
     const quickViewColorList = document.getElementById("quickViewColorList");
     const quickViewColorTemplate = document.getElementById("quickViewColorTemplate");
-
     const quickViewSizeList = document.getElementById("quickViewSizeList");
     const quickViewSizeTemplate = document.getElementById("quickViewSizeTemplate");
-
     const quickViewMinusQty = document.getElementById("quickViewMinusQty");
     const quickViewPlusQty = document.getElementById("quickViewPlusQty");
     const quickViewQuantityInput = document.getElementById("quickViewQuantityInput");
     const quickViewBuyBtn = document.getElementById("quickViewBuyBtn");
-
     const quickViewMaterial = document.getElementById("quickViewMaterial");
     const quickViewDescription = document.getElementById("quickViewDescription");
     const quickViewDetailLink = document.getElementById("quickViewDetailLink");
-
 
     // 7. Lấy phần tử DOM cart drawer
     const cartDrawerOverlay = document.getElementById("cartDrawerOverlay");
@@ -114,13 +96,56 @@ document.addEventListener("DOMContentLoaded", function () {
     const cartDrawerCheckoutBtn = document.getElementById("cartDrawerCheckoutBtn");
     const cartDrawerItemTemplate = document.getElementById("cartDrawerItemTemplate");
 
-
-    // 8. Map slug dự phòng nếu DB và HTML đặt slug khác nhau
-    const categorySlugAliasMap = {
-        "hoodie": ["hoodie", "ao-hoodie"],
-        "ao-hoodie": ["ao-hoodie", "hoodie"]
+    // 8. Map nhóm danh mục sang các loại sản phẩm con
+    const categorySlugGroupMap = {
+        "ao": [
+            "ao",
+            "ao-thun",
+            "ao-polo",
+            "ao-so-mi",
+            "ao-tay-ngan",
+            "ao-tay-dai",
+            "ao-hoodie",
+            "ao-sweater",
+            "ao-khoac"
+        ],
+        "ao-tay-ngan": [
+            "ao-tay-ngan",
+            "ao-thun",
+            "ao-polo",
+            "ao-so-mi"
+        ],
+        "ao-tay-dai": [
+            "ao-tay-dai",
+            "ao-hoodie",
+            "ao-sweater",
+            "ao-khoac"
+        ],
+        "quan": [
+            "quan",
+            "quan-dai",
+            "quan-ngan",
+            "quan-lot"
+        ],
+        "vay": [
+            "vay",
+            "vay-dai",
+            "vay-ngan"
+        ],
+        "phu-kien": [
+            "phu-kien",
+            "mu",
+            "tat"
+        ],
+        "hoodie": [
+            "hoodie",
+            "ao-hoodie"
+        ],
+        "ao-hoodie": [
+            "ao-hoodie",
+            "hoodie"
+        ]
     };
-
 
     // 9. Gọi API
     async function getApi(endpoint) {
@@ -141,7 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return data;
     }
-
 
     // 10. Hàm tiện ích
     function formatPrice(price) {
@@ -208,7 +232,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return ["../img/products/default.jpg"];
     }
 
-
     // 11. LocalStorage
     function getDataFromStorage(key, fallbackValue) {
         const data = localStorage.getItem(key);
@@ -246,7 +269,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function saveCheckoutItemsToStorage(checkoutItems) {
         saveDataToStorage(CHECKOUT_STORAGE_KEY, checkoutItems);
     }
-
 
     // 12. Trạng thái hiển thị category
     function hideCategoryStates() {
@@ -313,14 +335,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 13. Lấy filter giá
+    // 13. Lấy filter giá và loại sản phẩm
     function getSelectedPriceFilter() {
-        const checkedPrice = filterForm
-            ? filterForm.querySelector('input[name="price"]:checked')
-            : null;
-
+        const checkedPrice = filterForm ? filterForm.querySelector('input[name="price"]:checked') : null;
         return checkedPrice ? checkedPrice.value : "";
+    }
+
+    function getSelectedTypeFilter() {
+        const checkedType = filterForm ? filterForm.querySelector('input[name="type"]:checked') : null;
+        return checkedType ? checkedType.value : "";
     }
 
     function getPriceFilterParams() {
@@ -353,7 +376,6 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
-
     // 14. Map sort UI sang API
     function getSortParam() {
         const sortValue = sortSelect ? sortSelect.value : "default";
@@ -373,29 +395,45 @@ document.addEventListener("DOMContentLoaded", function () {
         return "";
     }
 
+    // 15. Lấy slug category cần gọi API
+    function getUniqueSlugList(slugList) {
+        const result = [];
 
-    // 15. Lấy slug category
+        slugList.forEach(function (slug) {
+            if (slug && !result.includes(slug)) {
+                result.push(slug);
+            }
+        });
+
+        return result;
+    }
+
     function getCategorySlugCandidates() {
+        const selectedType = getSelectedTypeFilter();
+
+        if (selectedType) {
+            return [selectedType];
+        }
+
         if (!currentCategory) {
             return [""];
         }
 
-        if (categorySlugAliasMap[currentCategory]) {
-            return categorySlugAliasMap[currentCategory];
+        if (categorySlugGroupMap[currentCategory]) {
+            return getUniqueSlugList(categorySlugGroupMap[currentCategory]);
         }
 
         return [currentCategory];
     }
 
-
     // 16. Tạo endpoint danh sách sản phẩm
-    function buildProductListEndpoint(categorySlug) {
+    function buildProductListEndpoint(categorySlug, pageValue, limitValue) {
         const priceParams = getPriceFilterParams();
         const sortParam = getSortParam();
-
         let endpoint = "products/get-products.php?";
-        endpoint += "page=" + encodeURIComponent(currentPage);
-        endpoint += "&limit=" + encodeURIComponent(currentLimit);
+
+        endpoint += "page=" + encodeURIComponent(pageValue || currentPage);
+        endpoint += "&limit=" + encodeURIComponent(limitValue || currentLimit);
 
         if (categorySlug) {
             endpoint += "&category_slug=" + encodeURIComponent(categorySlug);
@@ -420,46 +458,35 @@ document.addEventListener("DOMContentLoaded", function () {
         return endpoint;
     }
 
-
     // 17. Chuẩn hóa sản phẩm từ API danh sách
     function normalizeProductFromApi(product) {
         const image = product.main_image || product.image_url || product.image || "../img/products/default.jpg";
         const price = Number(product.base_price || product.price || 0);
-        const oldPrice = product.old_price !== null && product.old_price !== undefined
-            ? Number(product.old_price || 0)
-            : 0;
+        const oldPrice = product.old_price !== null && product.old_price !== undefined ? Number(product.old_price || 0) : 0;
 
         return {
             id: String(product.id),
             category: product.category_slug || product.category_name || "",
             name: product.name || "Sản phẩm",
             brand: product.brand || "DUHU Shop",
-
             meta: product.category_name || "",
             shortDesc: product.short_description || "",
             material: product.material || "Chưa có thông tin chất liệu.",
             description: product.short_description || product.description || "Chưa có mô tả sản phẩm.",
-
             price: price,
             oldPrice: oldPrice,
-
             image: image,
             images: [image],
-
             isNew: Number(product.is_new || 0) === 1,
             isSale: Number(product.is_sale || 0) === 1 || oldPrice > price,
-
             inStock: Number(product.total_stock || 0) > 0,
             totalStock: Number(product.total_stock || 0),
-
             colors: [],
             sizes: [],
             variants: [],
-
             raw: product
         };
     }
-
 
     // 18. Chuẩn hóa sản phẩm từ API chi tiết
     function normalizeProductDetailFromApi(product) {
@@ -470,11 +497,8 @@ document.addEventListener("DOMContentLoaded", function () {
             : [];
 
         const mainImage = product.main_image || imageList[0] || "../img/products/default.jpg";
-
         const price = Number(product.base_price || product.price || 0);
-        const oldPrice = product.old_price !== null && product.old_price !== undefined
-            ? Number(product.old_price || 0)
-            : 0;
+        const oldPrice = product.old_price !== null && product.old_price !== undefined ? Number(product.old_price || 0) : 0;
 
         const colors = Array.isArray(product.colors)
             ? product.colors.map(function (color) {
@@ -506,12 +530,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     sizeId: variant.size ? variant.size.id : variant.size_id,
                     sizeName: variant.size ? variant.size.name : "",
                     sku: variant.sku,
-                    price: variant.price !== null && variant.price !== undefined
-                        ? Number(variant.price)
-                        : price,
-                    oldPrice: variant.old_price !== null && variant.old_price !== undefined
-                        ? Number(variant.old_price)
-                        : oldPrice,
+                    price: variant.price !== null && variant.price !== undefined ? Number(variant.price) : price,
+                    oldPrice: variant.old_price !== null && variant.old_price !== undefined ? Number(variant.old_price) : oldPrice,
                     stockQuantity: Number(variant.stock_quantity || 0),
                     status: variant.status || "active"
                 };
@@ -523,81 +543,143 @@ document.addEventListener("DOMContentLoaded", function () {
             category: product.category ? product.category.slug : "",
             name: product.name || "Sản phẩm",
             brand: product.brand || "DUHU Shop",
-
             meta: product.category ? product.category.name : "",
             shortDesc: product.short_description || "",
             material: product.material || "Chưa có thông tin chất liệu.",
             description: product.description || product.short_description || "Chưa có mô tả sản phẩm.",
-
             price: price,
             oldPrice: oldPrice,
-
             image: mainImage,
             images: imageList.length > 0 ? imageList : [mainImage],
-
             isNew: Number(product.is_new || 0) === 1,
             isSale: Number(product.is_sale || 0) === 1 || oldPrice > price,
-
             inStock: Number(product.total_stock || 0) > 0,
             totalStock: Number(product.total_stock || 0),
-
             colors: colors,
             sizes: sizes,
             variants: variants,
-
             raw: product
         };
     }
 
+    // 19. Sắp xếp và phân trang khi gom nhiều danh mục
+    function sortProductsOnClient(productList) {
+        const sortValue = sortSelect ? sortSelect.value : "default";
+        const sortedProducts = productList.slice();
 
-    // 19. Load danh sách sản phẩm từ API
+        if (sortValue === "price-asc") {
+            sortedProducts.sort(function (a, b) {
+                return Number(a.price || 0) - Number(b.price || 0);
+            });
+
+            return sortedProducts;
+        }
+
+        if (sortValue === "price-desc") {
+            sortedProducts.sort(function (a, b) {
+                return Number(b.price || 0) - Number(a.price || 0);
+            });
+
+            return sortedProducts;
+        }
+
+        if (sortValue === "best-seller") {
+            sortedProducts.sort(function (a, b) {
+                return Number(b.raw?.is_featured || 0) - Number(a.raw?.is_featured || 0);
+            });
+
+            return sortedProducts;
+        }
+
+        sortedProducts.sort(function (a, b) {
+            const dateA = a.raw?.created_at ? new Date(a.raw.created_at).getTime() : Number(a.id || 0);
+            const dateB = b.raw?.created_at ? new Date(b.raw.created_at).getTime() : Number(b.id || 0);
+            return dateB - dateA;
+        });
+
+        return sortedProducts;
+    }
+
+    function paginateProductsOnClient(productList) {
+        const totalProducts = productList.length;
+        const totalPages = Math.max(1, Math.ceil(totalProducts / currentLimit));
+
+        if (currentPage > totalPages) {
+            currentPage = 1;
+        }
+
+        const startIndex = (currentPage - 1) * currentLimit;
+        const endIndex = startIndex + currentLimit;
+
+        paginationData = {
+            page: currentPage,
+            limit: currentLimit,
+            total_products: totalProducts,
+            total_pages: totalPages
+        };
+
+        return productList.slice(startIndex, endIndex);
+    }
+
+    // 20. Load danh sách sản phẩm từ API
     async function loadProductsFromApi() {
         showLoadingState();
 
         const slugCandidates = getCategorySlugCandidates();
 
-        let responseData = null;
+        if (slugCandidates.length > 1) {
+            const productMap = new Map();
 
-        for (let i = 0; i < slugCandidates.length; i += 1) {
-            const endpoint = buildProductListEndpoint(slugCandidates[i]);
-            const response = await getApi(endpoint);
-            const data = response.data || {};
-            const productList = Array.isArray(data.products) ? data.products : [];
+            const requests = slugCandidates.map(function (slug) {
+                const endpoint = buildProductListEndpoint(slug, 1, 50);
 
-            responseData = data;
+                return getApi(endpoint).catch(function (error) {
+                    console.error("Không lấy được sản phẩm cho danh mục:", slug, error);
+                    return null;
+                });
+            });
 
-            if (productList.length > 0 || i === slugCandidates.length - 1) {
-                break;
-            }
+            const responses = await Promise.all(requests);
+
+            responses.forEach(function (response) {
+                const data = response && response.data ? response.data : {};
+                const productList = Array.isArray(data.products) ? data.products : [];
+
+                productList.forEach(function (product) {
+                    const normalizedProduct = normalizeProductFromApi(product);
+                    productMap.set(String(normalizedProduct.id), normalizedProduct);
+                });
+            });
+
+            const mergedProducts = sortProductsOnClient(Array.from(productMap.values()));
+            products = paginateProductsOnClient(mergedProducts);
+            renderCategoryProducts();
+            return;
         }
 
-        const productList = responseData && Array.isArray(responseData.products)
-            ? responseData.products
-            : [];
+        const endpoint = buildProductListEndpoint(slugCandidates[0], currentPage, currentLimit);
+        const response = await getApi(endpoint);
+        const data = response.data || {};
+        const productList = Array.isArray(data.products) ? data.products : [];
 
         products = productList.map(normalizeProductFromApi);
-
-        paginationData = responseData && responseData.pagination
-            ? responseData.pagination
-            : {
-                page: currentPage,
-                limit: currentLimit,
-                total_products: products.length,
-                total_pages: 1
-            };
+        paginationData = data.pagination ? data.pagination : {
+            page: currentPage,
+            limit: currentLimit,
+            total_products: products.length,
+            total_pages: 1
+        };
 
         renderCategoryProducts();
     }
 
-
-    // 20. Render card sản phẩm
+    // 21. Render card sản phẩm
     function createProductCard(product) {
         if (!productCardTemplate) {
             return null;
         }
 
         const clone = productCardTemplate.content.cloneNode(true);
-
         const productCard = clone.querySelector(".productCard");
         const productImage = clone.querySelector('[data-role="product-image"]');
         const productLinks = clone.querySelectorAll('[data-role="product-link"], [data-role="product-link-text"]');
@@ -607,7 +689,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const productDiscount = clone.querySelector('[data-role="product-discount"]');
         const quickBuyBtn = clone.querySelector('[data-role="quick-buy-btn"]');
         const viewDetailBtn = clone.querySelector('[data-role="view-detail-btn"]');
-
         const detailUrl = getProductDetailUrl(product.id);
         const discountPercent = calculateDiscountPercent(product.price, product.oldPrice);
 
@@ -666,8 +747,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return clone;
     }
 
-
-    // 21. Render danh sách sản phẩm
+    // 22. Render danh sách sản phẩm
     function renderProductCount() {
         if (!productCount) {
             return;
@@ -701,7 +781,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const totalPages = Number(paginationData.total_pages || 1);
-
         pagination.innerHTML = "";
 
         if (totalPages <= 1) {
@@ -719,7 +798,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         for (let page = 1; page <= totalPages; page += 1) {
             const pageButton = document.createElement("button");
-
             pageButton.type = "button";
             pageButton.className = "paginationBtn";
 
@@ -729,7 +807,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             pageButton.textContent = String(page);
             pageButton.dataset.page = String(page);
-
             pagination.appendChild(pageButton);
         }
 
@@ -763,8 +840,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showProductContent();
     }
 
-
-    // 22. Load chi tiết sản phẩm cho quick view
+    // 23. Load chi tiết sản phẩm cho quick view
     async function getProductDetailForQuickView(productId) {
         const productKey = String(productId);
 
@@ -773,13 +849,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const response = await getApi(
-                "products/get-product-detail.php?id=" + encodeURIComponent(productId)
-            );
-
-            const product = response.data && response.data.product
-                ? normalizeProductDetailFromApi(response.data.product)
-                : null;
+            const response = await getApi("products/get-product-detail.php?id=" + encodeURIComponent(productId));
+            const product = response.data && response.data.product ? normalizeProductDetailFromApi(response.data.product) : null;
 
             if (!product) {
                 return getProductById(productId);
@@ -802,15 +873,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 23. Render quick view
+    // 24. Render quick view
     function renderQuickViewThumbs(product) {
         if (!quickViewThumbs || !quickViewThumbTemplate) {
             return;
         }
 
         const images = getProductImages(product);
-
         quickViewThumbs.innerHTML = "";
 
         images.forEach(function (imageUrl, index) {
@@ -849,19 +918,16 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const colors = product.colors.length > 0
-            ? product.colors
-            : [
-                {
-                    id: "",
-                    name: "Mặc định",
-                    value: "#111111"
-                }
-            ];
+        const colors = product.colors.length > 0 ? product.colors : [
+            {
+                id: "",
+                name: "Mặc định",
+                value: "#111111"
+            }
+        ];
 
         quickViewSelectedColor = colors[0].name;
         quickViewSelectedColorId = colors[0].id || "";
-
         quickViewColorList.innerHTML = "";
 
         colors.forEach(function (color, index) {
@@ -891,19 +957,16 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const sizes = product.sizes.length > 0
-            ? product.sizes
-            : [
-                {
-                    id: "",
-                    name: "M",
-                    code: "M"
-                }
-            ];
+        const sizes = product.sizes.length > 0 ? product.sizes : [
+            {
+                id: "",
+                name: "M",
+                code: "M"
+            }
+        ];
 
         quickViewSelectedSize = sizes[0].name;
         quickViewSelectedSizeId = sizes[0].id || "";
-
         quickViewSizeList.innerHTML = "";
 
         sizes.forEach(function (size, index) {
@@ -995,8 +1058,7 @@ document.addEventListener("DOMContentLoaded", function () {
         renderQuickViewInfo(product);
     }
 
-
-    // 24. Mở đóng quick view
+    // 25. Mở đóng quick view
     async function openQuickView(productId) {
         const product = await getProductDetailForQuickView(productId);
 
@@ -1034,8 +1096,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.style.overflow = "";
     }
 
-
-    // 25. Xử lý chọn trong quick view
+    // 26. Xử lý chọn trong quick view
     function updateQuickViewImage(index) {
         if (!quickViewProduct) {
             return;
@@ -1081,31 +1142,6 @@ document.addEventListener("DOMContentLoaded", function () {
         button.classList.add("active");
     }
 
-    function renderQuickViewQuantityInput() {
-        if (quickViewQuantityInput) {
-            quickViewQuantityInput.value = String(quickViewQuantity);
-        }
-    }
-
-    function decreaseQuickViewQuantity() {
-        if (quickViewQuantity <= 1) {
-            return;
-        }
-
-        quickViewQuantity -= 1;
-        renderQuickViewQuantityInput();
-    }
-
-    function increaseQuickViewQuantity() {
-        quickViewQuantity += 1;
-        renderQuickViewQuantityInput();
-    }
-
-    function updateQuickViewQuantityFromInput() {
-        quickViewQuantity = normalizeQuantity(quickViewQuantityInput?.value || 1);
-        renderQuickViewQuantityInput();
-    }
-
     function toggleQuickViewContent(action) {
         let targetContent = null;
 
@@ -1124,8 +1160,7 @@ document.addEventListener("DOMContentLoaded", function () {
         targetContent.hidden = !targetContent.hidden;
     }
 
-
-    // 26. Lấy biến thể đang chọn
+    // 27. Lấy biến thể đang chọn
     function getSelectedQuickViewVariant() {
         if (!quickViewProduct || !Array.isArray(quickViewProduct.variants)) {
             return null;
@@ -1139,8 +1174,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }) || null;
     }
 
-
-    // 27. Tạo item giỏ hàng
+    // 28. Tạo item giỏ hàng
     function createCartItemFromQuickView() {
         const selectedVariant = getSelectedQuickViewVariant();
 
@@ -1150,29 +1184,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 quickViewSelectedSize,
                 quickViewSelectedColor
             ),
-
             id: quickViewProduct.id,
             productId: quickViewProduct.id,
             product_id: quickViewProduct.id,
-
             variantId: selectedVariant ? selectedVariant.id : null,
             productVariantId: selectedVariant ? selectedVariant.id : null,
             product_variant_id: selectedVariant ? selectedVariant.id : null,
-
             name: quickViewProduct.name,
-            price: selectedVariant && selectedVariant.price
-                ? Number(selectedVariant.price || 0)
-                : Number(quickViewProduct.price || 0),
+            price: selectedVariant && selectedVariant.price ? Number(selectedVariant.price || 0) : Number(quickViewProduct.price || 0),
             oldPrice: Number(quickViewProduct.oldPrice || 0),
-
             image: quickViewProduct.image,
-
             meta: "Màu: " + quickViewSelectedColor + " / Size: " + quickViewSelectedSize,
             color: quickViewSelectedColor,
             colorId: quickViewSelectedColorId,
             size: quickViewSelectedSize,
             sizeId: quickViewSelectedSizeId,
-
             quantity: normalizeQuantity(quickViewQuantity),
             selected: true
         };
@@ -1202,7 +1228,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const cartItems = getCartItemsFromStorage();
         const newItem = createCartItemFromQuickView();
-
         const existingItem = cartItems.find(function (item) {
             return item.cartItemId === newItem.cartItemId;
         });
@@ -1215,19 +1240,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         saveCartItemsToStorage(cartItems);
-
         return true;
     }
 
-
-    // 28. Render cart drawer
+    // 29. Render cart drawer
     function createCartDrawerItemElement(item) {
         if (!cartDrawerItemTemplate) {
             return null;
         }
 
         const clone = cartDrawerItemTemplate.content.cloneNode(true);
-
         const drawerItem = clone.querySelector(".cartDrawerItem");
         const productLink = clone.querySelector('[data-role="drawer-product-link"]');
         const productImage = clone.querySelector('[data-role="drawer-product-image"]');
@@ -1235,7 +1257,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const productVariant = clone.querySelector('[data-role="drawer-product-variant"]');
         const productPriceQuantity = clone.querySelector('[data-role="drawer-product-price-quantity"]');
         const removeButton = clone.querySelector('[data-role="drawer-remove-item-btn"]');
-
         const detailUrl = getProductDetailUrl(item.id);
 
         if (drawerItem) {
@@ -1318,8 +1339,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-
-    // 29. Mở đóng cart drawer
+    // 30. Mở đóng cart drawer
     function openCartDrawer() {
         renderCartDrawer();
 
@@ -1367,8 +1387,7 @@ document.addEventListener("DOMContentLoaded", function () {
         renderCartDrawer();
     }
 
-
-    // 30. Sở hữu ngay và checkout
+    // 31. Sở hữu ngay và checkout
     function handleQuickViewBuy() {
         const isAdded = addQuickViewProductToCart();
 
@@ -1397,12 +1416,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         saveCheckoutItemsToStorage(checkoutItems);
-
         window.location.href = "../html/checkout.html?mode=cart";
     }
 
-
-    // 31. Xử lý sản phẩm / filter / view
+    // 32. Xử lý sản phẩm / filter / view
     function handleProductClick(event) {
         const quickBuyBtn = event.target.closest('[data-role="quick-buy-btn"]');
 
@@ -1421,13 +1438,17 @@ document.addEventListener("DOMContentLoaded", function () {
         openQuickView(productId);
     }
 
-    function handleApplyFilter() {
+    function reloadProductsFromFirstPage() {
         currentPage = 1;
 
         loadProductsFromApi().catch(function (error) {
             console.error(error);
             showErrorState();
         });
+    }
+
+    function handleApplyFilter() {
+        reloadProductsFromFirstPage();
     }
 
     function handleResetFilter() {
@@ -1440,21 +1461,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         currentKeyword = "";
-        currentPage = 1;
-
-        loadProductsFromApi().catch(function (error) {
-            console.error(error);
-            showErrorState();
-        });
+        reloadProductsFromFirstPage();
     }
 
     function handleSortChange() {
-        currentPage = 1;
-
-        loadProductsFromApi().catch(function (error) {
-            console.error(error);
-            showErrorState();
-        });
+        reloadProductsFromFirstPage();
     }
 
     function setViewMode(view) {
@@ -1500,8 +1511,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-
-    // 32. Xử lý quick view
+    // 33. Xử lý quick view
     function handleQuickViewClick(event) {
         const thumbButton = event.target.closest(".quickViewThumb");
         const colorButton = event.target.closest(".quickViewColorItem");
@@ -1528,8 +1538,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 33. Xử lý cart drawer
+    // 34. Xử lý cart drawer
     function handleCartDrawerClick(event) {
         const removeButton = event.target.closest('[data-role="drawer-remove-item-btn"]');
 
@@ -1546,8 +1555,7 @@ document.addEventListener("DOMContentLoaded", function () {
         removeCartDrawerItem(cartItemId);
     }
 
-
-    // 34. Xử lý tìm kiếm
+    // 35. Xử lý tìm kiếm
     function handleSearchSubmit(event) {
         event.preventDefault();
 
@@ -1561,8 +1569,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "../html/search.html?keyword=" + encodeURIComponent(keyword);
     }
 
-
-    // 35. Phím ESC
+    // 36. Phím ESC
     function handleEscapeKey(event) {
         if (event.key !== "Escape") {
             return;
@@ -1572,8 +1579,7 @@ document.addEventListener("DOMContentLoaded", function () {
         closeCartDrawer();
     }
 
-
-    // 36. Gắn sự kiện
+    // 37. Gắn sự kiện
     function bindEvents() {
         document.addEventListener("click", handleProductClick);
         document.addEventListener("keydown", handleEscapeKey);
@@ -1588,6 +1594,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (btnResetFilter) {
             btnResetFilter.addEventListener("click", handleResetFilter);
+        }
+
+        if (filterForm) {
+            filterForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                handleApplyFilter();
+            });
         }
 
         if (sortSelect) {
@@ -1698,8 +1711,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-    // 37. Khởi tạo trang danh mục
+    // 38. Khởi tạo trang danh mục
     async function initCategoryPage() {
         bindEvents();
         setViewMode("grid");
