@@ -109,7 +109,7 @@ if ($file['error'] !== UPLOAD_ERR_OK) {
 }
 
 
-// 6. Validate dung lượng
+// 6. Validate dung lượng file
 $maxFileSize = 5 * 1024 * 1024;
 
 if ((int) $file['size'] <= 0) {
@@ -141,18 +141,18 @@ if (!isset($allowedMimeTypes[$mimeType])) {
 $extension = $allowedMimeTypes[$mimeType];
 
 
-// 8. Tạo thư mục upload nếu chưa có
-$uploadDir = realpath(__DIR__ . '/../../../../uploads');
+// 8. Tạo thư mục BackEnd/uploads/products nếu chưa có
+$uploadRootDir = realpath(__DIR__ . '/../../../../uploads');
 
-if ($uploadDir === false) {
-    $uploadDir = __DIR__ . '/../../../../uploads';
+if ($uploadRootDir === false) {
+    $uploadRootDir = __DIR__ . '/../../../../uploads';
 
-    if (!mkdir($uploadDir, 0777, true)) {
+    if (!mkdir($uploadRootDir, 0777, true)) {
         sendError('Khong tao duoc thu muc uploads', 500);
     }
 }
 
-$productUploadDir = $uploadDir . DIRECTORY_SEPARATOR . 'products';
+$productUploadDir = $uploadRootDir . DIRECTORY_SEPARATOR . 'products';
 
 if (!is_dir($productUploadDir)) {
     if (!mkdir($productUploadDir, 0777, true)) {
@@ -165,6 +165,7 @@ if (!is_dir($productUploadDir)) {
 $originalName = pathinfo($file['name'], PATHINFO_FILENAME);
 
 $safeName = strtolower($originalName);
+$safeName = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $safeName);
 $safeName = preg_replace('/[^a-z0-9-_]+/i', '-', $safeName);
 $safeName = trim($safeName, '-');
 

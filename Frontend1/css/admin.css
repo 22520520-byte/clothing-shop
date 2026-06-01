@@ -3666,3 +3666,380 @@ textarea {
     align-items: center;
     justify-content: center;
 }
+/* =========================================================
+   Product detail - Variant section
+   Áp dụng cho trang admin-product-detail.html
+========================================================= */
+
+.productVariantSection {
+    margin-top: 28px;
+    padding: 22px;
+    border: 1px solid #eeeeee;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.035);
+}
+
+.productVariantSection h4 {
+    margin: 0 0 6px;
+    color: #111111;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.productVariantSection .sectionHint {
+    margin: 0 0 18px;
+    color: #777777;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.variantFormGrid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr 1.3fr auto;
+    gap: 14px;
+    align-items: end;
+    margin-bottom: 20px;
+}
+
+.variantActionGroup {
+    display: flex;
+    align-items: end;
+}
+
+.variantActionGroup .secondaryBtn {
+    width: 100%;
+    min-width: 145px;
+    height: 44px;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.variantTableWrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.variantTable {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+
+.variantTable thead th {
+    background: #fafafa;
+    color: #444444;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.variantTable tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f1f1;
+    vertical-align: middle;
+    color: #111111;
+    font-size: 14px;
+}
+
+.variantTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.variantTable tbody tr:hover {
+    background: #fcfcfc;
+}
+
+.variantColorText,
+.variantSizeText {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    font-weight: 600;
+    color: #111111;
+}
+
+.variantSkuInput,
+.variantQuantityInput {
+    max-width: 180px;
+    height: 38px;
+    padding: 8px 12px;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.variantSkuInput {
+    min-width: 170px;
+}
+
+.variantQuantityInput {
+    max-width: 120px;
+}
+
+.variantSkuInput:focus,
+.variantQuantityInput:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.dangerBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    height: 34px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 10px;
+    background: #ffe5e5;
+    color: #e03131;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dangerBtn:hover {
+    background: #ffd2d2;
+    transform: translateY(-1px);
+}
+
+.productVariantSection .formHint {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8f8f8;
+    color: #777777;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   Product detail - Image preview
+========================================================= */
+
+.productImagePreviewBox {
+    width: 100%;
+    min-height: 300px;
+    border: 1px solid #eeeeee;
+    border-radius: 18px;
+    background: #f8f8f8;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.productImagePreview {
+    width: 100%;
+    height: 100%;
+    max-height: 330px;
+    object-fit: contain;
+    object-position: center;
+    display: none;
+    background: #f8f8f8;
+}
+
+.productImageText {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #111111;
+    font-size: 30px;
+    font-weight: 800;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================================================
+   Product detail - Form spacing
+========================================================= */
+
+.productDetailForm .formGrid.twoColumns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.productDetailForm .formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.productDetailForm .formLabel {
+    color: #111111;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.productDetailForm .formInput {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #111111;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.productDetailForm .formInput:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.productDetailForm .formTextarea {
+    min-height: 115px;
+    resize: vertical;
+}
+
+.productDetailForm .formHint {
+    margin: 6px 0 0;
+    color: #777777;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.formMessage {
+    min-height: 22px;
+    margin: 18px 0 0;
+    color: #e03131;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.formMessage.success {
+    color: #087f5b;
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+
+/* =========================================================
+   Responsive
+========================================================= */
+
+@media (max-width: 1200px) {
+    .variantFormGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .variantActionGroup {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .productDetailForm .formGrid.twoColumns {
+        grid-template-columns: 1fr;
+    }
+
+    .variantFormGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .variantActionGroup {
+        grid-column: span 1;
+    }
+
+    .variantActionGroup .secondaryBtn {
+        width: 100%;
+    }
+
+    .productImagePreviewBox {
+        min-height: 240px;
+    }
+}
+/* =========================================================
+   Product detail - Summary card
+========================================================= */
+
+.productDetailSummaryGrid {
+    margin-top: 24px;
+    padding: 24px;
+    border: 1px solid #eeeeee;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.productDetailSummaryGrid > h3 {
+    margin: 0 0 6px;
+    color: #111111;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.productDetailSummaryGrid > p {
+    margin: 0 0 20px;
+    color: #777777;
+    font-size: 14px;
+}
+
+.productDetailSummaryGrid .summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.productDetailSummaryGrid .summaryItem {
+    min-height: 74px;
+    padding: 16px;
+    border: 1px solid #eeeeee;
+    border-radius: 14px;
+    background: #fafafa;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.productDetailSummaryGrid .summaryItem span {
+    color: #777777;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.productDetailSummaryGrid .summaryItem strong {
+    color: #111111;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+
+/* Responsive summary */
+@media (max-width: 1100px) {
+    .productDetailSummaryGrid .summaryGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .productDetailSummaryGrid .summaryGrid {
+        grid-template-columns: 1fr;
+    }
+}

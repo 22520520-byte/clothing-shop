@@ -1,6 +1,7 @@
 // =========================================================
 // File: Frontend1/js/admin-product-detail.js
 // Mục đích: Thêm / sửa sản phẩm admin bằng API backend thật
+//          Quản lý biến thể theo Màu + Size + Số lượng
 // =========================================================
 
 
@@ -36,30 +37,26 @@ const detailProductPriceInput = document.getElementById("detailProductPriceInput
 const detailProductOldPriceInput = document.getElementById("detailProductOldPriceInput");
 const detailProductMaterialInput = document.getElementById("detailProductMaterialInput");
 const detailProductStockInput = document.getElementById("detailProductStockInput");
-
-const detailProductColorInput = document.getElementById("detailProductColorInput");
-const addProductColorBtn = document.getElementById("addProductColorBtn");
-const detailProductColorList = document.getElementById("detailProductColorList");
-
-const detailProductSizeInput = document.getElementById("detailProductSizeInput");
-const detailProductSizeQuantityInput = document.getElementById("detailProductSizeQuantityInput");
-const addProductSizeBtn = document.getElementById("addProductSizeBtn");
-const detailProductSizeTableBody = document.getElementById("detailProductSizeTableBody");
-
 const detailProductDescriptionInput = document.getElementById("detailProductDescriptionInput");
 const detailProductFormMessage = document.getElementById("detailProductFormMessage");
 
 
-// 4. Lấy element template
-const productColorTagTemplate = document.getElementById("productColorTagTemplate");
-const productSizeRowTemplate = document.getElementById("productSizeRowTemplate");
+// 4. Lấy element biến thể sản phẩm
+const detailVariantColorInput = document.getElementById("detailVariantColorInput");
+const detailVariantSizeInput = document.getElementById("detailVariantSizeInput");
+const detailVariantQuantityInput = document.getElementById("detailVariantQuantityInput");
+const detailVariantSkuInput = document.getElementById("detailVariantSkuInput");
+const addProductVariantBtn = document.getElementById("addProductVariantBtn");
+
+const detailProductVariantTableBody = document.getElementById("detailProductVariantTableBody");
+const productVariantRowTemplate = document.getElementById("productVariantRowTemplate");
 
 
 // 5. Lấy element tóm tắt sản phẩm
 const summaryProductGroup = document.getElementById("summaryProductGroup");
 const summaryProductCategory = document.getElementById("summaryProductCategory");
 const summaryProductMaterial = document.getElementById("summaryProductMaterial");
-const summaryProductColorCount = document.getElementById("summaryProductColorCount");
+const summaryProductVariantCount = document.getElementById("summaryProductVariantCount");
 const summaryProductPrice = document.getElementById("summaryProductPrice");
 const summaryProductStock = document.getElementById("summaryProductStock");
 
@@ -85,10 +82,8 @@ let adminProductOptions = {
     sizes: []
 };
 
-let selectedColors = [];
-let selectedSizes = [];
 let selectedImage = "";
-let existingVariantMap = {};
+let selectedVariants = [];
 
 
 // 7.1. Nhóm sản phẩm hiển thị theo đúng menu khách hàng
@@ -505,9 +500,11 @@ function renderCategoryOptions(groupId = "") {
 
     categoryList.forEach(function (category) {
         const option = document.createElement("option");
+
         option.value = category.id;
         option.textContent = category.name;
         option.dataset.parentId = category.parent && category.parent.id ? category.parent.id : "";
+
         detailProductCategoryInput.appendChild(option);
     });
 
@@ -537,8 +534,8 @@ async function loadProductOptions() {
     renderProductGroupOptions();
     renderCategoryOptions();
 
-    createInputDatalist(detailProductColorInput, "adminColorOptions", adminProductOptions.colors);
-    createInputDatalist(detailProductSizeInput, "adminSizeOptions", adminProductOptions.sizes);
+    createInputDatalist(detailVariantColorInput, "adminColorOptions", adminProductOptions.colors);
+    createInputDatalist(detailVariantSizeInput, "adminSizeOptions", adminProductOptions.sizes);
 }
 
 
@@ -570,272 +567,14 @@ function renderProductImagePreview(productName) {
 }
 
 
-// 30. Tính tổng tồn kho
-function calculateTotalStock() {
-    return selectedSizes.reduce(function (total, item) {
-        return total + Number(item.quantity || 0);
-    }, 0);
-}
-
-
-// 31. Cập nhật tổng tồn kho
-function updateProductStock() {
-    if (detailProductStockInput) {
-        detailProductStockInput.value = calculateTotalStock();
-    }
-}
-
-
-// 32. Lấy text option đang chọn
-function getSelectedOptionText(selectElement) {
-    if (!selectElement || !selectElement.options || selectElement.selectedIndex < 0) {
-        return "";
-    }
-
-    return selectElement.options[selectElement.selectedIndex].textContent;
-}
-
-
-// 33. Render tóm tắt sản phẩm
-function renderProductSummary() {
-    const groupText = getSelectedOptionText(detailProductGroupInput);
-    const categoryText = getSelectedOptionText(detailProductCategoryInput);
-    const material = detailProductMaterialInput ? detailProductMaterialInput.value.trim() : "";
-    const price = detailProductPriceInput ? Number(detailProductPriceInput.value || 0) : 0;
-    const stock = calculateTotalStock();
-
-    if (summaryProductGroup) {
-        summaryProductGroup.textContent = groupText && groupText !== "Chọn nhóm sản phẩm"
-            ? groupText
-            : "Đang cập nhật";
-    }
-
-    if (summaryProductCategory) {
-        summaryProductCategory.textContent = categoryText && categoryText !== "Chọn loại sản phẩm"
-            ? categoryText
-            : "Đang cập nhật";
-    }
-
-    if (summaryProductMaterial) {
-        summaryProductMaterial.textContent = material || "Đang cập nhật";
-    }
-
-    if (summaryProductColorCount) {
-        summaryProductColorCount.textContent = selectedColors.length + " màu";
-    }
-
-    if (summaryProductPrice) {
-        summaryProductPrice.textContent = formatPrice(price);
-    }
-
-    if (summaryProductStock) {
-        summaryProductStock.textContent = stock + " sản phẩm";
-    }
-}
-
-
-// 34. Render tag màu
-function renderProductColors() {
-    if (!detailProductColorList || !productColorTagTemplate) {
-        return;
-    }
-
-    detailProductColorList.innerHTML = "";
-
-    selectedColors.forEach(function (color) {
-        const colorFragment = productColorTagTemplate.content.cloneNode(true);
-        const colorTag = colorFragment.querySelector(".colorTagItem");
-        const removeButton = colorFragment.querySelector("[data-action='remove-color']");
-        const colorNameText = colorFragment.querySelector(".colorNameText");
-
-        if (colorTag) {
-            colorTag.dataset.colorId = color.id;
-        }
-
-        if (colorNameText) {
-            colorNameText.textContent = color.name;
-        }
-
-        if (removeButton) {
-            removeButton.dataset.colorId = color.id;
-        }
-
-        detailProductColorList.appendChild(colorFragment);
-    });
-
-    renderProductSummary();
-}
-
-
-// 35. Render bảng size
-function renderProductSizes() {
-    if (!detailProductSizeTableBody || !productSizeRowTemplate) {
-        return;
-    }
-
-    detailProductSizeTableBody.innerHTML = "";
-
-    selectedSizes.forEach(function (sizeItem, index) {
-        const sizeFragment = productSizeRowTemplate.content.cloneNode(true);
-        const row = sizeFragment.querySelector("tr");
-        const sizeNameText = sizeFragment.querySelector(".sizeNameText");
-        const quantityInput = sizeFragment.querySelector(".sizeQuantityInput");
-        const removeButton = sizeFragment.querySelector("[data-action='remove-size']");
-
-        if (row) {
-            row.dataset.index = index;
-        }
-
-        if (sizeNameText) {
-            sizeNameText.textContent = sizeItem.name;
-        }
-
-        if (quantityInput) {
-            quantityInput.dataset.index = index;
-            quantityInput.value = Number(sizeItem.quantity || 0);
-        }
-
-        if (removeButton) {
-            removeButton.dataset.index = index;
-        }
-
-        detailProductSizeTableBody.appendChild(sizeFragment);
-    });
-
-    updateProductStock();
-    renderProductSummary();
-}
-
-
-// 36. Thêm màu sản phẩm
-function addProductColor() {
-    if (!detailProductColorInput) {
-        return;
-    }
-
-    const colorValue = detailProductColorInput.value.trim();
-
-    if (!colorValue) {
-        showProductFormMessage("Vui lòng nhập hoặc chọn màu sản phẩm.");
-        return;
-    }
-
-    const colorOption = findColorOption(colorValue);
-
-    if (!colorOption) {
-        showProductFormMessage("Màu này chưa có trong database. Vui lòng chọn theo gợi ý.");
-        return;
-    }
-
-    const isDuplicate = selectedColors.some(function (item) {
-        return Number(item.id) === Number(colorOption.id);
-    });
-
-    if (isDuplicate) {
-        showProductFormMessage("Màu này đã tồn tại.");
-        return;
-    }
-
-    selectedColors.push({
-        id: Number(colorOption.id),
-        name: colorOption.name,
-        code: colorOption.code,
-        hex_code: colorOption.hex_code
-    });
-
-    detailProductColorInput.value = "";
-    clearProductFormMessage();
-    renderProductColors();
-}
-
-
-// 37. Xóa màu sản phẩm
-function removeProductColor(colorId) {
-    selectedColors = selectedColors.filter(function (item) {
-        return Number(item.id) !== Number(colorId);
-    });
-
-    renderProductColors();
-}
-
-
-// 38. Thêm size sản phẩm
-function addProductSize() {
-    if (!detailProductSizeInput || !detailProductSizeQuantityInput) {
-        return;
-    }
-
-    const sizeValue = detailProductSizeInput.value.trim();
-    const quantity = Number(detailProductSizeQuantityInput.value || 0);
-
-    if (!sizeValue) {
-        showProductFormMessage("Vui lòng nhập hoặc chọn kích thước sản phẩm.");
-        return;
-    }
-
-    if (quantity < 0) {
-        showProductFormMessage("Số lượng size không hợp lệ.");
-        return;
-    }
-
-    const sizeOption = findSizeOption(sizeValue);
-
-    if (!sizeOption) {
-        showProductFormMessage("Size này chưa có trong database. Vui lòng chọn theo gợi ý.");
-        return;
-    }
-
-    const isDuplicate = selectedSizes.some(function (item) {
-        return Number(item.id) === Number(sizeOption.id);
-    });
-
-    if (isDuplicate) {
-        showProductFormMessage("Kích thước này đã tồn tại.");
-        return;
-    }
-
-    selectedSizes.push({
-        id: Number(sizeOption.id),
-        name: sizeOption.name,
-        code: sizeOption.code,
-        quantity: quantity
-    });
-
-    detailProductSizeInput.value = "";
-    detailProductSizeQuantityInput.value = "";
-    clearProductFormMessage();
-    renderProductSizes();
-}
-
-
-// 39. Xóa size sản phẩm
-function removeProductSize(index) {
-    selectedSizes.splice(index, 1);
-    renderProductSizes();
-}
-
-
-// 40. Cập nhật số lượng size
-function updateProductSizeQuantity(index, quantity) {
-    if (!selectedSizes[index]) {
-        return;
-    }
-
-    selectedSizes[index].quantity = Math.max(Number(quantity || 0), 0);
-
-    updateProductStock();
-    renderProductSummary();
-}
-
-
-// 41. Kiểm tra ảnh tạm không được lưu vào database
+// 30. Kiểm tra ảnh tạm không được lưu vào database
 function isTemporaryImageUrl(imageUrl) {
     return String(imageUrl || "").startsWith("data:image") ||
         String(imageUrl || "").startsWith("blob:");
 }
 
 
-// 42. Set trạng thái upload ảnh
+// 31. Set trạng thái upload ảnh
 function setImageUploadLoading(isLoading) {
     isProductImageUploading = isLoading;
 
@@ -856,7 +595,7 @@ function setImageUploadLoading(isLoading) {
 }
 
 
-// 43. Upload ảnh sản phẩm lên server
+// 32. Upload ảnh sản phẩm lên server
 async function uploadProductImage(file) {
     const formData = new FormData();
 
@@ -888,7 +627,7 @@ async function uploadProductImage(file) {
 }
 
 
-// 44. Xử lý upload ảnh sản phẩm
+// 33. Xử lý upload ảnh sản phẩm
 async function handleProductImageUpload(event) {
     const file = event.target.files[0];
 
@@ -934,12 +673,253 @@ async function handleProductImageUpload(event) {
 }
 
 
+// 34. Tính tổng tồn kho
+function calculateTotalStock() {
+    return selectedVariants.reduce(function (total, variant) {
+        return total + Number(variant.stockQuantity || 0);
+    }, 0);
+}
+
+
+// 35. Cập nhật tổng tồn kho
+function updateProductStock() {
+    if (detailProductStockInput) {
+        detailProductStockInput.value = calculateTotalStock();
+    }
+}
+
+
+// 36. Lấy text option đang chọn
+function getSelectedOptionText(selectElement) {
+    if (!selectElement || !selectElement.options || selectElement.selectedIndex < 0) {
+        return "";
+    }
+
+    return selectElement.options[selectElement.selectedIndex].textContent;
+}
+
+
+// 37. Render tóm tắt sản phẩm
+function renderProductSummary() {
+    const groupText = getSelectedOptionText(detailProductGroupInput);
+    const categoryText = getSelectedOptionText(detailProductCategoryInput);
+    const material = detailProductMaterialInput ? detailProductMaterialInput.value.trim() : "";
+    const price = detailProductPriceInput ? Number(detailProductPriceInput.value || 0) : 0;
+    const stock = calculateTotalStock();
+
+    if (summaryProductGroup) {
+        summaryProductGroup.textContent = groupText && groupText !== "Chọn nhóm sản phẩm"
+            ? groupText
+            : "Đang cập nhật";
+    }
+
+    if (summaryProductCategory) {
+        summaryProductCategory.textContent = categoryText && categoryText !== "Chọn loại sản phẩm"
+            ? categoryText
+            : "Đang cập nhật";
+    }
+
+    if (summaryProductMaterial) {
+        summaryProductMaterial.textContent = material || "Đang cập nhật";
+    }
+
+    if (summaryProductVariantCount) {
+        summaryProductVariantCount.textContent = selectedVariants.length + " biến thể";
+    }
+
+    if (summaryProductPrice) {
+        summaryProductPrice.textContent = formatPrice(price);
+    }
+
+    if (summaryProductStock) {
+        summaryProductStock.textContent = stock + " sản phẩm";
+    }
+
+    updateProductStock();
+}
+
+
+// 38. Tạo SKU cho biến thể
+function createVariantSku(productName, color, size) {
+    const productPart = isEditMode && currentProductId
+        ? "SP" + String(currentProductId).padStart(3, "0")
+        : createSlug(productName).toUpperCase().slice(0, 12);
+
+    const colorPart = String(color.code || color.name || color.id)
+        .toUpperCase()
+        .replace(/\s+/g, "-");
+
+    const sizePart = String(size.code || size.name || size.id)
+        .toUpperCase()
+        .replace(/\s+/g, "-");
+
+    return productPart + "-" + colorPart + "-" + sizePart + "-" + Date.now().toString().slice(-4);
+}
+
+
+// 39. Tìm biến thể theo màu và size
+function findVariantIndex(colorId, sizeId) {
+    return selectedVariants.findIndex(function (variant) {
+        return (
+            Number(variant.colorId) === Number(colorId) &&
+            Number(variant.sizeId) === Number(sizeId)
+        );
+    });
+}
+
+
+// 40. Thêm biến thể sản phẩm
+function addProductVariant() {
+    const colorValue = detailVariantColorInput ? detailVariantColorInput.value.trim() : "";
+    const sizeValue = detailVariantSizeInput ? detailVariantSizeInput.value.trim() : "";
+    const quantity = detailVariantQuantityInput ? Number(detailVariantQuantityInput.value || 0) : 0;
+    const skuValue = detailVariantSkuInput ? detailVariantSkuInput.value.trim() : "";
+
+    if (!colorValue) {
+        showProductFormMessage("Vui lòng nhập hoặc chọn màu sản phẩm.");
+        return;
+    }
+
+    if (!sizeValue) {
+        showProductFormMessage("Vui lòng nhập hoặc chọn kích thước sản phẩm.");
+        return;
+    }
+
+    if (quantity < 0) {
+        showProductFormMessage("Số lượng biến thể không hợp lệ.");
+        return;
+    }
+
+    const colorOption = findColorOption(colorValue);
+
+    if (!colorOption) {
+        showProductFormMessage("Màu này chưa có trong database. Vui lòng chọn theo gợi ý.");
+        return;
+    }
+
+    const sizeOption = findSizeOption(sizeValue);
+
+    if (!sizeOption) {
+        showProductFormMessage("Size này chưa có trong database. Vui lòng chọn theo gợi ý.");
+        return;
+    }
+
+    const existedIndex = findVariantIndex(colorOption.id, sizeOption.id);
+
+    if (existedIndex >= 0) {
+        showProductFormMessage("Biến thể màu và size này đã tồn tại. Bạn có thể sửa số lượng trực tiếp trong bảng.");
+        return;
+    }
+
+    const productName = detailProductNameInput ? detailProductNameInput.value.trim() : "product";
+
+    selectedVariants.push({
+        id: 0,
+        colorId: Number(colorOption.id),
+        colorName: colorOption.name,
+        colorCode: colorOption.code || "",
+        sizeId: Number(sizeOption.id),
+        sizeName: sizeOption.name,
+        sizeCode: sizeOption.code || "",
+        sku: skuValue || createVariantSku(productName, colorOption, sizeOption),
+        stockQuantity: quantity,
+        status: "active"
+    });
+
+    if (detailVariantColorInput) detailVariantColorInput.value = "";
+    if (detailVariantSizeInput) detailVariantSizeInput.value = "";
+    if (detailVariantQuantityInput) detailVariantQuantityInput.value = "";
+    if (detailVariantSkuInput) detailVariantSkuInput.value = "";
+
+    clearProductFormMessage();
+    renderProductVariants();
+}
+
+
+// 41. Xóa biến thể sản phẩm
+function removeProductVariant(index) {
+    selectedVariants.splice(index, 1);
+    renderProductVariants();
+}
+
+
+// 42. Cập nhật SKU biến thể
+function updateVariantSku(index, sku) {
+    if (!selectedVariants[index]) {
+        return;
+    }
+
+    selectedVariants[index].sku = String(sku || "").trim();
+}
+
+
+// 43. Cập nhật số lượng biến thể
+function updateVariantQuantity(index, quantity) {
+    if (!selectedVariants[index]) {
+        return;
+    }
+
+    selectedVariants[index].stockQuantity = Math.max(Number(quantity || 0), 0);
+    renderProductSummary();
+}
+
+
+// 44. Render bảng biến thể
+function renderProductVariants() {
+    if (!detailProductVariantTableBody || !productVariantRowTemplate) {
+        renderProductSummary();
+        return;
+    }
+
+    detailProductVariantTableBody.innerHTML = "";
+
+    selectedVariants.forEach(function (variant, index) {
+        const variantFragment = productVariantRowTemplate.content.cloneNode(true);
+        const row = variantFragment.querySelector("tr");
+
+        const colorText = variantFragment.querySelector(".variantColorText");
+        const sizeText = variantFragment.querySelector(".variantSizeText");
+        const skuInput = variantFragment.querySelector(".variantSkuInput");
+        const quantityInput = variantFragment.querySelector(".variantQuantityInput");
+        const removeButton = variantFragment.querySelector("[data-action='remove-variant']");
+
+        if (row) {
+            row.dataset.index = index;
+        }
+
+        if (colorText) {
+            colorText.textContent = variant.colorName || "Đang cập nhật";
+        }
+
+        if (sizeText) {
+            sizeText.textContent = variant.sizeName || "Đang cập nhật";
+        }
+
+        if (skuInput) {
+            skuInput.dataset.index = index;
+            skuInput.value = variant.sku || "";
+        }
+
+        if (quantityInput) {
+            quantityInput.dataset.index = index;
+            quantityInput.value = Number(variant.stockQuantity || 0);
+        }
+
+        if (removeButton) {
+            removeButton.dataset.index = index;
+        }
+
+        detailProductVariantTableBody.appendChild(variantFragment);
+    });
+
+    renderProductSummary();
+}
+
+
 // 45. Set form mặc định khi thêm mới
 function setDefaultProductForm() {
-    selectedColors = [];
-    selectedSizes = [];
     selectedImage = "";
-    existingVariantMap = {};
+    selectedVariants = [];
 
     if (detailProductIdInput) {
         detailProductIdInput.value = "";
@@ -979,16 +959,20 @@ function setDefaultProductForm() {
         detailProductStockInput.value = 0;
     }
 
-    if (detailProductColorInput) {
-        detailProductColorInput.value = "";
+    if (detailVariantColorInput) {
+        detailVariantColorInput.value = "";
     }
 
-    if (detailProductSizeInput) {
-        detailProductSizeInput.value = "";
+    if (detailVariantSizeInput) {
+        detailVariantSizeInput.value = "";
     }
 
-    if (detailProductSizeQuantityInput) {
-        detailProductSizeQuantityInput.value = "";
+    if (detailVariantQuantityInput) {
+        detailVariantQuantityInput.value = "";
+    }
+
+    if (detailVariantSkuInput) {
+        detailVariantSkuInput.value = "";
     }
 
     if (detailProductDescriptionInput) {
@@ -1005,8 +989,7 @@ function setDefaultProductForm() {
 
     renderProductStatusBadge("active");
     renderProductImagePreview("");
-    renderProductColors();
-    renderProductSizes();
+    renderProductVariants();
     renderProductSummary();
 }
 
@@ -1036,72 +1019,34 @@ function normalizeProductDetail(product) {
         description: product.short_description || "",
         image: product.main_image || "",
         images: Array.isArray(product.images) ? product.images : [],
-        variants: Array.isArray(product.variants) ? product.variants : []
+        variants: Array.isArray(product.variants) ? product.variants : [],
+        is_featured: product.is_featured || 0
     };
 }
 
 
-// 47. Tạo dữ liệu màu và size từ variants
+// 47. Tạo dữ liệu biến thể từ API
 function prepareVariantData(product) {
-    selectedColors = [];
-    selectedSizes = [];
-    existingVariantMap = {};
+    selectedVariants = [];
 
     product.variants.forEach(function (variant) {
-        if (variant.color && variant.color.id) {
-            colorMapSet(variant.color);
+        if (!variant.color || !variant.color.id || !variant.size || !variant.size.id) {
+            return;
         }
 
-        if (variant.size && variant.size.id) {
-            sizeMapSet(variant.size, variant.stock_quantity);
-        }
-
-        if (variant.color && variant.color.id && variant.size && variant.size.id) {
-            const mapKey = variant.color.id + "-" + variant.size.id;
-
-            existingVariantMap[mapKey] = {
-                id: variant.id,
-                sku: variant.sku,
-                stock_quantity: Number(variant.stock_quantity || 0),
-                status: variant.status || "active"
-            };
-        }
+        selectedVariants.push({
+            id: Number(variant.id || 0),
+            colorId: Number(variant.color.id),
+            colorName: variant.color.name || "Đang cập nhật",
+            colorCode: variant.color.code || "",
+            sizeId: Number(variant.size.id),
+            sizeName: variant.size.name || "Đang cập nhật",
+            sizeCode: variant.size.code || "",
+            sku: variant.sku || "",
+            stockQuantity: Number(variant.stock_quantity || 0),
+            status: variant.status || "active"
+        });
     });
-
-    function colorMapSet(color) {
-        const existed = selectedColors.some(function (item) {
-            return Number(item.id) === Number(color.id);
-        });
-
-        if (existed) {
-            return;
-        }
-
-        selectedColors.push({
-            id: Number(color.id),
-            name: color.name,
-            code: color.code,
-            hex_code: color.hex_code
-        });
-    }
-
-    function sizeMapSet(size, stockQuantity) {
-        const existedSize = selectedSizes.find(function (item) {
-            return Number(item.id) === Number(size.id);
-        });
-
-        if (existedSize) {
-            existedSize.quantity += Number(stockQuantity || 0);
-            return;
-        }
-
-        selectedSizes.push({
-            id: Number(size.id),
-            name: size.name,
-            code: size.code,
-            quantity: Number(stockQuantity || 0)
-        });
-    }
 }
 
 
@@ -1170,8 +1115,7 @@ function fillProductForm(product) {
 
     renderProductStatusBadge(normalizedProduct.status);
     renderProductImagePreview(normalizedProduct.name);
-    renderProductColors();
-    renderProductSizes();
+    renderProductVariants();
     renderProductSummary();
 }
 
@@ -1247,13 +1191,21 @@ function validateProductForm() {
         return false;
     }
 
-    if (selectedColors.length === 0) {
-        showProductFormMessage("Vui lòng thêm ít nhất 1 màu sản phẩm.");
+    if (selectedVariants.length === 0) {
+        showProductFormMessage("Vui lòng thêm ít nhất 1 biến thể sản phẩm.");
         return false;
     }
 
-    if (selectedSizes.length === 0) {
-        showProductFormMessage("Vui lòng thêm ít nhất 1 kích thước sản phẩm.");
+    const hasInvalidVariant = selectedVariants.some(function (variant) {
+        return (
+            !variant.colorId ||
+            !variant.sizeId ||
+            Number(variant.stockQuantity || 0) < 0
+        );
+    });
+
+    if (hasInvalidVariant) {
+        showProductFormMessage("Danh sách biến thể có dữ liệu không hợp lệ.");
         return false;
     }
 
@@ -1261,63 +1213,34 @@ function validateProductForm() {
 }
 
 
-// 51. Tạo SKU cho biến thể
-function createVariantSku(productIdOrName, color, size) {
-    const base = isEditMode && currentProductId
-        ? "SP" + String(currentProductId).padStart(3, "0")
-        : createSlug(productIdOrName).toUpperCase().slice(0, 12);
-
-    const colorCode = String(color.code || color.name || color.id)
-        .toUpperCase()
-        .replace(/\s+/g, "-");
-
-    const sizeCode = String(size.code || size.name || size.id)
-        .toUpperCase()
-        .replace(/\s+/g, "-");
-
-    return base + "-" + colorCode + "-" + sizeCode + "-" + Date.now().toString().slice(-4);
-}
-
-
-// 52. Chia tồn kho của size cho các màu
-function distributeQuantity(totalQuantity, colorIndex, colorCount) {
-    const quantity = Number(totalQuantity || 0);
-    const baseQuantity = Math.floor(quantity / colorCount);
-    const remainder = quantity % colorCount;
-
-    return baseQuantity + (colorIndex < remainder ? 1 : 0);
-}
-
-
-// 53. Tạo danh sách biến thể gửi lên API
+// 51. Tạo danh sách biến thể gửi lên API
 function buildProductVariants(productName) {
-    const variants = [];
-    const colorCount = selectedColors.length;
-
-    selectedSizes.forEach(function (size) {
-        selectedColors.forEach(function (color, colorIndex) {
-            const mapKey = color.id + "-" + size.id;
-            const oldVariant = existingVariantMap[mapKey] || null;
-            const stockQuantity = distributeQuantity(size.quantity, colorIndex, colorCount);
-
-            variants.push({
-                id: oldVariant ? Number(oldVariant.id) : 0,
-                color_id: Number(color.id),
-                size_id: Number(size.id),
-                sku: oldVariant && oldVariant.sku
-                    ? oldVariant.sku
-                    : createVariantSku(productName, color, size),
-                stock_quantity: stockQuantity,
-                status: "active"
-            });
-        });
+    return selectedVariants.map(function (variant) {
+        return {
+            id: Number(variant.id || 0),
+            color_id: Number(variant.colorId),
+            size_id: Number(variant.sizeId),
+            sku: variant.sku || createVariantSku(
+                productName,
+                {
+                    id: variant.colorId,
+                    name: variant.colorName,
+                    code: variant.colorCode
+                },
+                {
+                    id: variant.sizeId,
+                    name: variant.sizeName,
+                    code: variant.sizeCode
+                }
+            ),
+            stock_quantity: Number(variant.stockQuantity || 0),
+            status: variant.status || "active"
+        };
     });
-
-    return variants;
 }
 
 
-// 54. Tạo danh sách ảnh gửi lên API
+// 52. Tạo danh sách ảnh gửi lên API
 function buildProductImages() {
     if (!selectedImage || isTemporaryImageUrl(selectedImage)) {
         return [];
@@ -1332,7 +1255,7 @@ function buildProductImages() {
 }
 
 
-// 55. Lấy dữ liệu form sản phẩm để gửi API
+// 53. Lấy dữ liệu form sản phẩm để gửi API
 function getProductFormData() {
     const name = detailProductNameInput.value.trim();
 
@@ -1370,7 +1293,7 @@ function getProductFormData() {
 }
 
 
-// 56. Set trạng thái loading nút lưu
+// 54. Set trạng thái loading nút lưu
 function setSaveLoading(isLoading) {
     const submitButtons = document.querySelectorAll("button[type='submit'], #saveProductHeaderBtn");
 
@@ -1384,7 +1307,7 @@ function setSaveLoading(isLoading) {
 }
 
 
-// 57. Lưu sản phẩm bằng API
+// 55. Lưu sản phẩm bằng API
 async function saveProduct() {
     if (!validateProductForm()) {
         return;
@@ -1416,7 +1339,7 @@ async function saveProduct() {
 }
 
 
-// 58. Xử lý submit form sản phẩm
+// 56. Xử lý submit form sản phẩm
 function handleProductFormSubmit(event) {
     event.preventDefault();
     clearProductFormMessage();
@@ -1424,86 +1347,65 @@ function handleProductFormSubmit(event) {
 }
 
 
-// 59. Gắn sự kiện form màu / size / ảnh
+// 57. Gắn sự kiện form biến thể / ảnh
 function bindDynamicFormEvents() {
-    if (addProductColorBtn) {
-        addProductColorBtn.addEventListener("click", addProductColor);
+    if (addProductVariantBtn) {
+        addProductVariantBtn.addEventListener("click", addProductVariant);
     }
 
-    if (detailProductColorInput) {
-        detailProductColorInput.addEventListener("keydown", function (event) {
+    const variantInputs = [
+        detailVariantColorInput,
+        detailVariantSizeInput,
+        detailVariantQuantityInput,
+        detailVariantSkuInput
+    ];
+
+    variantInputs.forEach(function (input) {
+        if (!input) {
+            return;
+        }
+
+        input.addEventListener("keydown", function (event) {
             if (event.key === "Enter") {
                 event.preventDefault();
-                addProductColor();
+                addProductVariant();
             }
         });
-    }
+    });
 
-    if (detailProductColorList) {
-        detailProductColorList.addEventListener("click", function (event) {
-            const removeButton = event.target.closest("[data-action='remove-color']");
+    if (detailProductVariantTableBody) {
+        detailProductVariantTableBody.addEventListener("click", function (event) {
+            const removeButton = event.target.closest("[data-action='remove-variant']");
 
             if (!removeButton) {
                 return;
             }
 
-            removeProductColor(removeButton.dataset.colorId);
+            removeProductVariant(Number(removeButton.dataset.index));
         });
-    }
 
-    if (addProductSizeBtn) {
-        addProductSizeBtn.addEventListener("click", addProductSize);
-    }
+        detailProductVariantTableBody.addEventListener("input", function (event) {
+            const skuInput = event.target.closest(".variantSkuInput");
+            const quantityInput = event.target.closest(".variantQuantityInput");
 
-    if (detailProductSizeInput) {
-        detailProductSizeInput.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                addProductSize();
-            }
-        });
-    }
-
-    if (detailProductSizeQuantityInput) {
-        detailProductSizeQuantityInput.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                addProductSize();
-            }
-        });
-    }
-
-    if (detailProductSizeTableBody) {
-        detailProductSizeTableBody.addEventListener("click", function (event) {
-            const removeButton = event.target.closest("[data-action='remove-size']");
-
-            if (!removeButton) {
+            if (skuInput) {
+                updateVariantSku(Number(skuInput.dataset.index), skuInput.value);
                 return;
             }
 
-            removeProductSize(Number(removeButton.dataset.index));
-        });
-
-        detailProductSizeTableBody.addEventListener("input", function (event) {
-            const quantityInput = event.target.closest(".sizeQuantityInput");
-
-            if (!quantityInput) {
-                return;
+            if (quantityInput) {
+                updateVariantQuantity(Number(quantityInput.dataset.index), quantityInput.value);
             }
-
-            updateProductSizeQuantity(Number(quantityInput.dataset.index), quantityInput.value);
         });
     }
 
     if (detailProductImageFile) {
-        detailProductImageFile.addEventListener("change", function (event) {
-            handleProductImageUpload(event);
-        });
+        detailProductImageFile.addEventListener("change", handleProductImageUpload);
     }
 }
 
 
-// 60. Gắn sự kiện cập nhật summary
+// 58. Gắn sự kiện cập nhật summary
 function bindSummaryEvents() {
     const summaryInputs = [
         detailProductNameInput,
@@ -1552,7 +1454,7 @@ function bindSummaryEvents() {
 }
 
 
-// 61. Gắn sự kiện trang chi tiết sản phẩm
+// 59. Gắn sự kiện trang chi tiết sản phẩm
 function bindProductDetailEvents() {
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener("click", handleAdminLogout);
@@ -1575,7 +1477,7 @@ function bindProductDetailEvents() {
 }
 
 
-// 62. Kiểm tra đăng nhập local
+// 60. Kiểm tra đăng nhập local
 function checkAdminLoginLocal() {
     if (!window.AdminApi) {
         window.location.href = "../html/admin-login.html";
@@ -1593,7 +1495,7 @@ function checkAdminLoginLocal() {
 }
 
 
-// 63. Khởi tạo trang chi tiết sản phẩm
+// 61. Khởi tạo trang chi tiết sản phẩm
 async function initAdminProductDetailPage() {
     currentAdminUser = checkAdminLoginLocal();
 
